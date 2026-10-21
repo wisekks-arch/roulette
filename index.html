@@ -80,6 +80,12 @@
                 <!-- 룰렛 휠 캔버스 뷰 -->
                 <div class="wheel-canvas-box">
                     <canvas id="roulette-wheel-canvas" width="420" height="420"></canvas>
+                    <!-- 구슬 안착 시 휠 상단에 즉시 나타나는 실시간 당첨 번호 대형 뱃지 -->
+                    <div id="wheel-win-banner" class="wheel-win-banner hidden">
+                        <span class="win-banner-title">WINNING NUMBER</span>
+                        <div class="win-banner-badge" id="wheel-badge-number">-</div>
+                        <span class="win-banner-desc" id="wheel-badge-desc"></span>
+                    </div>
                 </div>
 
                 <!-- 가상 AI 플레이어 착석 현황 -->

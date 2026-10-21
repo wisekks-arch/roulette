@@ -177,10 +177,14 @@ class RouletteApp {
         this.currentPhase = 'BETTING';
         this.timerSeconds = 20;
 
-        // 돌리 핀 제거
+        // 돌리 핀 제거 및 휠 당첨 배너 숨김
         if (window.rouletteTable) {
             window.rouletteTable.removeDolly();
             window.rouletteTable.setLocked(false);
+        }
+        const wheelBanner = document.getElementById('wheel-win-banner');
+        if (wheelBanner) {
+            wheelBanner.classList.add('hidden');
         }
 
         // 안내 상태바 업데이트
@@ -292,6 +296,17 @@ class RouletteApp {
 
         // 상태 배너 업데이트
         this.updatePhaseStatus(`🎯 당첨 번호: [ ${winningNumber} ] ${colorKor}`, "result");
+
+        // 휠 상단 실시간 당첨 번호 3D 오버레이 뱃지 표시
+        const wheelBanner = document.getElementById('wheel-win-banner');
+        const badgeNum = document.getElementById('wheel-badge-number');
+        const badgeDesc = document.getElementById('wheel-badge-desc');
+        if (wheelBanner && badgeNum && badgeDesc) {
+            badgeNum.textContent = winningNumber;
+            badgeNum.className = `win-banner-badge badge-${color}-text`;
+            badgeDesc.textContent = colorKor;
+            wheelBanner.classList.remove('hidden');
+        }
 
         // 1. 여성 딜러 목소리로 당첨 번호 낭독
         if (window.rouletteAudio) {

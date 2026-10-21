@@ -130,6 +130,7 @@ class RouletteTable {
 
                 <!-- 당첨 번호에 꽂히는 최고급 크리스탈 유리 말머리(Knight) 돌리 마커 -->
                 <div class="crystal-knight-dolly" id="brass-dolly" style="display: none;">
+                    <div class="dolly-number-badge" id="dolly-num-label">0</div>
                     <div class="knight-glass-figure">
                         <svg class="horse-head-svg" viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg">
                             <defs>
@@ -415,6 +416,12 @@ class RouletteTable {
         this.dollyElement.style.left = `${targetX}px`;
         this.dollyElement.style.top = `${targetY}px`;
         this.dollyElement.classList.add('dolly-drop');
+
+        // 돌리 상단 번호 뱃지 동기화
+        const dollyNum = this.dollyElement.querySelector('#dolly-num-label');
+        if (dollyNum) {
+            dollyNum.textContent = winningNumber;
+        }
 
         // 황동 타격음 재생
         if (window.rouletteAudio) {

@@ -86,6 +86,14 @@ class RouletteWheel {
             if (this.wheelAngle >= Math.PI * 2) {
                 this.wheelAngle -= Math.PI * 2;
             }
+
+            // [핵심 보정] 안착된 구슬이 있다면, 휠 회전 각도에 맞춰 구슬 각도를 실시간 100% 밀착 동기화
+            if (this.ballPhase === 'pocketed' && this.targetNumber !== null) {
+                const targetIndex = this.numbers.indexOf(this.targetNumber);
+                if (targetIndex !== -1) {
+                    this.ballAngle = this.wheelAngle + targetIndex * this.sliceAngle + this.sliceAngle / 2;
+                }
+            }
             return;
         }
 
@@ -105,7 +113,7 @@ class RouletteWheel {
      */
     updateBallPhysics() {
         const trackRadius = this.outerRadius * 0.88;
-        const pocketRadius = this.outerRadius * 0.58;
+        const pocketRadius = this.outerRadius * 0.60; // 번호와 포켓 홈에 자연스럽게 안착하는 반경
 
         if (this.ballPhase === 'rolling') {
             // 구슬이 외곽 림을 타고 역방향으로 맹렬하게 질주
@@ -282,27 +290,44 @@ class RouletteWheel {
             const num = this.numbers[i];
             const colorType = this.getNumberColor(num);
 
+            const isWinner = (this.ballPhase === 'pocketed' && num === this.targetNumber);
+
             // 포켓 배경
             ctx.beginPath();
             ctx.arc(0, 0, pocketOuterR, startAngle, endAngle);
             ctx.arc(0, 0, pocketInnerR, endAngle, startAngle, true);
             ctx.closePath();
 
-            if (colorType === 'green') {
-                ctx.fillStyle = '#0f7b3c';
-            } else if (colorType === 'red') {
-                ctx.fillStyle = '#b71212';
+            if (isWinner) {
+                // [당첨 포켓] 황금빛 네온 스포트라이트 (펄스 광채)
+                const pulseAlpha = 0.78 + Math.sin(Date.now() * 0.009) * 0.22;
+                ctx.fillStyle = `rgba(255, 215, 0, ${pulseAlpha})`;
+                ctx.fill();
+
+                // 테두리 강력 강조
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2.8;
+                ctx.shadowColor = '#ffd700';
+                ctx.shadowBlur = 12;
+                ctx.stroke();
+                ctx.shadowBlur = 0;
             } else {
-                ctx.fillStyle = '#181818';
+                if (colorType === 'green') {
+                    ctx.fillStyle = '#0f7b3c';
+                } else if (colorType === 'red') {
+                    ctx.fillStyle = '#b71212';
+                } else {
+                    ctx.fillStyle = '#181818';
+                }
+                ctx.fill();
             }
-            ctx.fill();
 
             // 황동 격벽 (Frets)
             ctx.beginPath();
             ctx.moveTo(Math.cos(startAngle) * pocketInnerR, Math.sin(startAngle) * pocketInnerR);
             ctx.lineTo(Math.cos(startAngle) * pocketOuterR, Math.sin(startAngle) * pocketOuterR);
-            ctx.strokeStyle = '#e6c35c';
-            ctx.lineWidth = 1.8;
+            ctx.strokeStyle = isWinner ? '#ffffff' : '#e6c35c';
+            ctx.lineWidth = isWinner ? 2.5 : 1.8;
             ctx.stroke();
 
             // 번호 텍스트 렌더링
@@ -315,12 +340,20 @@ class RouletteWheel {
             ctx.translate(tx, ty);
             ctx.rotate(midAngle + Math.PI / 2);
 
-            ctx.fillStyle = '#ffffff';
-            ctx.font = `bold ${Math.max(10, r * 0.075)}px 'Cinzel', 'Outfit', sans-serif`;
+            if (isWinner) {
+                // 당첨 번호는 1.4배 크고 또렷한 텍스트로 강조
+                ctx.fillStyle = '#0a0a0a'; // 황금 바탕 위 선명한 가독성
+                ctx.font = `900 ${Math.max(13, r * 0.095)}px 'Cinzel', 'Outfit', sans-serif`;
+                ctx.shadowColor = '#ffffff';
+                ctx.shadowBlur = 8;
+            } else {
+                ctx.fillStyle = '#ffffff';
+                ctx.font = `bold ${Math.max(10, r * 0.075)}px 'Cinzel', 'Outfit', sans-serif`;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
+                ctx.shadowBlur = 3;
+            }
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-            ctx.shadowBlur = 3;
             ctx.fillText(num.toString(), 0, 0);
             ctx.restore();
         }
@@ -412,6 +445,22 @@ class RouletteWheel {
             ctx.shadowColor = '#ffffff';
             ctx.shadowBlur = 3;
             ctx.fill();
+
+            // 8. 당첨 구슬 안착 시 펄스 회전 황금 타겟 조준 링(Golden Target Ring) 렌더링
+            if (this.ballPhase === 'pocketed') {
+                const targetR = bSize * 1.9 + Math.sin(Date.now() * 0.008) * 2;
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(bx, by, targetR, 0, Math.PI * 2);
+                ctx.strokeStyle = '#ffd700';
+                ctx.lineWidth = 2.2;
+                ctx.shadowColor = '#fff5a0';
+                ctx.shadowBlur = 8;
+                ctx.setLineDash([5, 3]);
+                ctx.lineDashOffset = (Date.now() * 0.02) % 8;
+                ctx.stroke();
+                ctx.restore();
+            }
         }
     }
 }
