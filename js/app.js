@@ -7,9 +7,10 @@ class RouletteApp {
     constructor() {
         this.balance = 10000000; // 초기 무료 머니: 1,000만 원
         this.currentPhase = 'BETTING'; // 'BETTING', 'NO_MORE_BETS', 'SPINNING', 'RESULT'
-        this.timerSeconds = 25;
+        this.timerSeconds = 20;
         this.timerInterval = null;
         this.autoSpinTimer = null;
+        this.isLiveVideoMode = true; // 기본값: 실사 카지노 영상 모드 ON
 
         this.init();
     }
@@ -142,6 +143,20 @@ class RouletteApp {
                 }
             });
         }
+
+        // 9. 실사 영상 / 3D 그래픽 뷰모드 토글
+        const viewModeBtn = document.getElementById('btn-toggle-viewmode');
+        if (viewModeBtn) {
+            viewModeBtn.addEventListener('click', () => {
+                this.isLiveVideoMode = !this.isLiveVideoMode;
+                viewModeBtn.textContent = this.isLiveVideoMode ? '🎬 실사 영상 ON' : '🎨 3D 그래픽 ON';
+                this.showToast(this.isLiveVideoMode ? "실제 카지노 라이브 영상 모드가 켜졌습니다." : "3D 그래픽 캔버스 모드가 켜졌습니다.");
+                const videoLayer = document.getElementById('live-video-layer');
+                if (videoLayer && !this.isLiveVideoMode) {
+                    videoLayer.classList.add('hidden');
+                }
+            });
+        }
     }
 
     /**
@@ -233,7 +248,7 @@ class RouletteApp {
     }
 
     /**
-     * 실제 물리 휠 스핀 및 결과 판정
+     * 실제 물리 휠 스핀 및 결과 판정 (실사 영상 / 3D Canvas 듀얼 모드)
      */
     executeSpin() {
         this.currentPhase = 'SPINNING';
@@ -242,11 +257,59 @@ class RouletteApp {
         // 0부터 36까지 공정한 무작위 당첨 번호 추첨 (유러피언 룰렛)
         const winningNumber = Math.floor(Math.random() * 37);
 
-        // 휠 회전 애니메이션 시작
-        if (window.rouletteWheel) {
-            window.rouletteWheel.spin(winningNumber, (finalNumber) => {
-                this.onSpinFinished(finalNumber);
-            });
+        const videoLayer = document.getElementById('live-video-layer');
+        const video = document.getElementById('live-roulette-video');
+
+        // 실사 카지노 영상 모드 실행
+        if (this.isLiveVideoMode && videoLayer && video) {
+            videoLayer.classList.remove('hidden');
+            try {
+                video.currentTime = 0;
+                const playPromise = video.play();
+
+                if (window.rouletteAudio) {
+                    window.rouletteAudio.startBallRolling();
+                }
+
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.warn("비디오 자동재생 제약, 3D Canvas 휠로 자동 전환합니다:", error);
+                        videoLayer.classList.add('hidden');
+                        if (window.rouletteWheel) {
+                            window.rouletteWheel.spin(winningNumber, (finalNumber) => {
+                                this.onSpinFinished(finalNumber);
+                            });
+                        }
+                    });
+                }
+
+                // 실사 영상 약 5초간 회전 및 구슬 튀는 장면 감상 후 결과 안착
+                setTimeout(() => {
+                    video.pause();
+                    videoLayer.classList.add('hidden');
+                    if (window.rouletteAudio) {
+                        window.rouletteAudio.stopBallRolling();
+                        window.rouletteAudio.playDrop();
+                    }
+                    this.onSpinFinished(winningNumber);
+                }, 5000);
+
+            } catch (err) {
+                videoLayer.classList.add('hidden');
+                if (window.rouletteWheel) {
+                    window.rouletteWheel.spin(winningNumber, (finalNumber) => {
+                        this.onSpinFinished(finalNumber);
+                    });
+                }
+            }
+        } else {
+            // 3D Canvas 물리 휠 스핀
+            if (videoLayer) videoLayer.classList.add('hidden');
+            if (window.rouletteWheel) {
+                window.rouletteWheel.spin(winningNumber, (finalNumber) => {
+                    this.onSpinFinished(finalNumber);
+                });
+            }
         }
     }
 
@@ -278,19 +341,24 @@ class RouletteApp {
             window.rouletteLobby.evaluateAiWins(winningNumber);
         }
 
-        // 4. 배당금 정산
+        // 4. 배당금 정산 및 테이블 결과 스포트라이트 연출
         setTimeout(() => {
             this.settlePayouts(winningNumber);
-        }, 1200);
+        }, 1000);
     }
 
     /**
-     * 배당금 정산 및 축하 연출
+     * 배당금 정산 및 테이블 칩 상황 스포트라이트 클로즈업 연출
      */
     settlePayouts(winningNumber) {
         if (!window.rouletteTable) return;
 
         const { totalPayout, winningBets } = window.rouletteTable.calculatePayout(winningNumber);
+
+        // 핵심 연출: 구슬이 떨어진 후 테이블에 해당 번호와 실제 칩이 놓여진 상황 대형 스포트라이트 표시
+        if (window.rouletteTable.showTableSpotlight) {
+            window.rouletteTable.showTableSpotlight(winningNumber, totalPayout, winningBets);
+        }
 
         if (totalPayout > 0) {
             // 플레이어 당첨!
@@ -299,16 +367,18 @@ class RouletteApp {
                 window.rouletteAudio.playWinSound();
                 setTimeout(() => window.rouletteAudio.announceWin(), 800);
             }
-            this.showWinModal(winningNumber, totalPayout, winningBets);
+            setTimeout(() => {
+                this.showWinModal(winningNumber, totalPayout, winningBets);
+            }, 3000);
         }
 
         this.updateBetDisplay();
 
-        // 7초 후 다음 라운드 자동 시작
+        // 6.5초 후 다음 라운드 자동 시작
         setTimeout(() => {
             this.hideWinModal();
             this.startBettingPhase();
-        }, 7000);
+        }, 6500);
     }
 
     /**

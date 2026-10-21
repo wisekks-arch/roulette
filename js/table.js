@@ -505,4 +505,114 @@ class RouletteTable {
 
         return { totalPayout, winningBets };
     }
+
+    /**
+     * 구슬 안착 후 테이블 당첨 번호 및 실제 놓여진 칩 상황 대형 스포트라이트 연출
+     * @param {number} winningNumber - 당첨 번호
+     * @param {number} totalPayout - 획득 상금
+     * @param {Array} winningBets - 적중된 배팅 목록
+     */
+    showTableSpotlight(winningNumber, totalPayout, winningBets) {
+        const modal = document.getElementById('table-result-spotlight');
+        const mount = document.getElementById('spotlight-cells-mount');
+        const numBadge = document.getElementById('spotlight-win-number');
+        const descEl = document.getElementById('spotlight-win-desc');
+        const payoutVal = document.getElementById('spotlight-payout-amount');
+        const dolly = document.getElementById('spotlight-dolly');
+
+        if (!modal || !mount) return;
+
+        // 색상 및 속성
+        const isRed = this.redNumbers.includes(winningNumber);
+        const colorName = winningNumber === 0 ? 'GREEN (ZERO)' : (isRed ? 'RED' : 'BLACK');
+        const parity = winningNumber === 0 ? '' : (winningNumber % 2 === 0 ? 'EVEN' : 'ODD');
+        const descText = parity ? `${colorName} / ${parity}` : colorName;
+
+        if (numBadge) {
+            numBadge.textContent = winningNumber;
+            numBadge.className = `badge-number ${winningNumber === 0 ? 'text-green' : (isRed ? 'text-red' : 'text-black')}`;
+        }
+        if (descEl) descEl.textContent = descText;
+        if (payoutVal) {
+            payoutVal.textContent = totalPayout > 0 ? `+₩ ${totalPayout.toLocaleString()}` : `₩ 0 (낙첨)`;
+            payoutVal.style.color = totalPayout > 0 ? '#2ecc71' : '#a0a6b2';
+        }
+
+        // 당첨 번호 주변 3개 번호 선별 (예: 17번이면 16, 17, 18 등)
+        let displayNumbers = [];
+        if (winningNumber === 0) {
+            displayNumbers = [1, 0, 2];
+        } else if (winningNumber === 1) {
+            displayNumbers = [0, 1, 2];
+        } else if (winningNumber === 36) {
+            displayNumbers = [35, 36, 34];
+        } else {
+            displayNumbers = [winningNumber - 1, winningNumber, winningNumber + 1];
+        }
+
+        // 대형 셀 HTML 조립 (각 번호에 실제 놓여 있던 칩 정보 포함)
+        let html = '';
+        displayNumbers.forEach(n => {
+            const isWin = n === winningNumber;
+            const nIsRed = this.redNumbers.includes(n);
+            const bgClass = n === 0 ? 'spot-zero' : (nIsRed ? 'spot-red' : 'spot-black');
+            
+            // 직전 저장된 배팅 데이터에서 해당 번호에 걸린 칩 확인
+            const savedBet = this.lastBets ? this.lastBets[`spot-${n}`] : null;
+            let chipHtml = '';
+
+            if (savedBet && savedBet.amount > 0) {
+                const amountText = savedBet.amount >= 1000000 
+                    ? (savedBet.amount / 1000000).toFixed(1) + 'M' 
+                    : (savedBet.amount / 1000) + 'K';
+                chipHtml = `
+                    <div class="spotlight-chip-container">
+                        <div class="spotlight-chip chip-100k">
+                            <span>${amountText}</span>
+                        </div>
+                    </div>
+                `;
+            } else {
+                chipHtml = `<div class="spotlight-no-chips">베팅 없음</div>`;
+            }
+
+            html += `
+                <div class="spotlight-cell ${bgClass} ${isWin ? 'is-winner' : ''}">
+                    <span class="spotlight-cell-num">${n}</span>
+                    ${chipHtml}
+                </div>
+            `;
+        });
+
+        mount.innerHTML = html;
+
+        // 모달 표시
+        modal.classList.remove('hidden');
+
+        // 황동 돌리 핀 쿵 내려앉는 애니메이션 리셋 및 실행
+        if (dolly) {
+            dolly.style.display = 'block';
+            dolly.classList.remove('spotlight-dolly-marker');
+            void dolly.offsetWidth; // 리플로우 트리거
+            dolly.classList.add('spotlight-dolly-marker');
+        }
+
+        // 황동 타격음 재생
+        if (window.rouletteAudio) {
+            window.rouletteAudio.playDollySound();
+        }
+
+        // 4.5초 후 스포트라이트 모달 닫기
+        setTimeout(() => {
+            this.closeTableSpotlight();
+        }, 4500);
+    }
+
+    /**
+     * 스포트라이트 모달 닫기
+     */
+    closeTableSpotlight() {
+        const modal = document.getElementById('table-result-spotlight');
+        if (modal) modal.classList.add('hidden');
+    }
 }

@@ -129,7 +129,8 @@ body {
     gap: 12px;
 }
 
-.balance-box, .bet-box {
+.balance-box,
+.bet-box {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -139,7 +140,8 @@ body {
     border: 1px solid #33261a;
 }
 
-.balance-label, .bet-label {
+.balance-label,
+.bet-label {
     font-size: 0.75rem;
     color: #9aa0a6;
 }
@@ -211,14 +213,31 @@ body {
     color: var(--gold-primary);
 }
 
-.banner-betting { border-bottom-color: #2ecc71; }
-.banner-nomorebets { border-bottom-color: #e74c3c; animation: pulseRed 1s infinite alternate; }
-.banner-spinning { border-bottom-color: var(--gold-primary); }
-.banner-result { border-bottom-color: #f39c12; }
+.banner-betting {
+    border-bottom-color: #2ecc71;
+}
+
+.banner-nomorebets {
+    border-bottom-color: #e74c3c;
+    animation: pulseRed 1s infinite alternate;
+}
+
+.banner-spinning {
+    border-bottom-color: var(--gold-primary);
+}
+
+.banner-result {
+    border-bottom-color: #f39c12;
+}
 
 @keyframes pulseRed {
-    from { background-color: #2b0b0b; }
-    to { background-color: #12151b; }
+    from {
+        background-color: #2b0b0b;
+    }
+
+    to {
+        background-color: #12151b;
+    }
 }
 
 /* ==========================================================================
@@ -283,9 +302,20 @@ body {
     flex-shrink: 0;
 }
 
-.badge-red { background: var(--red-pocket); border: 1px solid #ff4d4d; }
-.badge-black { background: var(--black-pocket); border: 1px solid #444; }
-.badge-green { background: var(--green-pocket); border: 1px solid #00ff7f; }
+.badge-red {
+    background: var(--red-pocket);
+    border: 1px solid #ff4d4d;
+}
+
+.badge-black {
+    background: var(--black-pocket);
+    border: 1px solid #444;
+}
+
+.badge-green {
+    background: var(--green-pocket);
+    border: 1px solid #00ff7f;
+}
 
 .wheel-canvas-box {
     position: relative;
@@ -384,8 +414,15 @@ body {
 }
 
 @keyframes popBounce {
-    0% { transform: translateX(-50%) scale(0.5); opacity: 0; }
-    100% { transform: translateX(-50%) scale(1); opacity: 1; }
+    0% {
+        transform: translateX(-50%) scale(0.5);
+        opacity: 0;
+    }
+
+    100% {
+        transform: translateX(-50%) scale(1);
+        opacity: 1;
+    }
 }
 
 /* ==========================================================================
@@ -562,6 +599,7 @@ body {
         box-shadow: inset 0 0 10px #ffd700, 0 0 12px #ffd700;
         background-color: rgba(255, 215, 0, 0.5);
     }
+
     to {
         box-shadow: inset 0 0 20px #ffffff, 0 0 24px #ffd700;
         background-color: rgba(255, 215, 0, 0.8);
@@ -616,13 +654,16 @@ body {
         transform: translateY(-80px) scale(1.6);
         opacity: 0;
     }
+
     70% {
         transform: translateY(0px) scale(0.95);
         opacity: 1;
     }
+
     85% {
         transform: translateY(-6px) scale(1.05);
     }
+
     100% {
         transform: translateY(0px) scale(1);
     }
@@ -657,16 +698,48 @@ body {
 }
 
 @keyframes chipDrop {
-    0% { transform: scale(1.4); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
+    0% {
+        transform: scale(1.4);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
-.chip-1k { background: radial-gradient(circle, #3498db, #1d6fa5); border-color: #a8d5f7; }
-.chip-5k { background: radial-gradient(circle, #e74c3c, #a92213); border-color: #f8b4ab; }
-.chip-10k { background: radial-gradient(circle, #2ecc71, #1e8449); border-color: #abf1c6; }
-.chip-50k { background: radial-gradient(circle, #9b59b6, #6c3483); border-color: #dcc0e9; }
-.chip-100k { background: radial-gradient(circle, #34495e, #1a252f); border-color: var(--gold-primary); color: var(--gold-primary); }
-.chip-500k { background: radial-gradient(circle, #d4af37, #785e13); border-color: #ffffff; color: #fff; }
+.chip-1k {
+    background: radial-gradient(circle, #3498db, #1d6fa5);
+    border-color: #a8d5f7;
+}
+
+.chip-5k {
+    background: radial-gradient(circle, #e74c3c, #a92213);
+    border-color: #f8b4ab;
+}
+
+.chip-10k {
+    background: radial-gradient(circle, #2ecc71, #1e8449);
+    border-color: #abf1c6;
+}
+
+.chip-50k {
+    background: radial-gradient(circle, #9b59b6, #6c3483);
+    border-color: #dcc0e9;
+}
+
+.chip-100k {
+    background: radial-gradient(circle, #34495e, #1a252f);
+    border-color: var(--gold-primary);
+    color: var(--gold-primary);
+}
+
+.chip-500k {
+    background: radial-gradient(circle, #d4af37, #785e13);
+    border-color: #ffffff;
+    color: #fff;
+}
 
 /* ==========================================================================
    컨트롤 패널 (칩 선택 바 & 액션 버튼들)
@@ -740,9 +813,23 @@ body {
     box-shadow: 0 6px 14px rgba(0, 0, 0, 0.7);
 }
 
-.btn-clear { background: #3d1717; color: #ff9b9b; border-color: #722323; }
-.btn-rebet { background: #1a2f42; color: #8ec3f8; border-color: #245277; }
-.btn-double { background: #3c2f16; color: #ffdf9e; border-color: #70551e; }
+.btn-clear {
+    background: #3d1717;
+    color: #ff9b9b;
+    border-color: #722323;
+}
+
+.btn-rebet {
+    background: #1a2f42;
+    color: #8ec3f8;
+    border-color: #245277;
+}
+
+.btn-double {
+    background: #3c2f16;
+    color: #ffdf9e;
+    border-color: #70551e;
+}
 
 .btn-spin-gold {
     background: var(--gold-gradient);
@@ -929,9 +1016,17 @@ body {
     color: #fff;
 }
 
-.h-red { background: var(--red-pocket); }
-.h-black { background: var(--black-pocket); }
-.h-green { background: var(--green-pocket); }
+.h-red {
+    background: var(--red-pocket);
+}
+
+.h-black {
+    background: var(--black-pocket);
+}
+
+.h-green {
+    background: var(--green-pocket);
+}
 
 .room-card-footer {
     display: flex;
@@ -978,8 +1073,15 @@ body {
 }
 
 @keyframes winCardPop {
-    0% { transform: scale(0.6); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
+    0% {
+        transform: scale(0.6);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .win-confetti {
@@ -1098,7 +1200,8 @@ body {
         font-size: 1.1rem;
     }
 
-    .balance-box, .bet-box {
+    .balance-box,
+    .bet-box {
         padding: 4px 8px;
     }
 
