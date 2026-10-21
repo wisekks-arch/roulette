@@ -1,0 +1,1125 @@
+/* ==========================================================================
+   🎡 최고급 전통 카지노 룰렛 스타일시트 (CSS3)
+   에메랄드 펠트, 마호가니 원목, 황동 골드, 입체 칩 및 돌리 핀 연출
+   ========================================================================== */
+
+:root {
+    --bg-dark: #0a0a0c;
+    --wood-dark: #1f0b04;
+    --wood-border: #421c0b;
+    --felt-green: #0a4d2e;
+    --felt-dark: #06311d;
+    --gold-primary: #ffd700;
+    --gold-dark: #b8860b;
+    --gold-light: #fff3a8;
+    --gold-gradient: linear-gradient(135deg, #ffd700 0%, #d4af37 50%, #996515 100%);
+    --wood-gradient: linear-gradient(145deg, #3d1708, #1c0802);
+    --red-pocket: #c01414;
+    --black-pocket: #151515;
+    --green-pocket: #0d823f;
+    --font-heading: 'Cinzel', serif;
+    --font-body: 'Outfit', 'Noto Sans KR', sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    -webkit-tap-highlight-color: transparent;
+    user-select: none;
+}
+
+body {
+    background-color: var(--bg-dark);
+    color: #ffffff;
+    font-family: var(--font-body);
+    overflow-x: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#app-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    width: 100%;
+    background: radial-gradient(circle at 50% 30%, #171c24 0%, #08090b 100%);
+}
+
+/* ==========================================================================
+   상단 네비게이션 헤더
+   ========================================================================== */
+#main-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background: linear-gradient(to bottom, #1f140e 0%, #0d0603 100%);
+    border-bottom: 2px solid var(--gold-dark);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.7);
+    z-index: 50;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.nav-btn {
+    background: var(--wood-gradient);
+    border: 1px solid var(--gold-dark);
+    color: var(--gold-light);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+}
+
+.nav-btn:hover {
+    border-color: var(--gold-primary);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(255, 215, 0, 0.3);
+}
+
+.current-room-badge {
+    display: flex;
+    flex-direction: column;
+}
+
+.room-title-text {
+    font-family: var(--font-heading);
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: var(--gold-primary);
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
+}
+
+.room-limit-text {
+    font-size: 0.75rem;
+    color: #a0a6b2;
+}
+
+.header-center .header-logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-heading);
+    font-weight: 900;
+    font-size: 1.3rem;
+    letter-spacing: 2px;
+    background: var(--gold-gradient);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.balance-box, .bet-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 6px 12px;
+    border-radius: 6px;
+    border: 1px solid #33261a;
+}
+
+.balance-label, .bet-label {
+    font-size: 0.75rem;
+    color: #9aa0a6;
+}
+
+.balance-val {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #2ecc71;
+}
+
+.bet-val {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--gold-primary);
+}
+
+.refill-btn {
+    background: #1e7e34;
+    color: #fff;
+    border: none;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.refill-btn:hover {
+    background: #28a745;
+}
+
+/* ==========================================================================
+   딜러 아나운스 배너
+   ========================================================================== */
+.announcement-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 24px;
+    background: linear-gradient(90deg, #12151b 0%, #1e2638 50%, #12151b 100%);
+    border-bottom: 1px solid #2a3348;
+    box-shadow: inset 0 1px 4px rgba(255, 255, 255, 0.05);
+    font-size: 0.95rem;
+}
+
+.dealer-voice-avatar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #8da4c4;
+}
+
+.status-message {
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+}
+
+.timer-badge {
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--gold-dark);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    color: var(--gold-primary);
+}
+
+.banner-betting { border-bottom-color: #2ecc71; }
+.banner-nomorebets { border-bottom-color: #e74c3c; animation: pulseRed 1s infinite alternate; }
+.banner-spinning { border-bottom-color: var(--gold-primary); }
+.banner-result { border-bottom-color: #f39c12; }
+
+@keyframes pulseRed {
+    from { background-color: #2b0b0b; }
+    to { background-color: #12151b; }
+}
+
+/* ==========================================================================
+   메인 게임 컨테이너 (반응형 레이아웃)
+   ========================================================================== */
+.game-container {
+    display: flex;
+    flex: 1;
+    padding: 16px;
+    gap: 20px;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+/* 좌측 휠 섹션 */
+.wheel-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    width: 380px;
+    flex-shrink: 0;
+}
+
+.history-board {
+    width: 100%;
+    background: rgba(14, 16, 20, 0.8);
+    border: 1px solid #2f2518;
+    border-radius: 8px;
+    padding: 8px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.history-title {
+    font-family: var(--font-heading);
+    font-size: 0.72rem;
+    color: #8e7b67;
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.history-badges {
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    padding-bottom: 2px;
+}
+
+.history-badge {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+    color: #ffffff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+    flex-shrink: 0;
+}
+
+.badge-red { background: var(--red-pocket); border: 1px solid #ff4d4d; }
+.badge-black { background: var(--black-pocket); border: 1px solid #444; }
+.badge-green { background: var(--green-pocket); border: 1px solid #00ff7f; }
+
+.wheel-canvas-box {
+    position: relative;
+    width: 360px;
+    height: 360px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#roulette-wheel-canvas {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+}
+
+/* 가상 AI 플레이어 바 */
+.ai-players-section {
+    width: 100%;
+    background: rgba(15, 17, 22, 0.85);
+    border: 1px solid #252830;
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.ai-section-title {
+    font-size: 0.72rem;
+    color: var(--gold-dark);
+    font-family: var(--font-heading);
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.ai-players-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.ai-player-card {
+    position: relative;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid #2a2e39;
+    border-radius: 6px;
+    padding: 6px 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ai-avatar {
+    font-size: 1.3rem;
+}
+
+.ai-info {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.ai-name {
+    font-size: 0.78rem;
+    font-weight: bold;
+    color: #e0e0e0;
+}
+
+.ai-bet {
+    font-size: 0.68rem;
+    color: #8da4c4;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.ai-win-bubble {
+    position: absolute;
+    top: -24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--gold-gradient);
+    color: #000;
+    font-size: 0.75rem;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(255, 215, 0, 0.5);
+    white-space: nowrap;
+    z-index: 10;
+}
+
+.pop-animation {
+    animation: popBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes popBounce {
+    0% { transform: translateX(-50%) scale(0.5); opacity: 0; }
+    100% { transform: translateX(-50%) scale(1); opacity: 1; }
+}
+
+/* ==========================================================================
+   우측 테이블 섹션 (전통 펠트 룰렛 다이)
+   ========================================================================== */
+.table-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+    max-width: 920px;
+}
+
+.table-scroll-wrapper {
+    width: 100%;
+    overflow-x: auto;
+    padding-bottom: 6px;
+}
+
+/* 전통 펠트 다이 전체 박스 */
+.roulette-felt-table {
+    position: relative;
+    background: radial-gradient(ellipse at center, var(--felt-green) 0%, var(--felt-dark) 100%);
+    border: 12px solid #2b1106;
+    outline: 3px solid var(--gold-dark);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.8), 0 10px 30px rgba(0, 0, 0, 0.85);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 720px;
+}
+
+/* 0 (싱글 제로) 및 메인 36개 숫자 그리드 */
+.table-zero-area {
+    width: 100%;
+}
+
+.table-grid-area {
+    display: flex;
+    width: 100%;
+    gap: 4px;
+}
+
+.table-numbers-grid {
+    display: flex;
+    flex: 1;
+    gap: 4px;
+}
+
+.table-column-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+/* 베팅 스팟 공통 버튼 스타일 */
+.bet-spot {
+    position: relative;
+    background: transparent;
+    border: 1.5px solid rgba(255, 215, 0, 0.75);
+    color: #ffffff;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border-radius: 4px;
+    box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.4);
+}
+
+.bet-spot:hover:not(.locked) {
+    background: rgba(255, 215, 0, 0.2);
+    border-color: #fff;
+}
+
+.bet-spot.locked {
+    cursor: not-allowed;
+    opacity: 0.95;
+}
+
+/* 0 구역 */
+.spot-zero {
+    width: 100%;
+    height: 48px;
+    background: rgba(13, 130, 63, 0.65);
+    font-size: 1.2rem;
+}
+
+/* 숫자 1~36 구역 */
+.spot-number {
+    height: 52px;
+    font-size: 1.15rem;
+}
+
+.spot-red {
+    background: rgba(192, 20, 20, 0.7);
+}
+
+.spot-black {
+    background: rgba(18, 18, 18, 0.75);
+}
+
+/* 컬럼 (2 to 1) 구역 */
+.table-columns-bet {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    width: 58px;
+}
+
+.spot-col {
+    height: 52px;
+    font-size: 0.75rem;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+/* 다즌 (1st 12, 2nd 12, 3rd 12) */
+.table-dozens-area {
+    display: flex;
+    gap: 4px;
+    width: calc(100% - 62px);
+}
+
+.spot-dozen {
+    flex: 1;
+    height: 40px;
+    font-size: 0.85rem;
+    background: rgba(0, 0, 0, 0.4);
+}
+
+/* 외부 1:1 배팅 구역 */
+.table-outside-area {
+    display: flex;
+    gap: 4px;
+    width: calc(100% - 62px);
+}
+
+.spot-even-money {
+    flex: 1;
+    height: 42px;
+    font-size: 0.8rem;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.spot-color-red {
+    flex: 1;
+    height: 42px;
+    background: rgba(192, 20, 20, 0.7);
+    font-size: 0.8rem;
+}
+
+.spot-color-black {
+    flex: 1;
+    height: 42px;
+    background: rgba(18, 18, 18, 0.75);
+    font-size: 0.8rem;
+}
+
+/* 당첨 하이라이트 발광 효과 */
+.bet-spot.winning-spot {
+    animation: goldGlow 0.8s infinite alternate !important;
+    border-color: #fff !important;
+    z-index: 5;
+}
+
+@keyframes goldGlow {
+    from {
+        box-shadow: inset 0 0 10px #ffd700, 0 0 12px #ffd700;
+        background-color: rgba(255, 215, 0, 0.5);
+    }
+    to {
+        box-shadow: inset 0 0 20px #ffffff, 0 0 24px #ffd700;
+        background-color: rgba(255, 215, 0, 0.8);
+    }
+}
+
+/* ==========================================================================
+   황동 돌리(Brass Dolly Marker) 핀 연출
+   ========================================================================== */
+.brass-dolly-marker {
+    position: absolute;
+    width: 32px;
+    height: 54px;
+    pointer-events: none;
+    z-index: 30;
+    transition: transform 0.2s ease;
+}
+
+.dolly-head {
+    width: 14px;
+    height: 14px;
+    background: radial-gradient(circle at 35% 35%, #fff, #ffd700, #856404);
+    border-radius: 50%;
+    margin: 0 auto;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.6);
+}
+
+.dolly-neck {
+    width: 6px;
+    height: 22px;
+    background: linear-gradient(to right, #ffd700, #b8860b, #664d03);
+    margin: -2px auto 0 auto;
+    border-radius: 2px;
+}
+
+.dolly-base {
+    width: 28px;
+    height: 18px;
+    background: radial-gradient(ellipse at center, #fff 0%, #ffd700 40%, #573e04 100%);
+    border-radius: 50%;
+    margin: -4px auto 0 auto;
+    box-shadow: 0 8px 12px rgba(0, 0, 0, 0.9);
+}
+
+/* 상단에서 쿵 내려와 테이블에 세워지는 3D 모션 */
+.dolly-drop {
+    animation: dollyImpact 0.45s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+@keyframes dollyImpact {
+    0% {
+        transform: translateY(-80px) scale(1.6);
+        opacity: 0;
+    }
+    70% {
+        transform: translateY(0px) scale(0.95);
+        opacity: 1;
+    }
+    85% {
+        transform: translateY(-6px) scale(1.05);
+    }
+    100% {
+        transform: translateY(0px) scale(1);
+    }
+}
+
+/* ==========================================================================
+   칩(Chips) 시각화 및 스택 디자인
+   ========================================================================== */
+.chip-stack {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 10;
+}
+
+.placed-chip {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 2px dashed #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.62rem;
+    font-weight: 900;
+    font-family: var(--font-body);
+    color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.8), inset 0 0 4px rgba(255, 255, 255, 0.4);
+    animation: chipDrop 0.18s ease-out;
+}
+
+@keyframes chipDrop {
+    0% { transform: scale(1.4); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.chip-1k { background: radial-gradient(circle, #3498db, #1d6fa5); border-color: #a8d5f7; }
+.chip-5k { background: radial-gradient(circle, #e74c3c, #a92213); border-color: #f8b4ab; }
+.chip-10k { background: radial-gradient(circle, #2ecc71, #1e8449); border-color: #abf1c6; }
+.chip-50k { background: radial-gradient(circle, #9b59b6, #6c3483); border-color: #dcc0e9; }
+.chip-100k { background: radial-gradient(circle, #34495e, #1a252f); border-color: var(--gold-primary); color: var(--gold-primary); }
+.chip-500k { background: radial-gradient(circle, #d4af37, #785e13); border-color: #ffffff; color: #fff; }
+
+/* ==========================================================================
+   컨트롤 패널 (칩 선택 바 & 액션 버튼들)
+   ========================================================================== */
+.table-controls-panel {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
+}
+
+.chip-selector-bar {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    background: rgba(0, 0, 0, 0.5);
+    padding: 10px;
+    border-radius: 30px;
+    border: 1px solid #33271c;
+}
+
+.chip-selector-btn {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 2px dashed #ffffff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.6);
+    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.chip-selector-btn:hover {
+    transform: translateY(-4px) scale(1.08);
+}
+
+.chip-selector-btn.active {
+    transform: translateY(-6px) scale(1.18);
+    box-shadow: 0 8px 16px rgba(255, 215, 0, 0.6);
+    outline: 3px solid var(--gold-primary);
+}
+
+.action-buttons-bar {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.act-btn {
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 10px 18px;
+    border-radius: 8px;
+    border: 1px solid #444;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.2s ease;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
+}
+
+.act-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.7);
+}
+
+.btn-clear { background: #3d1717; color: #ff9b9b; border-color: #722323; }
+.btn-rebet { background: #1a2f42; color: #8ec3f8; border-color: #245277; }
+.btn-double { background: #3c2f16; color: #ffdf9e; border-color: #70551e; }
+
+.btn-spin-gold {
+    background: var(--gold-gradient);
+    color: #1a1005;
+    border-color: #fff;
+    font-size: 1rem;
+    font-weight: 900;
+    padding: 10px 28px;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+}
+
+.btn-spin-gold:hover {
+    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.7);
+    filter: brightness(1.1);
+}
+
+/* ==========================================================================
+   6개 카지노 룸 로비 모달
+   ========================================================================== */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.hidden {
+    opacity: 0;
+    pointer-events: none;
+}
+
+.lobby-modal-content {
+    background: radial-gradient(circle at 50% 20%, #1e2535 0%, #0d0f17 100%);
+    border: 2px solid var(--gold-dark);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 1040px;
+    max-height: 88vh;
+    overflow-y: auto;
+    padding: 24px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.9);
+}
+
+.lobby-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #2a3348;
+    padding-bottom: 16px;
+    margin-bottom: 20px;
+}
+
+.lobby-modal-title h2 {
+    font-family: var(--font-heading);
+    font-size: 1.5rem;
+    color: var(--gold-primary);
+}
+
+.lobby-modal-title p {
+    font-size: 0.85rem;
+    color: #8da4c4;
+    margin-top: 4px;
+}
+
+.btn-close-modal {
+    background: #2a1515;
+    border: 1px solid #632626;
+    color: #ff9999;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.lobby-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 18px;
+}
+
+.lobby-room-card {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid #2c3446;
+    border-top: 4px solid var(--room-accent);
+    border-radius: 12px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    transition: all 0.25s ease;
+}
+
+.lobby-room-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--room-accent);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.6);
+}
+
+.room-card-badge {
+    align-self: flex-start;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid #444;
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: var(--room-accent);
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.room-title {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    color: #ffffff;
+}
+
+.room-subtitle {
+    font-size: 0.78rem;
+    color: #8da4c4;
+}
+
+.room-desc {
+    font-size: 0.8rem;
+    color: #b0b8c4;
+    line-height: 1.4;
+}
+
+.room-limits {
+    display: flex;
+    justify-content: space-between;
+    background: rgba(0, 0, 0, 0.4);
+    padding: 8px 12px;
+    border-radius: 6px;
+}
+
+.limit-item {
+    display: flex;
+    flex-direction: column;
+}
+
+.limit-item .label {
+    font-size: 0.68rem;
+    color: #7b8596;
+}
+
+.limit-item .value {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--gold-light);
+}
+
+.room-history-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.history-label {
+    font-size: 0.7rem;
+    color: #7b8596;
+}
+
+.history-chips {
+    display: flex;
+    gap: 4px;
+}
+
+.h-chip {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    font-size: 0.65rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    color: #fff;
+}
+
+.h-red { background: var(--red-pocket); }
+.h-black { background: var(--black-pocket); }
+.h-green { background: var(--green-pocket); }
+
+.room-card-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: auto;
+    padding-top: 10px;
+    border-top: 1px solid #232938;
+}
+
+.players-online {
+    font-size: 0.75rem;
+    color: #9aa0a6;
+}
+
+.btn-enter-room {
+    background: var(--gold-gradient);
+    border: none;
+    color: #120a02;
+    font-family: var(--font-heading);
+    font-weight: 900;
+    font-size: 0.8rem;
+    padding: 8px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.btn-enter-room:hover {
+    transform: scale(1.05);
+}
+
+/* ==========================================================================
+   승리 축하 모달 & 토스트 알림
+   ========================================================================== */
+.win-modal-card {
+    background: radial-gradient(circle at center, #261705 0%, #110901 100%);
+    border: 3px solid var(--gold-primary);
+    border-radius: 20px;
+    padding: 30px;
+    text-align: center;
+    box-shadow: 0 0 50px rgba(255, 215, 0, 0.5);
+    animation: winCardPop 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes winCardPop {
+    0% { transform: scale(0.6); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.win-confetti {
+    font-size: 3rem;
+}
+
+.win-title {
+    font-family: var(--font-heading);
+    font-size: 2rem;
+    color: var(--gold-primary);
+    margin-top: 8px;
+}
+
+.win-subtitle {
+    color: #e0e0e0;
+    font-size: 0.95rem;
+    margin-top: 4px;
+}
+
+.win-number-display {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    margin: 16px 0;
+}
+
+.win-badge {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.4rem;
+    font-weight: 900;
+    font-family: var(--font-heading);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
+}
+
+.win-amount-box {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid var(--gold-dark);
+    padding: 12px 24px;
+    border-radius: 12px;
+}
+
+.amount-label {
+    font-size: 0.8rem;
+    color: #9aa0a6;
+}
+
+.amount-value {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #2ecc71;
+    font-family: var(--font-heading);
+    margin-top: 4px;
+}
+
+.toast-box {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(40px);
+    background: rgba(18, 22, 30, 0.95);
+    border: 1px solid var(--gold-dark);
+    color: #ffffff;
+    font-size: 0.9rem;
+    padding: 10px 20px;
+    border-radius: 20px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.8);
+    opacity: 0;
+    pointer-events: none;
+    transition: all 0.3s ease;
+    z-index: 2000;
+}
+
+.toast-box.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+}
+
+/* ==========================================================================
+   모바일 & 소형 디바이스 반응형 미디어 쿼리
+   ========================================================================== */
+@media (max-width: 992px) {
+    .game-container {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .wheel-section {
+        width: 100%;
+        max-width: 420px;
+    }
+
+    .wheel-canvas-box {
+        width: 320px;
+        height: 320px;
+    }
+
+    .table-section {
+        width: 100%;
+    }
+}
+
+@media (max-width: 576px) {
+    #main-header {
+        padding: 8px 12px;
+    }
+
+    .header-logo .logo-text {
+        font-size: 1.1rem;
+    }
+
+    .balance-box, .bet-box {
+        padding: 4px 8px;
+    }
+
+    .wheel-canvas-box {
+        width: 280px;
+        height: 280px;
+    }
+
+    .chip-selector-btn {
+        width: 38px;
+        height: 38px;
+        font-size: 0.68rem;
+    }
+
+    .act-btn {
+        font-size: 0.78rem;
+        padding: 8px 12px;
+    }
+
+    .btn-spin-gold {
+        padding: 8px 20px;
+        font-size: 0.9rem;
+    }
+}

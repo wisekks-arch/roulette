@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VIP European Roulette - 최고급 전통 카지노 룰렛</title>
+    <meta name="description" content="전통 카지노 유러피언 룰렛 게임. 모바일 및 PC 지원, 6개 VIP 룸, 실감 사운드 및 여성 딜러 음성 안내.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Outfit:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+    <div id="app-wrapper">
+        <!-- 상단 네비게이션 헤더 -->
+        <header id="main-header">
+            <div class="header-left">
+                <button id="btn-open-lobby" class="nav-btn lobby-btn">
+                    <span class="icon">🏛️</span>
+                    <span class="text">ROOM LOBBY (방 목록)</span>
+                </button>
+                <div class="current-room-badge">
+                    <span id="nav-room-name" class="room-title-text">모나코 클래식 (Monaco Classic)</span>
+                    <span id="nav-room-limits" class="room-limit-text">한도: ₩1,000 ~ ₩500,000</span>
+                </div>
+            </div>
+
+            <div class="header-center">
+                <div class="header-logo">
+                    <span class="crown">👑</span>
+                    <span class="logo-text">ROYAL CASINO</span>
+                </div>
+            </div>
+
+            <div class="header-right">
+                <div class="balance-box">
+                    <span class="balance-label">보유 머니</span>
+                    <span id="user-balance-text" class="balance-val">₩ 10,000,000</span>
+                    <button id="btn-refill-balance" class="refill-btn" title="1,000만원 무료 충전">＋ 충전</button>
+                </div>
+                <div class="bet-box">
+                    <span class="bet-label">총 배팅액</span>
+                    <span id="user-bet-text" class="bet-val">₩ 0</span>
+                </div>
+                <button id="btn-toggle-sound" class="nav-btn sound-btn" title="사운드 켜기/끄기">
+                    🔊 사운드 ON
+                </button>
+            </div>
+        </header>
+
+        <!-- 딜러 아나운스 & 안내 상태 배너 -->
+        <div id="announcement-banner" class="announcement-banner banner-betting">
+            <div class="dealer-voice-avatar">
+                <span class="avatar-icon">👩‍💼</span>
+                <span class="dealer-name">딜러 로렌 (Dealer Lauren)</span>
+            </div>
+            <div id="status-message-text" class="status-message">
+                🎲 베팅을 진행해 주세요 (Place your bets)
+            </div>
+            <div class="timer-badge">
+                <span id="phase-timer">20s</span>
+            </div>
+        </div>
+
+        <!-- 메인 게임 영역 (상단 휠 + 테이블 / 반응형) -->
+        <main id="game-screen" class="game-container">
+            <!-- 좌측/상단: 룰렛 휠 & 최근 히스토리 판 -->
+            <section class="wheel-section">
+                <!-- 최근 10회 당첨 번호 히스토리 바 -->
+                <div class="history-board">
+                    <span class="history-title">RECENT NUMBERS</span>
+                    <div id="table-history-list" class="history-badges"></div>
+                </div>
+
+                <!-- 룰렛 휠 캔버스 뷰 -->
+                <div class="wheel-canvas-box">
+                    <canvas id="roulette-wheel-canvas" width="420" height="420"></canvas>
+                </div>
+
+                <!-- 가상 AI 플레이어 착석 현황 -->
+                <div class="ai-players-section">
+                    <div class="ai-section-title">TABLE VIP PLAYERS (참가자)</div>
+                    <div id="table-ai-players" class="ai-players-list"></div>
+                </div>
+            </section>
+
+            <!-- 우측/하단: 전통 펠트 룰렛 다이 테이블 -->
+            <section class="table-section">
+                <div class="table-scroll-wrapper">
+                    <div id="roulette-table-mount"></div>
+                </div>
+
+                <!-- 칩 선택 및 베팅 조작 컨트롤 패널 -->
+                <div class="table-controls-panel">
+                    <!-- 칩 선택 바 -->
+                    <div class="chip-selector-bar">
+                        <button class="chip-selector-btn chip-1k" data-value="1000">
+                            <span>1K</span>
+                        </button>
+                        <button class="chip-selector-btn chip-5k" data-value="5000">
+                            <span>5K</span>
+                        </button>
+                        <button class="chip-selector-btn chip-10k active" data-value="10000">
+                            <span>10K</span>
+                        </button>
+                        <button class="chip-selector-btn chip-50k" data-value="50000">
+                            <span>50K</span>
+                        </button>
+                        <button class="chip-selector-btn chip-100k" data-value="100000">
+                            <span>100K</span>
+                        </button>
+                        <button class="chip-selector-btn chip-500k" data-value="500000">
+                            <span>500K</span>
+                        </button>
+                    </div>
+
+                    <!-- 액션 버튼들 (취소, 재베팅, 2배, 스핀) -->
+                    <div class="action-buttons-bar">
+                        <button id="btn-clear" class="act-btn btn-clear">
+                            <span class="btn-icon">↺</span> 취소 (CLEAR)
+                        </button>
+                        <button id="btn-rebet" class="act-btn btn-rebet">
+                            <span class="btn-icon">🔁</span> 재베팅 (REBET)
+                        </button>
+                        <button id="btn-double" class="act-btn btn-double">
+                            <span class="btn-icon">2X</span> 2배 (DOUBLE)
+                        </button>
+                        <button id="btn-spin" class="act-btn btn-spin-gold">
+                            <span class="btn-icon">🎡</span> 스핀 (SPIN)
+                        </button>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- 6개 룰렛 방(Room) 선택 로비 모달 -->
+        <div id="lobby-modal" class="modal-overlay hidden">
+            <div class="lobby-modal-content">
+                <div class="lobby-modal-header">
+                    <div class="lobby-modal-title">
+                        <h2>🏛️ CASINO ROULETTE ROOMS</h2>
+                        <p>원하는 분위기와 베팅 한도의 룰렛 테이블을 선택하여 입장하세요.</p>
+                    </div>
+                    <button id="btn-close-lobby" class="btn-close-modal">✕ 닫기</button>
+                </div>
+                <div id="lobby-room-grid" class="lobby-grid"></div>
+            </div>
+        </div>
+
+        <!-- 승리 축하 모달 -->
+        <div id="win-celebration-modal" class="modal-overlay hidden">
+            <div class="win-modal-card">
+                <div class="win-confetti">🎉</div>
+                <h2 class="win-title">CONGRATULATIONS!</h2>
+                <p class="win-subtitle">당첨을 진심으로 축하합니다!</p>
+                <div class="win-number-display">
+                    <span class="label">당첨 번호:</span>
+                    <span id="win-number-badge" class="win-badge badge-red">17</span>
+                </div>
+                <div class="win-amount-box">
+                    <span class="amount-label">획득 상금</span>
+                    <span id="win-amount-text" class="amount-value">+₩ 3,600,000</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 간단 토스트 알림 -->
+        <div id="toast-notification" class="toast-box"></div>
+    </div>
+
+    <!-- 스크립트 모듈 로드 -->
+    <script src="js/audio.js"></script>
+    <script src="js/wheel.js"></script>
+    <script src="js/table.js"></script>
+    <script src="js/lobby.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
