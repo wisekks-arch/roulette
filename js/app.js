@@ -313,21 +313,28 @@ class RouletteApp {
             window.rouletteAudio.announceResult(winningNumber, color);
         }
 
-        // 2. 베팅 테이블의 당첨 번호 위에 황동 돌리(Dolly) 핀 세우기
+        // 2. 베팅 테이블의 당첨 번호 위에 크리스탈 말머리 돌리(Dolly) 핀 세우기
         if (window.rouletteTable) {
             window.rouletteTable.placeDolly(winningNumber);
         }
 
-        // 3. 최근 히스토리 기록
+        // 3. 구슬이 떨어지고 돌리 핀이 꽂힌 후: 낙첨된 칩 모두 회수(스위핑)하고 당첨된 번호 칩만 남기기
+        setTimeout(() => {
+            if (window.rouletteTable) {
+                window.rouletteTable.sweepLosingBets(winningNumber);
+            }
+        }, 800);
+
+        // 4. 최근 히스토리 기록
         if (window.rouletteLobby) {
             window.rouletteLobby.recordWinningNumber(winningNumber);
             window.rouletteLobby.evaluateAiWins(winningNumber);
         }
 
-        // 4. 배당금 정산 및 테이블 결과 스포트라이트 연출
+        // 5. 배당금 정산 및 당첨 축하 연출 (스위핑 완료 후 당첨 칩만 남은 상태에서 진행)
         setTimeout(() => {
             this.settlePayouts(winningNumber);
-        }, 1000);
+        }, 1500);
     }
 
     /**

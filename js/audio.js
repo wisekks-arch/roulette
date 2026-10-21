@@ -46,10 +46,14 @@ class RouletteAudio {
     loadVoices() {
         if (!this.synth) return;
         this.voices = this.synth.getVoices();
-        // 한국어 여성 음성 우선 탐색 (예: Yuna, SunHi, Heami 등)
-        this.femaleVoice = this.voices.find(v => 
-            v.lang.startsWith('ko') && (v.name.includes('Female') || v.name.includes('여성') || v.name.includes('Yuna') || v.name.includes('SunHi') || v.name.includes('Natural'))
-        ) || this.voices.find(v => v.lang.startsWith('ko')) || this.voices.find(v => v.lang.startsWith('en') && (v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Victoria')));
+        // 최고급 영국식(en-GB) 또는 프리미엄 미국식(en-US) 여성 딜러 음성 우선 탐색
+        this.dealerVoice = this.voices.find(v => 
+            v.lang.startsWith('en-GB') && (v.name.includes('Female') || v.name.includes('Libby') || v.name.includes('Sonia') || v.name.includes('Victoria'))
+        ) || this.voices.find(v => 
+            v.lang.startsWith('en') && (v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Jenny') || v.name.includes('Karen') || v.name.includes('Zira') || v.name.includes('Natural'))
+        ) || this.voices.find(v => v.lang.startsWith('en-GB')) 
+          || this.voices.find(v => v.lang.startsWith('en'))
+          || this.voices.find(v => v.lang.startsWith('ko'));
     }
 
     /**
@@ -93,6 +97,33 @@ class RouletteAudio {
 
         osc.start(now);
         osc.stop(now + 0.05);
+    }
+
+    /**
+     * 딜러가 낙첨 칩들을 테이블 위에서 쓸어 담을 때의 세련된 칩 스위핑 사운드
+     */
+    playChipSweepSound() {
+        if (this.isMuted) return;
+        this.initContext();
+        if (!this.ctx) return;
+
+        for (let i = 0; i < 4; i++) {
+            setTimeout(() => {
+                if (!this.ctx) return;
+                const t = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(1200 + Math.random() * 600, t);
+                osc.frequency.exponentialRampToValueAtTime(250, t + 0.04);
+                gain.gain.setValueAtTime(0.18, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(t);
+                osc.stop(t + 0.04);
+            }, i * 35);
+        }
     }
 
     /**
@@ -329,7 +360,7 @@ class RouletteAudio {
     }
 
     /**
-     * 관리자/딜러 여성 목소리 음성 멘트 재생 (Web Speech API)
+     * 세련된 정통 카지노 여성 딜러 영어 음성 멘트 재생 (Web Speech API)
      * @param {string} text - 음성 안내 문구
      */
     speak(text) {
@@ -337,11 +368,17 @@ class RouletteAudio {
         try {
             this.synth.cancel(); // 이전 음성 중단
             const utterance = new SpeechSynthesisUtterance(text);
-            if (this.femaleVoice) {
-                utterance.voice = this.femaleVoice;
+            if (!this.dealerVoice) {
+                this.loadVoices();
             }
-            utterance.rate = 1.0;
-            utterance.pitch = 1.15; // 자연스러운 여성 톤
+            if (this.dealerVoice) {
+                utterance.voice = this.dealerVoice;
+                utterance.lang = this.dealerVoice.lang;
+            } else {
+                utterance.lang = 'en-US';
+            }
+            utterance.rate = 0.95; // 정통 카지노 딜러의 기품 있고 차분한 속도
+            utterance.pitch = 1.05; // 세련되고 자연스러운 여성 톤
             utterance.volume = 1.0;
             this.synth.speak(utterance);
         } catch (e) {
@@ -350,39 +387,33 @@ class RouletteAudio {
     }
 
     /**
-     * 딜러 멘트: 베팅 시작
+     * 딜러 멘트: 베팅 시작 (정통 카지노 스타일)
      */
     announcePlaceBets() {
-        this.speak("베팅을 시작해 주세요. Place your bets.");
+        this.speak("Place your bets, please.");
     }
 
     /**
      * 딜러 멘트: 노 모어 벳 (더 이상 베팅할 수 없음)
      */
     announceNoMoreBets() {
-        this.speak("노 모어 벳. 더 이상 베팅할 수 없습니다. No more bets.");
+        this.speak("No more bets, thank you.");
     }
 
     /**
-     * 딜러 멘트: 당첨 번호 결과 발표
+     * 딜러 멘트: 당첨 번호 결과 발표 (세련된 영어 낭독)
      * @param {number} number - 당첨 번호 (0~36)
      * @param {string} color - 'red', 'black', 'green'
      */
     announceResult(number, color) {
-        let colorKor = color === 'red' ? '빨강' : (color === 'black' ? '검정' : '녹색');
-        let colorEng = color === 'red' ? 'Red' : (color === 'black' ? 'Black' : 'Green');
-        
-        let parity = "";
+        let colorEng = color === 'red' ? 'Red' : (color === 'black' ? 'Black' : 'Zero');
         let parityEng = "";
         if (number > 0) {
-            parity = number % 2 === 0 ? "짝수" : "홀수";
-            parityEng = number % 2 === 0 ? "Even" : "Odd";
+            parityEng = number % 2 === 0 ? ", Even" : ", Odd";
         }
-
-        let phrase = `${number}번, ${colorKor}`;
-        if (parity) phrase += `, ${parity}`;
-        phrase += `입니다. Number ${number}, ${colorEng} ${parityEng}.`;
-
+        
+        // 정통 카지노 낭독 스타일: "Number 17, Black, Odd."
+        const phrase = `Number ${number}, ${colorEng}${parityEng}.`;
         this.speak(phrase);
     }
 
@@ -390,7 +421,7 @@ class RouletteAudio {
      * 딜러 멘트: 승리 축하
      */
     announceWin() {
-        this.speak("축하합니다! 승리하셨습니다. Congratulations!");
+        this.speak("Congratulations, winner!");
     }
 }
 

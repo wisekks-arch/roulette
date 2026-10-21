@@ -434,6 +434,72 @@ class RouletteTable {
     }
 
     /**
+     * 구슬 안착 후 낙첨된 모든 칩 회수(스위핑) 및 당첨 칩 단독 보존
+     * @param {number} winningNumber - 당첨 번호 (0~36)
+     */
+    sweepLosingBets(winningNumber) {
+        // 당첨된 스팟 ID 목록 구성
+        const winningSpotIds = new Set();
+        winningSpotIds.add(`spot-${winningNumber}`);
+
+        if (winningNumber !== 0) {
+            // 색상
+            winningSpotIds.add(this.redNumbers.includes(winningNumber) ? 'spot-red' : 'spot-black');
+            // 홀짝
+            winningSpotIds.add(winningNumber % 2 === 0 ? 'spot-even' : 'spot-odd');
+            // 하이로우
+            winningSpotIds.add(winningNumber <= 18 ? 'spot-low' : 'spot-high');
+            // 다즌
+            if (winningNumber <= 12) winningSpotIds.add('spot-dozen1');
+            else if (winningNumber <= 24) winningSpotIds.add('spot-dozen2');
+            else winningSpotIds.add('spot-dozen3');
+            // 컬럼
+            if (winningNumber % 3 === 1) winningSpotIds.add('spot-col1');
+            else if (winningNumber % 3 === 2) winningSpotIds.add('spot-col2');
+            else if (winningNumber % 3 === 0) winningSpotIds.add('spot-col3');
+        }
+
+        let sweptAny = false;
+
+        // 테이블 상의 모든 베팅 스팟 점검
+        const allSpots = this.container.querySelectorAll('.bet-spot');
+        allSpots.forEach(spot => {
+            const spotId = spot.id;
+            const chipStack = spot.querySelector('.chip-stack');
+            if (!chipStack || !chipStack.children.length) return;
+
+            if (winningSpotIds.has(spotId)) {
+                // [당첨 칩]: 테이블 위에 영광스럽게 그대로 보존 및 황금 오라 연출!
+                chipStack.classList.add('winning-chip-glowing');
+            } else {
+                // [낙첨 칩]: 딜러 트레이 쪽으로 쓸려나가는 애니메이션 실행 및 회수
+                chipStack.classList.add('chip-sweep-away');
+                sweptAny = true;
+                setTimeout(() => {
+                    chipStack.innerHTML = '';
+                    chipStack.classList.remove('chip-sweep-away');
+                }, 550);
+            }
+        });
+
+        // 칩 쓸어 담는 소리 재생
+        if (sweptAny && window.rouletteAudio && window.rouletteAudio.playChipSweepSound) {
+            window.rouletteAudio.playChipSweepSound();
+        }
+    }
+
+    /**
+     * 다음 라운드(새로운 판) 시작 시 테이블 위의 모든 칩 및 당첨 오라 완전 초기화
+     */
+    clearAllChips() {
+        const allChipStacks = this.container.querySelectorAll('.chip-stack');
+        allChipStacks.forEach(stack => {
+            stack.innerHTML = '';
+            stack.classList.remove('chip-sweep-away', 'winning-chip-glowing');
+        });
+    }
+
+    /**
      * 돌리 핀 제거
      */
     removeDolly() {
@@ -442,6 +508,7 @@ class RouletteTable {
             this.dollyElement.classList.remove('dolly-drop');
         }
         this.clearHighlights();
+        this.clearAllChips();
     }
 
     /**

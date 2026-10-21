@@ -718,6 +718,44 @@ body {
     100% { transform: scale(1); opacity: 1; }
 }
 
+/* 낙첨 칩 일제 회수(스위핑) 애니메이션 */
+.chip-stack.chip-sweep-away {
+    animation: chipSweepAway 0.52s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes chipSweepAway {
+    0% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: translate(-50%, -180%) scale(0.85);
+        opacity: 0.8;
+    }
+    100% {
+        transform: translate(-50%, -320%) scale(0.3);
+        opacity: 0;
+    }
+}
+
+/* 당첨 칩 단독 보존 & 황금 오라 발광 효과 */
+.chip-stack.winning-chip-glowing .placed-chip {
+    animation: winningChipGlow 0.9s infinite alternate cubic-bezier(0.45, 0.05, 0.55, 0.95);
+    box-shadow: 0 0 20px #ffd700, inset 0 0 10px #ffffff;
+    z-index: 20;
+}
+
+@keyframes winningChipGlow {
+    0% {
+        transform: scale(1);
+        filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.8));
+    }
+    100% {
+        transform: scale(1.18);
+        filter: drop-shadow(0 0 20px rgba(255, 215, 0, 1)) drop-shadow(0 0 30px rgba(255, 255, 255, 0.9));
+    }
+}
+
 /* 1K: 로열 사파이어 딥블루 & 아이보리 엣지 스트라이프 */
 .chip-1k {
     background: 
