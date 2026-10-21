@@ -248,7 +248,7 @@ class RouletteApp {
     }
 
     /**
-     * 실제 물리 휠 스핀 및 결과 판정 (실사 영상 / 3D Canvas 듀얼 모드)
+     * 실제 물리 휠 스핀 및 결과 판정 (최소 20초 실감 물리 회전)
      */
     executeSpin() {
         this.currentPhase = 'SPINNING';
@@ -257,59 +257,27 @@ class RouletteApp {
         // 0부터 36까지 공정한 무작위 당첨 번호 추첨 (유러피언 룰렛)
         const winningNumber = Math.floor(Math.random() * 37);
 
-        const videoLayer = document.getElementById('live-video-layer');
-        const video = document.getElementById('live-roulette-video');
+        // 스핀 진행 20초 카운트다운 표시
+        let spinSeconds = 20;
+        const timerEl = document.getElementById('phase-timer');
+        if (timerEl) timerEl.textContent = `${spinSeconds}s`;
 
-        // 실사 카지노 영상 모드 실행
-        if (this.isLiveVideoMode && videoLayer && video) {
-            videoLayer.classList.remove('hidden');
-            try {
-                video.currentTime = 0;
-                const playPromise = video.play();
-
-                if (window.rouletteAudio) {
-                    window.rouletteAudio.startBallRolling();
-                }
-
-                if (playPromise !== undefined) {
-                    playPromise.catch(error => {
-                        console.warn("비디오 자동재생 제약, 3D Canvas 휠로 자동 전환합니다:", error);
-                        videoLayer.classList.add('hidden');
-                        if (window.rouletteWheel) {
-                            window.rouletteWheel.spin(winningNumber, (finalNumber) => {
-                                this.onSpinFinished(finalNumber);
-                            });
-                        }
-                    });
-                }
-
-                // 실사 영상 약 5초간 회전 및 구슬 튀는 장면 감상 후 결과 안착
-                setTimeout(() => {
-                    video.pause();
-                    videoLayer.classList.add('hidden');
-                    if (window.rouletteAudio) {
-                        window.rouletteAudio.stopBallRolling();
-                        window.rouletteAudio.playDrop();
-                    }
-                    this.onSpinFinished(winningNumber);
-                }, 5000);
-
-            } catch (err) {
-                videoLayer.classList.add('hidden');
-                if (window.rouletteWheel) {
-                    window.rouletteWheel.spin(winningNumber, (finalNumber) => {
-                        this.onSpinFinished(finalNumber);
-                    });
-                }
+        const spinInterval = setInterval(() => {
+            spinSeconds--;
+            if (timerEl && spinSeconds >= 0) {
+                timerEl.textContent = `${spinSeconds}s`;
             }
-        } else {
-            // 3D Canvas 물리 휠 스핀
-            if (videoLayer) videoLayer.classList.add('hidden');
-            if (window.rouletteWheel) {
-                window.rouletteWheel.spin(winningNumber, (finalNumber) => {
-                    this.onSpinFinished(finalNumber);
-                });
+            if (spinSeconds <= 0) {
+                clearInterval(spinInterval);
             }
+        }, 1000);
+
+        // 20초 이상 지속되는 Canvas 3D 룰렛 휠 물리 시뮬레이션 실행
+        if (window.rouletteWheel) {
+            window.rouletteWheel.spin(winningNumber, (finalNumber) => {
+                clearInterval(spinInterval);
+                this.onSpinFinished(finalNumber);
+            });
         }
     }
 
@@ -348,37 +316,32 @@ class RouletteApp {
     }
 
     /**
-     * 배당금 정산 및 테이블 칩 상황 스포트라이트 클로즈업 연출
+     * 배당금 정산 및 축하 연출
      */
     settlePayouts(winningNumber) {
         if (!window.rouletteTable) return;
 
         const { totalPayout, winningBets } = window.rouletteTable.calculatePayout(winningNumber);
 
-        // 핵심 연출: 구슬이 떨어진 후 테이블에 해당 번호와 실제 칩이 놓여진 상황 대형 스포트라이트 표시
-        if (window.rouletteTable.showTableSpotlight) {
-            window.rouletteTable.showTableSpotlight(winningNumber, totalPayout, winningBets);
-        }
-
         if (totalPayout > 0) {
             // 플레이어 당첨!
             this.addBalance(totalPayout);
             if (window.rouletteAudio) {
                 window.rouletteAudio.playWinSound();
-                setTimeout(() => window.rouletteAudio.announceWin(), 800);
+                setTimeout(() => window.rouletteAudio.announceWin(), 600);
             }
             setTimeout(() => {
                 this.showWinModal(winningNumber, totalPayout, winningBets);
-            }, 3000);
+            }, 800);
         }
 
         this.updateBetDisplay();
 
-        // 6.5초 후 다음 라운드 자동 시작
+        // 7초 후 다음 라운드 자동 시작
         setTimeout(() => {
             this.hideWinModal();
             this.startBettingPhase();
-        }, 6500);
+        }, 7000);
     }
 
     /**

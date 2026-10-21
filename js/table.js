@@ -128,11 +128,46 @@ class RouletteTable {
                     </button>
                 </div>
 
-                <!-- 당첨 번호에 꽂히는 황동 돌리(Dolly) 핀 엘리먼트 -->
-                <div class="brass-dolly-marker" id="brass-dolly" style="display: none;">
-                    <div class="dolly-head"></div>
-                    <div class="dolly-neck"></div>
-                    <div class="dolly-base"></div>
+                <!-- 당첨 번호에 꽂히는 최고급 크리스탈 유리 말머리(Knight) 돌리 마커 -->
+                <div class="crystal-knight-dolly" id="brass-dolly" style="display: none;">
+                    <div class="knight-glass-figure">
+                        <svg class="horse-head-svg" viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg">
+                            <defs>
+                                <linearGradient id="glassLightGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
+                                    <stop offset="35%" stop-color="#e0f4ff" stop-opacity="0.75" />
+                                    <stop offset="70%" stop-color="#a6d8f5" stop-opacity="0.5" />
+                                    <stop offset="100%" stop-color="#ffffff" stop-opacity="0.9" />
+                                </linearGradient>
+                                <linearGradient id="glassPrismGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#ffd700" stop-opacity="0.5" />
+                                    <stop offset="50%" stop-color="#70c4ff" stop-opacity="0.4" />
+                                    <stop offset="100%" stop-color="#ff7eb3" stop-opacity="0.3" />
+                                </linearGradient>
+                                <filter id="glassGlow" x="-20%" y="-20%" width="140%" height="140%">
+                                    <feGaussianBlur stdDeviation="2" result="blur" />
+                                    <feComposite in="SourceGraphic" in2="blur" operator="over" />
+                                </filter>
+                            </defs>
+                            <!-- 정교한 크리스탈 말머리 조각 실루엣 -->
+                            <path d="M 28 115 C 25 95 20 70 30 50 C 35 40 45 35 48 20 C 50 12 55 5 62 8 C 65 10 65 18 64 22 C 72 23 85 30 88 42 C 90 50 85 58 75 62 C 68 65 62 68 60 75 C 57 85 62 105 68 115 Z" 
+                                  fill="url(#glassLightGrad)" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" filter="url(#glassGlow)" />
+                            <!-- 말 갈기 크리스탈 프리즘 각인 -->
+                            <path d="M 45 22 Q 40 40 32 60 Q 25 80 27 100" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2" />
+                            <path d="M 40 32 L 30 38 M 36 48 L 26 54 M 32 64 L 22 70 M 30 78 L 20 84" stroke="rgba(255,255,255,0.7)" stroke-width="1.8" />
+                            <!-- 말 주둥이 & 콧날 -->
+                            <circle cx="82" cy="46" r="2.5" fill="#ffffff" />
+                            <!-- 말 눈빛 보석 하이라이트 -->
+                            <circle cx="68" cy="38" r="3" fill="#ffffff" />
+                            <circle cx="68" cy="38" r="1.5" fill="#00e5ff" />
+                            <!-- 내부 프리즘 굴절면 -->
+                            <path d="M 46 38 C 55 42 65 48 58 72 Z" fill="url(#glassPrismGrad)" />
+                        </svg>
+                    </div>
+                    <!-- 황동 크리스탈 접합 넥 링 -->
+                    <div class="knight-brass-collar"></div>
+                    <!-- 24K 순금 황동 원형 받침대 -->
+                    <div class="knight-brass-pedestal"></div>
                 </div>
             </div>
         `;
@@ -348,7 +383,7 @@ class RouletteTable {
     }
 
     /**
-     * 당첨 번호 위에 전통 카지노 황동 돌리(Dolly) 핀 세우기 애니메이션
+     * 당첨 번호 위에 최고급 크리스탈 유리 말머리(Knight) 돌리 마커 세우기 애니메이션
      * @param {number} winningNumber - 당첨 번호 (0~36)
      */
     placeDolly(winningNumber) {
@@ -360,9 +395,21 @@ class RouletteTable {
 
         const tableRect = this.container.querySelector('.roulette-felt-table').getBoundingClientRect();
         const spotRect = spot.getBoundingClientRect();
+        const numText = spot.querySelector('.num-text');
 
-        const targetX = spotRect.left - tableRect.left + (spotRect.width / 2) - 16;
-        const targetY = spotRect.top - tableRect.top + (spotRect.height / 2) - 28;
+        // 셀 내부 숫자의 정확한 위치 파악
+        let targetX = 0;
+        let targetY = 0;
+
+        if (numText) {
+            const numRect = numText.getBoundingClientRect();
+            // 숫자 텍스트의 중심 X좌표와 하단선 바로 위에 돌리 베이스가 안착하도록 보정
+            targetX = (numRect.left - tableRect.left) + (numRect.width / 2);
+            targetY = (numRect.top - tableRect.top) + (numRect.height / 2) + 12;
+        } else {
+            targetX = (spotRect.left - tableRect.left) + (spotRect.width / 2);
+            targetY = (spotRect.top - tableRect.top) + (spotRect.height / 2) + 12;
+        }
 
         this.dollyElement.style.display = 'block';
         this.dollyElement.style.left = `${targetX}px`;

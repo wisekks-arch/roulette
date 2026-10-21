@@ -108,70 +108,69 @@ class RouletteWheel {
         const pocketRadius = this.outerRadius * 0.58;
 
         if (this.ballPhase === 'rolling') {
-            // 구슬이 외곽 림을 타고 역방향으로 질주
+            // 구슬이 외곽 림을 타고 역방향으로 맹렬하게 질주
             this.ballAngle -= this.ballSpeed;
             this.ballRadius = trackRadius;
 
-            // 구슬 감속
-            this.ballSpeed *= 0.988;
+            // 20초 이상 지속을 위한 정밀 물리 감속 (60FPS 기준 약 12~13초간 외곽 림 질주)
+            this.ballSpeed *= 0.9982;
 
             // 오디오 회전 소리 속도 업데이트
             if (window.rouletteAudio) {
-                const normSpeed = Math.min(1.0, this.ballSpeed / 0.12);
+                const normSpeed = Math.min(1.0, this.ballSpeed / 0.16);
                 window.rouletteAudio.updateRollingSpeed(normSpeed);
             }
 
-            // 속도가 떨어지면 림에서 내부로 낙하 시작
-            if (this.ballSpeed < 0.045) {
+            // 속도가 떨어지면 림에서 내부로 낙하 시작 (약 12.5초 시점)
+            if (this.ballSpeed < 0.038) {
                 this.ballPhase = 'dropping';
                 if (window.rouletteAudio) {
                     window.rouletteAudio.stopBallRolling();
                 }
             }
         } else if (this.ballPhase === 'dropping') {
-            // 안쪽으로 떨어지는 단계
+            // 안쪽 포켓 트랙으로 서서히 하강 (약 3.5초 소요)
             this.ballAngle -= this.ballSpeed;
-            this.ballRadius -= (this.ballRadius - pocketRadius) * 0.08;
-            this.ballSpeed *= 0.98;
+            this.ballRadius -= (this.ballRadius - pocketRadius) * 0.025;
+            this.ballSpeed *= 0.994;
 
-            if (this.ballRadius <= pocketRadius + 4) {
+            if (this.ballRadius <= pocketRadius + 2.5) {
                 this.ballPhase = 'bouncing';
-                this.bouncesLeft = 3;
+                this.bouncesLeft = 5; // 5회 이상 실감 나는 격벽 바운스
                 if (window.rouletteAudio) {
                     window.rouletteAudio.playBounce();
                 }
             }
         } else if (this.ballPhase === 'bouncing') {
-            // 포켓 격벽에 부딪히며 통통 튀는 단계
+            // 포켓 격벽에 부딪히며 통통 튀는 단계 (약 4~5초 소요)
             this.ballAngle -= this.ballSpeed;
 
-            // 목표 번호 포켓 각도로 부드럽게 유도 (자연스러운 포켓 안착 연출)
+            // 목표 번호 포켓 각도로 부드럽게 유도
             const targetIndex = this.numbers.indexOf(this.targetNumber);
             const targetAngle = this.wheelAngle + targetIndex * this.sliceAngle + this.sliceAngle / 2;
             let angleDiff = Math.atan2(Math.sin(targetAngle - this.ballAngle), Math.cos(targetAngle - this.ballAngle));
-            this.ballAngle += angleDiff * 0.15;
+            this.ballAngle += angleDiff * 0.08;
 
             // 미세한 반발 탄성 궤적
-            const bounceOffset = Math.sin(this.bouncesLeft * Math.PI) * 4;
+            const bounceOffset = Math.sin(this.bouncesLeft * Math.PI) * 3.5;
             this.ballRadius = pocketRadius + bounceOffset;
-            this.ballSpeed *= 0.88;
+            this.ballSpeed *= 0.965;
 
-            if (this.ballSpeed < 0.008) {
+            if (this.ballSpeed < 0.005) {
                 if (this.bouncesLeft > 1) {
                     this.bouncesLeft--;
-                    this.ballSpeed = 0.012;
+                    this.ballSpeed = 0.008 + (this.bouncesLeft * 0.0015);
                     if (window.rouletteAudio) {
                         window.rouletteAudio.playBounce();
                     }
                 } else {
-                    // 최종 안착
+                    // 총 20~22초 경과 후 최종 포켓 안착
                     this.ballPhase = 'pocketed';
                     this.ballActive = false;
                     this.isSpinning = false;
                     this.wheelSpeed = 0.003; // 아이들 속도로 복귀
 
                     // 당첨 번호 포켓과 일치하도록 각도 정확히 고정
-                    const targetIndex = this.numbers.indexOf(this.targetNumber);
                     this.ballAngle = this.wheelAngle + targetIndex * this.sliceAngle + this.sliceAngle / 2;
                     this.ballRadius = pocketRadius;
 
@@ -193,7 +192,7 @@ class RouletteWheel {
     }
 
     /**
-     * 스핀 시작
+     * 스핀 시작 (최소 20초 회전)
      * @param {number} winningNumber - 이번 라운드 당첨 번호 (0~36)
      * @param {function} onComplete - 회전 완료 시 콜백
      */
@@ -207,10 +206,10 @@ class RouletteWheel {
         this.ballPhase = 'rolling';
 
         // 휠 회전 속도 부여 (약간의 감속 회전)
-        this.wheelSpeed = 0.012 + Math.random() * 0.004;
+        this.wheelSpeed = 0.009 + Math.random() * 0.002;
 
-        // 구슬 초기 속도 (반대 방향 고속)
-        this.ballSpeed = 0.14 + Math.random() * 0.02;
+        // 구슬 초기 속도 (20초 이상 스핀 유지)
+        this.ballSpeed = 0.185 + Math.random() * 0.015;
         this.ballAngle = Math.random() * Math.PI * 2;
         this.ballRadius = this.outerRadius * 0.88;
 
@@ -368,30 +367,50 @@ class RouletteWheel {
 
         ctx.restore(); // 회전 복원
 
-        // 7. 은구슬(Ball) 그리기 (외곽 좌표계)
+        // 7. 크리스탈 유리구슬(Crystal Ball) 3D 정밀 렌더링
         if (this.ballPhase !== 'idle') {
             const bx = cx + Math.cos(this.ballAngle) * this.ballRadius;
             const by = cy + Math.sin(this.ballAngle) * this.ballRadius;
-            const bSize = Math.max(5, r * 0.038);
+            const bSize = Math.max(5.5, r * 0.04);
 
-            // 구슬 그림자
+            // 유리구슬 깊은 그림자
             ctx.beginPath();
-            ctx.arc(bx + 2, by + 2, bSize, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(0, 0, 0, 0.45)';
+            ctx.arc(bx + 2.5, by + 3, bSize * 0.95, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(0, 0, 0, 0.55)';
+            ctx.filter = 'blur(1.5px)';
             ctx.fill();
+            ctx.filter = 'none';
 
-            // 은구슬 3D 광택 렌더링
-            const ballGrad = ctx.createRadialGradient(bx - bSize * 0.35, by - bSize * 0.35, bSize * 0.1, bx, by, bSize);
-            ballGrad.addColorStop(0, '#ffffff');
-            ballGrad.addColorStop(0.4, '#e6e8eb');
-            ballGrad.addColorStop(0.8, '#9aa0a6');
-            ballGrad.addColorStop(1, '#5f6368');
+            // 크리스탈 유리구슬 본체 (영롱한 유리 굴절 그라디언트)
+            const glassGrad = ctx.createRadialGradient(
+                bx - bSize * 0.35, by - bSize * 0.35, bSize * 0.08,
+                bx, by, bSize
+            );
+            glassGrad.addColorStop(0, '#ffffff');       // 강한 하이라이트 반사
+            glassGrad.addColorStop(0.35, '#f0f9ff');     // 맑은 크리스탈 면
+            glassGrad.addColorStop(0.65, '#cce7f5');     // 내부 굴절 아쿠아 틴트
+            glassGrad.addColorStop(0.9, '#82b5d1');      // 림 굴절 음영
+            glassGrad.addColorStop(1, '#3b6278');        // 외곽 림 에지
 
             ctx.beginPath();
             ctx.arc(bx, by, bSize, 0, Math.PI * 2);
-            ctx.fillStyle = ballGrad;
-            ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
-            ctx.shadowBlur = 4;
+            ctx.fillStyle = glassGrad;
+            ctx.shadowColor = 'rgba(180, 230, 255, 0.9)';
+            ctx.shadowBlur = 6;
+            ctx.fill();
+
+            // 유리구슬 하단 2차 반사광 (Rim Caustic)
+            ctx.beginPath();
+            ctx.arc(bx + bSize * 0.25, by + bSize * 0.25, bSize * 0.35, 0, Math.PI * 2);
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            ctx.fill();
+
+            // 상단 정밀 핀포인트 크리스탈 광채
+            ctx.beginPath();
+            ctx.arc(bx - bSize * 0.38, by - bSize * 0.38, bSize * 0.2, 0, Math.PI * 2);
+            ctx.fillStyle = '#ffffff';
+            ctx.shadowColor = '#ffffff';
+            ctx.shadowBlur = 3;
             ctx.fill();
         }
     }

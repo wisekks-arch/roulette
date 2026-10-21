@@ -96,7 +96,7 @@ class RouletteAudio {
     }
 
     /**
-     * 구슬이 휠 외곽 림을 타고 고속으로 회전하는 실감 나는 마찰 소리 시작
+     * 크리스탈/유리구슬이 마호가니 원목 림 트랙을 타고 고속으로 질주하는 실감 나는 매끄러운 활주음
      */
     startBallRolling() {
         if (this.isMuted || this.isRolling) return;
@@ -106,29 +106,49 @@ class RouletteAudio {
         const bufferSize = this.ctx.sampleRate * 2;
         const noiseBuffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
         const output = noiseBuffer.getChannelData(0);
+        // 부드러운 핑크 노이즈 성분의 마찰음 생성
+        let b0 = 0, b1 = 0, b2 = 0;
         for (let i = 0; i < bufferSize; i++) {
-            output[i] = Math.random() * 2 - 1;
+            const white = Math.random() * 2 - 1;
+            b0 = 0.99886 * b0 + white * 0.0555179;
+            b1 = 0.99332 * b1 + white * 0.0750759;
+            b2 = 0.96900 * b2 + white * 0.1538520;
+            output[i] = (b0 + b1 + b2) * 0.18;
         }
 
-        const whiteNoise = this.ctx.createBufferSource();
-        whiteNoise.buffer = noiseBuffer;
-        whiteNoise.loop = true;
+        const noiseSource = this.ctx.createBufferSource();
+        noiseSource.buffer = noiseBuffer;
+        noiseSource.loop = true;
 
+        // 크리스탈 휠 트랙 공명 필터 (듀얼 밴드패스)
         this.rollingFilter = this.ctx.createBiquadFilter();
         this.rollingFilter.type = 'bandpass';
-        this.rollingFilter.frequency.setValueAtTime(1200, this.ctx.currentTime);
-        this.rollingFilter.Q.setValueAtTime(8, this.ctx.currentTime);
+        this.rollingFilter.frequency.setValueAtTime(1900, this.ctx.currentTime);
+        this.rollingFilter.Q.setValueAtTime(10, this.ctx.currentTime);
+
+        // 유리구슬 특유의 미세한 고음 공명 하모닉 오실레이터
+        this.rollingHarmonic = this.ctx.createOscillator();
+        this.rollingHarmonic.type = 'sine';
+        this.rollingHarmonic.frequency.setValueAtTime(1100, this.ctx.currentTime);
+
+        this.harmonicGain = this.ctx.createGain();
+        this.harmonicGain.gain.setValueAtTime(0.015, this.ctx.currentTime);
 
         this.rollingGain = this.ctx.createGain();
-        this.rollingGain.gain.setValueAtTime(0.05, this.ctx.currentTime);
-        this.rollingGain.gain.linearRampToValueAtTime(0.35, this.ctx.currentTime + 0.5);
+        this.rollingGain.gain.setValueAtTime(0.03, this.ctx.currentTime);
+        this.rollingGain.gain.linearRampToValueAtTime(0.28, this.ctx.currentTime + 0.6);
 
-        whiteNoise.connect(this.rollingFilter);
+        noiseSource.connect(this.rollingFilter);
         this.rollingFilter.connect(this.rollingGain);
+
+        this.rollingHarmonic.connect(this.harmonicGain);
+        this.harmonicGain.connect(this.rollingGain);
+
         this.rollingGain.connect(this.ctx.destination);
 
-        whiteNoise.start();
-        this.rollingSource = whiteNoise;
+        noiseSource.start();
+        this.rollingHarmonic.start();
+        this.rollingSource = noiseSource;
         this.isRolling = true;
     }
 
@@ -139,10 +159,13 @@ class RouletteAudio {
     updateRollingSpeed(speedNorm) {
         if (!this.isRolling || !this.ctx || this.isMuted) return;
         const now = this.ctx.currentTime;
-        const freq = 400 + Math.max(0, speedNorm) * 1100;
-        const vol = Math.max(0, speedNorm) * 0.35;
-        this.rollingFilter.frequency.setTargetAtTime(freq, now, 0.05);
-        this.rollingGain.gain.setTargetAtTime(vol, now, 0.05);
+        const freq = 550 + Math.max(0, speedNorm) * 1450;
+        const vol = Math.max(0, speedNorm) * 0.28;
+        const harmFreq = 420 + Math.max(0, speedNorm) * 780;
+
+        if (this.rollingFilter) this.rollingFilter.frequency.setTargetAtTime(freq, now, 0.08);
+        if (this.rollingGain) this.rollingGain.gain.setTargetAtTime(vol, now, 0.08);
+        if (this.rollingHarmonic) this.rollingHarmonic.frequency.setTargetAtTime(harmFreq, now, 0.08);
     }
 
     /**
@@ -152,22 +175,26 @@ class RouletteAudio {
         if (!this.isRolling) return;
         try {
             if (this.rollingGain && this.ctx) {
-                this.rollingGain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.1);
+                this.rollingGain.gain.linearRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
             }
             setTimeout(() => {
                 if (this.rollingSource) {
                     this.rollingSource.stop();
                     this.rollingSource.disconnect();
                 }
+                if (this.rollingHarmonic) {
+                    this.rollingHarmonic.stop();
+                    this.rollingHarmonic.disconnect();
+                }
                 this.isRolling = false;
-            }, 100);
+            }, 150);
         } catch (e) {
             this.isRolling = false;
         }
     }
 
     /**
-     * 구슬이 포켓 격벽(Fret)에 통통 부딪힐 때의 실감 나는 탄성 타격음
+     * 크리스탈 유리구슬이 황동 포켓 격벽(Fret)에 부딪힐 때의 청아하고 맑은 핑(Crystal Bell Ping) 타격음
      */
     playBounce() {
         if (this.isMuted) return;
@@ -175,26 +202,39 @@ class RouletteAudio {
         if (!this.ctx) return;
 
         const now = this.ctx.currentTime;
-        const osc = this.ctx.createOscillator();
-        const gain = this.ctx.createGain();
+        // 메인 크리스탈 톤
+        const osc1 = this.ctx.createOscillator();
+        const gain1 = this.ctx.createGain();
 
-        osc.type = 'sine';
-        const startFreq = 2200 + Math.random() * 800;
-        osc.frequency.setValueAtTime(startFreq, now);
-        osc.frequency.exponentialRampToValueAtTime(600, now + 0.035);
+        osc1.type = 'sine';
+        const startFreq = 2600 + Math.random() * 600;
+        osc1.frequency.setValueAtTime(startFreq, now);
+        osc1.frequency.exponentialRampToValueAtTime(1200, now + 0.045);
 
-        gain.gain.setValueAtTime(0.4, now);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.035);
+        gain1.gain.setValueAtTime(0.42, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.045);
 
-        osc.connect(gain);
-        gain.connect(this.ctx.destination);
+        osc1.connect(gain1);
+        gain1.connect(this.ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 0.045);
 
-        osc.start(now);
-        osc.stop(now + 0.035);
+        // 상위 하모닉 프리즘 핑
+        const osc2 = this.ctx.createOscillator();
+        const gain2 = this.ctx.createGain();
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(startFreq * 1.6, now);
+        gain2.gain.setValueAtTime(0.18, now);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.03);
+
+        osc2.connect(gain2);
+        gain2.connect(this.ctx.destination);
+        osc2.start(now);
+        osc2.stop(now + 0.03);
     }
 
     /**
-     * 구슬이 최종 포켓 홈에 딸깍 안착하는 묵직한 착지음
+     * 크리스탈 구슬이 최종 포켓 홈에 딸깍-착 안착하는 묵직하고 품격있는 사운드
      */
     playDrop() {
         if (this.isMuted) return;
@@ -202,37 +242,37 @@ class RouletteAudio {
         if (!this.ctx) return;
 
         const now = this.ctx.currentTime;
-        // 저음 타격음
+        // 1. 단단한 원목 포켓 착지음
         const osc1 = this.ctx.createOscillator();
         const gain1 = this.ctx.createGain();
         osc1.type = 'triangle';
-        osc1.frequency.setValueAtTime(320, now);
-        osc1.frequency.exponentialRampToValueAtTime(80, now + 0.08);
+        osc1.frequency.setValueAtTime(360, now);
+        osc1.frequency.exponentialRampToValueAtTime(75, now + 0.09);
 
-        gain1.gain.setValueAtTime(0.5, now);
-        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        gain1.gain.setValueAtTime(0.55, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.09);
 
         osc1.connect(gain1);
         gain1.connect(this.ctx.destination);
         osc1.start(now);
-        osc1.stop(now + 0.08);
+        osc1.stop(now + 0.09);
 
-        // 고음 금속 클릭음
+        // 2. 맑은 크리스탈 클릭음
         setTimeout(() => {
             if (!this.ctx) return;
             const clickNow = this.ctx.currentTime;
             const osc2 = this.ctx.createOscillator();
             const gain2 = this.ctx.createGain();
             osc2.type = 'sine';
-            osc2.frequency.setValueAtTime(1600, clickNow);
-            osc2.frequency.exponentialRampToValueAtTime(400, clickNow + 0.04);
-            gain2.gain.setValueAtTime(0.3, clickNow);
-            gain2.gain.exponentialRampToValueAtTime(0.001, clickNow + 0.04);
+            osc2.frequency.setValueAtTime(2400, clickNow);
+            osc2.frequency.exponentialRampToValueAtTime(800, clickNow + 0.05);
+            gain2.gain.setValueAtTime(0.35, clickNow);
+            gain2.gain.exponentialRampToValueAtTime(0.001, clickNow + 0.05);
             osc2.connect(gain2);
             gain2.connect(this.ctx.destination);
             osc2.start(clickNow);
-            osc2.stop(clickNow + 0.04);
-        }, 30);
+            osc2.stop(clickNow + 0.05);
+        }, 25);
     }
 
     /**
