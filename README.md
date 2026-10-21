@@ -47,3 +47,9 @@
 * **다즌 (12개 묶음)**: 2 : 1
 * **컬럼 (세로 12개)**: 2 : 1
 * **빨강/검정, 홀/짝, 1~18/19~36**: 1 : 1
+
+---
+
+## 🌐 실서버 배포 주소 (GitHub Pages)
+* **온라인 바로가기**: **[https://wisekks-arch.github.io/roulette/index.html](https://wisekks-arch.github.io/roulette/index.html)**
+

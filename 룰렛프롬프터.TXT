@@ -49,3 +49,10 @@
 6. 당첨 번호 테이블에 전통 카지노 황동 돌리(Dolly) 핀을 세워주는 애니메이션
 7. 가상 카지노 AI 플레이어들과 함께 베팅 및 적중 플레이어 축하 연출
 8. 6개 카지노 룸 로비 운영 (모나코, 벨라지오, 몬테카를로, 갤럭시, 리츠, 두바이)
+
+[배포 정보]
+- GitHub 저장소: https://github.com/wisekks-arch/roulette
+- GitHub Pages 배포 URL: https://wisekks-arch.github.io/roulette/index.html
+- 배포 일시: 2026-10-21
+- 상태: 저장소 생성 및 main 브랜치 push, Pages 활성화 완료
+
