@@ -152,15 +152,6 @@ class RouletteApp {
             });
         }
 
-        // 3. 스핀 버튼 (즉시 배팅 마감)
-        const spinBtn = document.getElementById('btn-spin');
-        if (spinBtn) {
-            spinBtn.addEventListener('click', () => {
-                if (this.currentPhase === 'BETTING') {
-                    this.closeBettingPhase();
-                }
-            });
-        }
 
         // 4. 전체 베팅 취소 (Clear)
         const clearBtn = document.getElementById('btn-clear');
@@ -437,8 +428,10 @@ class RouletteApp {
         const winModal = document.getElementById('win-celebration-modal');
         if (winModal) winModal.classList.add('hidden');
 
-        // 상태 배너 업데이트
-        this.updatePhaseStatus(`🎲 BETTING OPEN - 배팅을 진행해 주세요 (ROUND #${this.currentRound})`, "betting");
+        // 상태 배너 업데이트 (테이블별 전담 딜러 안내)
+        const currentRoom = window.rouletteLobby ? window.rouletteLobby.getCurrentRoom() : null;
+        const dealerName = currentRoom && currentRoom.dealer ? currentRoom.dealer.name : '카지노 전담 딜러';
+        this.updatePhaseStatus(`🎲 BETTING OPEN - ${dealerName}: 배팅을 진행해 주세요 (ROUND #${this.currentRound})`, "betting");
         this.updateTimerDisplay(this.timerSeconds);
 
         // 딜러 음성 안내
@@ -474,7 +467,7 @@ class RouletteApp {
     }
 
     /**
-     * 10단계 시나리오 2: 배팅 마감 (BET CLOSED + 땡!! 벨)
+     * 10단계 시나리오 2: 배팅 마감 (BET CLOSED + 땡!! 벨 + 딜러 주도 스핀 안내)
      */
     closeBettingPhase() {
         if (this.currentPhase !== 'BETTING') return;
@@ -496,7 +489,10 @@ class RouletteApp {
             window.rouletteAudio.announceNoMoreBets();
         }
 
-        this.updatePhaseStatus("⛔ BET CLOSED - 배팅이 마감되었습니다", "closed");
+        // [핵심] 테이블별 전담 딜러가 스핀 및 구슬 투구를 진행함을 명확히 안내
+        const currentRoom = window.rouletteLobby ? window.rouletteLobby.getCurrentRoom() : null;
+        const dealerName = currentRoom && currentRoom.dealer ? currentRoom.dealer.name : '카지노 전담 딜러';
+        this.updatePhaseStatus(`⛔ BET CLOSED - ${dealerName}가 룰렛 휠을 회전시키고 구슬을 투구합니다!`, "closed");
         this.updateTimerDisplay(0);
 
         // 1.2초 후 실사 라이브 캠 팝업 및 회전 돌입

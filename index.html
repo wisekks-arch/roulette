@@ -53,11 +53,11 @@
             </div>
         </header>
 
-        <!-- 딜러 아나운스 & 안내 상태 배너 -->
+        <!-- 딜러 아나운스 & 안내 상태 배너 (테이블별 전담 딜러 표시) -->
         <div id="announcement-banner" class="announcement-banner banner-betting">
             <div class="dealer-voice-avatar">
-                <span class="avatar-icon">👩‍💼</span>
-                <span class="dealer-name">딜러 로렌 (Dealer Lauren)</span>
+                <span class="avatar-icon" id="dealer-avatar-icon">👩‍💼</span>
+                <span class="dealer-name" id="dealer-name-text">딜러 로렌 (Dealer Lauren)</span>
             </div>
             <div id="status-message-text" class="status-message">
                 🎲 베팅을 진행해 주세요 (Place your bets)
@@ -134,7 +134,7 @@
                         </button>
                     </div>
 
-                    <!-- 액션 버튼들 (취소, 재베팅, 2배, 스핀) -->
+                    <!-- 액션 버튼들 (취소, 전체취소, 재베팅, 2배 - 딜러 자동 스핀 방식) -->
                     <div class="action-buttons-bar">
                         <button id="btn-undo-bet" class="act-btn btn-undo" title="마지막 배팅 1단계 취소">
                             <span class="btn-icon">↩</span> 취소 (UNDO)
@@ -147,9 +147,6 @@
                         </button>
                         <button id="btn-double" class="act-btn btn-double">
                             <span class="btn-icon">2X</span> 2배 (DOUBLE)
-                        </button>
-                        <button id="btn-spin" class="act-btn btn-spin-gold">
-                            <span class="btn-icon">🎡</span> 스핀 (SPIN)
                         </button>
                     </div>
                 </div>
