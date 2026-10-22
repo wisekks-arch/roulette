@@ -2107,25 +2107,13 @@ body {
 /* ==========================================================================
    11차 개편: 배팅 마감(Lockout) 오버레이 (클릭 100% 완전 차단)
    ========================================================================== */
-.table-lockout-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(6, 11, 8, 0.82);
-    backdrop-filter: blur(4px);
-    z-index: 50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: all;
-    cursor: not-allowed;
-    animation: fadeInLock 0.25s ease forwards;
-}
-
-.table-lockout-overlay.hidden {
+.table-lockout-overlay,
+#table-lockout-overlay {
     display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+    z-index: -9999 !important;
 }
 
 @keyframes fadeInLock {

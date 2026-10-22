@@ -33,6 +33,8 @@ class RouletteApp {
      * 메인 앱 초기화
      */
     init() {
+        this.purgeLockoutOverlay();
+
         if (!window.rouletteTable) {
             window.rouletteTable = new RouletteTable('roulette-table-mount');
         }
@@ -52,6 +54,16 @@ class RouletteApp {
 
         // 첫 라운드 시작
         this.startBettingPhase();
+    }
+
+    /**
+     * 배팅 마감(Lockout) 잔여 오버레이 화면 강제 소멸 헬퍼
+     */
+    purgeLockoutOverlay() {
+        try {
+            const els = document.querySelectorAll('#table-lockout-overlay, .table-lockout-overlay');
+            els.forEach(el => el.remove());
+        } catch (e) {}
     }
 
     /**
@@ -505,6 +517,8 @@ class RouletteApp {
         if (this.currentPhase !== 'BETTING') return;
         this.currentPhase = 'CLOSED';
 
+        this.purgeLockoutOverlay();
+
         if (this.timerInterval) {
             clearInterval(this.timerInterval);
             this.timerInterval = null;
@@ -535,11 +549,12 @@ class RouletteApp {
      */
     triggerSpin() {
         this.currentPhase = 'SPINNING';
+        this.purgeLockoutOverlay();
         this.updatePhaseStatus("🔴 LIVE: 구슬이 룰렛 림을 타고 고속 질주하고 있습니다!", "spinning");
 
         const targetNum = this.currentWinningNumber;
 
-        // 1. 영상 팝업 화면 최상단 전면 표출
+        // 1. 영상 팝업 화면 최상단 전면 강제 표출 (z-index: 999999)
         const liveCamModal = document.getElementById('live-cam-modal');
         const liveCamVideo = document.getElementById('live-cam-video');
         const winBadge = document.getElementById('live-cam-win-badge');
@@ -550,7 +565,7 @@ class RouletteApp {
 
         if (liveCamModal) {
             liveCamModal.classList.remove('hidden');
-            liveCamModal.style.display = 'flex';
+            liveCamModal.style.cssText = 'display: flex !important; opacity: 1 !important; visibility: visible !important; z-index: 999999 !important; pointer-events: all !important;';
         }
 
         // 실사 비디오 자동 재생
@@ -587,10 +602,10 @@ class RouletteApp {
                 try { liveCamVideo.pause(); } catch (e) {}
             }
 
-            // 영상 팝업 완전 닫기
+            // 영상 팝업 완전 강제 소멸
             if (liveCamModal) {
                 liveCamModal.classList.add('hidden');
-                liveCamModal.style.display = 'none';
+                liveCamModal.style.cssText = 'display: none !important; opacity: 0 !important; visibility: hidden !important; pointer-events: none !important;';
             }
 
             const color = window.rouletteWheel ? window.rouletteWheel.getNumberColor(targetNum) : 'red';
@@ -867,6 +882,8 @@ class RouletteApp {
      * 5단계: 다음 회차 자동 생성 및 무한 순환 시작
      */
     nextRound() {
+        this.purgeLockoutOverlay();
+
         // 승리 팝업 닫기
         const winModal = document.getElementById('win-celebration-modal');
         if (winModal) {

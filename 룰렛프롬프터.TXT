@@ -172,6 +172,22 @@
 5. 강력한 브라우저 캐시 방지 버전 파라미터 적용 (index.html):
    - css/style.css?v=20261022_1640 및 모든 js 파일에 캐시 버스팅 파라미터 적용.
 
+[17차 사용자 요청 원문 - 2026-10-22]
+"배팅 마감 팝업이 뜨고 닫히지않아. 닫아줘 그리고 구슬굴러가는 영상이 안뜸 
+개선해줘"
+- 사용자 최종 확인: 승인 (컨펌 완료)
+
+[17차 핵심 구현 사항]
+1. 배팅 마감(Lockout) 오버레이 화면 원천 소멸 처리 (app.js, style.css):
+   - app.js에 purgeLockoutOverlay 헬퍼 메서드를 추가하여 페이지 로드(init), 배팅 시작(startBettingPhase), 마감(closeBettingPhase), 스핀(triggerSpin), 다음 회차(nextRound) 등 모든 라이프사이클에서 DOM에 남아있는 #table-lockout-overlay를 즉시 강제 remove() 삭제.
+   - style.css에서 #table-lockout-overlay에 display: none !important; z-index: -9999 !important;를 전역 적용하여 혹시 모를 잔여 화면 가림 현상 원천 봉쇄.
+2. 구슬 굴러가는 영상 팝업 최상단 전면 강제 표출 보장 (app.js):
+   - triggerSpin 시 liveCamModal에 인라인 스타일로 display: flex !important; opacity: 1 !important; visibility: visible !important; z-index: 999999 !important; pointer-events: all !important;를 강제 부여하여 어떤 요소보다 위에 100% 확실하게 뜨도록 조치.
+   - 정확히 3.0초 후 liveCamModal.style.cssText = 'display: none !important;'로 완전 강제 소멸 후 결과 화면으로 전환.
+3. 브라우저 HTML 캐시 차단 메타 태그 및 쿼리스트링 갱신 (index.html):
+   - no-cache, no-store, must-revalidate 메타 태그 삽입 및 ?v=20261022_1645 버전 갱신 완료.
+
+
 
 
 
