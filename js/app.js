@@ -503,6 +503,7 @@ class RouletteApp {
         const lockoutOverlay = document.getElementById('table-lockout-overlay');
         if (lockoutOverlay) {
             lockoutOverlay.classList.remove('hidden');
+            lockoutOverlay.style.display = 'flex';
         }
 
         const timerTitle = document.getElementById('betting-timer-title');
@@ -522,14 +523,15 @@ class RouletteApp {
         this.updatePhaseStatus(`⛔ NO MORE BETS! - ${dealerName}가 룰렛 휠을 회전시키고 구슬을 투구합니다!`, "closed");
         this.updateTimerDisplay(0);
 
-        // [사용자 요청 2단계 -> 3단계 전환]
-        // NO MORE BETS 화면을 1.2초간 잠시 보여준 후 자동으로 닫아 사라지게 하고, 곧바로 구슬 떨어지는 영상 팝업으로 직행!
+        // [사용자 1안 요청]
+        // NO MORE BETS 안내 팝업을 1.5초간 명확히 표출한 후 자동으로 닫아 완전히 사라지게 하고, 곧바로 구슬 떨어지는 영상 팝업으로 직행!
         setTimeout(() => {
             if (lockoutOverlay) {
                 lockoutOverlay.classList.add('hidden');
+                lockoutOverlay.style.display = 'none';
             }
             this.triggerSpin();
-        }, 1200);
+        }, 1500);
     }
 
     /**
@@ -594,7 +596,7 @@ class RouletteApp {
                 statusText.textContent = `🎯 BALL DROP LOCK-ON! 당첨 번호 #${targetNum}`;
             }
 
-            // 1.5초간 당첨 클로즈업을 충분히 보여준 후 영상 팝업 닫고 결과 화면으로 전환
+            // 1.2초간 당첨 클로즈업을 충분히 보여준 후 영상 팝업 닫고 결과 화면으로 전환
             setTimeout(() => {
                 if (liveCamModal) {
                     liveCamModal.classList.add('hidden');
@@ -602,7 +604,7 @@ class RouletteApp {
                 }
                 const color = window.rouletteWheel ? window.rouletteWheel.getNumberColor(targetNum) : 'red';
                 this.onSpinResult(targetNum, color);
-            }, 1500);
+            }, 1200);
         };
 
         // 2. 실사 라이브 캠 캔버스 클로즈업 물리 휠 & 은구슬 시네마틱 애니메이션 가동
@@ -613,12 +615,12 @@ class RouletteApp {
             window.rouletteWheel.spin(targetNum, () => {});
         }
 
-        // 4. [Fail-Safe 안전장치] 어떤 환경에서도 최대 5.5초 내에 무조건 결과로 진행
+        // 4. [Fail-Safe 안전장치] 어떤 환경에서도 최대 4.5초 내에 무조건 결과로 진행
         setTimeout(() => {
             if (!isCompleted) {
                 handleSpinComplete();
             }
-        }, 5500);
+        }, 4500);
     }
 
     /**
@@ -922,7 +924,23 @@ class RouletteApp {
     nextRound() {
         // 승리 팝업 닫기
         const winModal = document.getElementById('win-celebration-modal');
-        if (winModal) winModal.classList.add('hidden');
+        if (winModal) {
+            winModal.classList.add('hidden');
+            winModal.style.display = 'none';
+        }
+
+        // 라이브 캠 팝업 및 테이블 락아웃 확실하게 닫기
+        const liveCamModal = document.getElementById('live-cam-modal');
+        if (liveCamModal) {
+            liveCamModal.classList.add('hidden');
+            liveCamModal.style.display = 'none';
+        }
+
+        const lockoutOverlay = document.getElementById('table-lockout-overlay');
+        if (lockoutOverlay) {
+            lockoutOverlay.classList.add('hidden');
+            lockoutOverlay.style.display = 'none';
+        }
 
         // 오토플레이 조건 검사
         this.checkAutoPlayConditions();
@@ -931,7 +949,7 @@ class RouletteApp {
         this.currentRound++;
         this.updateRoundDisplay();
 
-        // 새 배팅 페이즈 시작
+        // 새 배팅 페이즈 시작 (15초 리셋)
         this.startBettingPhase();
     }
 
