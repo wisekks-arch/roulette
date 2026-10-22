@@ -491,8 +491,8 @@ class RouletteApp {
             winModal.style.display = 'none';
         }
 
-        // 상태 배너 업데이트
-        this.updatePhaseStatus(`🎲 PLACE YOUR BETS - 배팅을 진행해 주세요 (ROUND #${this.currentRound})`, "betting");
+        // 상태 배너 업데이트 (정통 카지노 딜러의 배팅 오픈 콜)
+        this.updatePhaseStatus(`🎲 PLACE YOUR BETS (ROUND #${this.currentRound})`, "betting");
         this.updateTimerDisplay(this.timerSeconds);
 
         // 딜러 음성 안내
@@ -561,7 +561,7 @@ class RouletteApp {
             window.rouletteAudio.announceNoMoreBets();
         }
 
-        this.updatePhaseStatus("⛔ NO MORE BETS! - 배팅이 마감되었습니다 (구슬 질주 중)", "closed");
+        this.updatePhaseStatus("⛔ NO MORE BETS! - 딜러 배팅 마감 (구슬 투구)", "closed");
         this.updateTimerDisplay(0);
 
         // 상단 마감 알림 배너 표출 (구슬 도는 화면을 방해하지 않고 1.5초 후 자동 소멸)
@@ -591,12 +591,12 @@ class RouletteApp {
     }
 
     /**
-     * 3단계: 구슬 낙하 실사 팝업 (정확히 4.0초 고정 실행 후 자동 닫힘)
+     * 3단계: 딜러 주도 구슬 투구 및 휠 회전 실사 라이브 연동 (정확히 4.0초 고정 실행 후 자동 닫힘)
      */
     triggerSpin() {
         this.currentPhase = 'SPINNING';
         this.purgeLockoutOverlay();
-        this.updatePhaseStatus("🔴 LIVE: 구슬이 룰렛 림을 타고 고속 질주하고 있습니다!", "spinning");
+        this.updatePhaseStatus("🔴 딜러가 구슬을 투구하여 휠을 회전시키고 있습니다!", "spinning");
 
         const targetNum = this.currentWinningNumber;
 
@@ -835,7 +835,7 @@ class RouletteApp {
         this.currentPhase = 'RESULT';
 
         const colorName = color === 'red' ? '레드' : (color === 'black' ? '블랙' : '싱글 제로');
-        this.updatePhaseStatus(`🎯 당첨 번호: ${winningNumber} (${colorName})`, "result");
+        this.updatePhaseStatus(`🎯 당첨 번호: ${winningNumber} (${colorName}) - 딜러 배당금 정산`, "result");
 
         // 1. 딜러 세련된 결과 낭독 음성
         if (window.rouletteAudio) {

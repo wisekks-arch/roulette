@@ -427,8 +427,8 @@ class RouletteLobby {
     }
 
     /**
-     * 봇 플레이어들의 실시간 테이블 배팅 시뮬레이션
-     * 배팅 타임(20초) 동안 봇들이 1~12초 간격으로 테이블 여러 스팟에 직접 칩을 배치
+     * 봇 플레이어들의 실시간 테이블 다중 배팅 시뮬레이션
+     * 배팅 타임(20초) 동안 각 봇이 최소 10개 이상(10~13개)의 다채로운 스팟에 실시간 순차 배팅!
      */
     simulateAiBets() {
         this.botTimeouts.forEach(t => clearTimeout(t));
@@ -436,70 +436,94 @@ class RouletteLobby {
         this.currentAiBets = [];
 
         const room = this.getCurrentRoom();
+        if (!room) return;
 
-        this.activeBots.forEach((bot, index) => {
-            bot.lastBet = null;
+        // 테이블 상의 유효한 모든 배팅 스팟 요소들 조회
+        const availableSpotElements = (window.rouletteTable && window.rouletteTable.container)
+            ? Array.from(window.rouletteTable.container.querySelectorAll('.bet-spot'))
+            : [];
+
+        if (availableSpotElements.length === 0) return;
+
+        this.activeBots.forEach((bot, botIdx) => {
+            bot.currentBetsCount = 0;
+            bot.currentBetsAmount = 0;
+            bot.roundBets = [];
+
             const betEl = document.getElementById(`badge-bet-${bot.id}`);
-            if (betEl) betEl.textContent = '배팅 고민 중...';
+            if (betEl) {
+                betEl.textContent = '배팅 준비 중...';
+                betEl.style.color = '#e2e8f0';
+            }
 
-            // 각 봇마다 1~2회에 걸쳐 분산 배팅 수행
-            const betCount = Math.random() > 0.35 ? 2 : 1;
+            // [핵심] 사용자 요청: 각 봇당 최소 10개 이상 (10~13곳) 배팅!
+            const betCount = Math.floor(Math.random() * 4) + 10;
+
             for (let b = 0; b < betCount; b++) {
-                const delay = 1200 + index * 1300 + b * 2800 + Math.random() * 1600;
+                // 0.6초부터 17.5초 사이에 순차적으로 배팅이 이루어지도록 타임라인 분산
+                const baseDelay = 600 + (b * (16500 / betCount));
+                const jitter = (botIdx * 450) + (Math.random() * 600 - 300);
+                const delay = Math.max(500, Math.min(17800, baseDelay + jitter));
 
                 const t = setTimeout(() => {
-                    if (!window.rouletteTable || (window.rouletteApp && window.rouletteApp.currentPhase !== 'BETTING')) return;
+                    // 배팅 페이즈가 아니거나 테이블이 잠겼으면 중단
+                    if (!window.rouletteTable || (window.rouletteApp && window.rouletteApp.currentPhase !== 'BETTING')) {
+                        return;
+                    }
 
-                    const chipUnit = room.minBet >= 5000 ? 10000 : (room.minBet >= 1000 ? 5000 : 500);
+                    // 봇 성향에 따른 스팟 후보 선별
+                    let candidateSpots = availableSpotElements;
+                    if (bot.preference === 'straight') {
+                        // 숫자 및 스플릿 등 인사이드 비중 강화
+                        const insides = availableSpotElements.filter(el => 
+                            el.classList.contains('spot-number') || el.classList.contains('hotspot-split-h') || el.classList.contains('hotspot-split-v')
+                        );
+                        if (insides.length > 0 && Math.random() < 0.75) candidateSpots = insides;
+                    } else if (bot.preference === 'outside') {
+                        // 다즌, 컬럼, 이븐머니 등 아웃사이드 비중 강화
+                        const outsides = availableSpotElements.filter(el => el.classList.contains('spot-outside'));
+                        if (outsides.length > 0 && Math.random() < 0.75) candidateSpots = outsides;
+                    }
+
+                    // 무작위 스팟 선정
+                    const chosenSpotEl = candidateSpots[Math.floor(Math.random() * candidateSpots.length)];
+                    if (!chosenSpotEl) return;
+
+                    const spotId = chosenSpotEl.id;
+                    const betType = chosenSpotEl.dataset.bet || 'straight';
+                    const rawNumbers = chosenSpotEl.dataset.numbers || '';
+                    const spotTitle = chosenSpotEl.title || chosenSpotEl.textContent.trim() || spotId;
+
+                    // 칩 배팅 금액 (룸 한도 내 합리적 단위)
+                    const chipUnit = room.minBet >= 5000 ? 5000 : (room.minBet >= 1000 ? 1000 : (room.minBet >= 500 ? 500 : 100));
                     const multiplier = Math.floor(Math.random() * 3) + 1;
                     const amount = Math.min(room.maxBet, Math.max(room.minBet, chipUnit * multiplier));
 
-                    let targetSpot = '';
-                    let targetName = '';
+                    // 테이블에 봇 칩 렌더링
+                    window.rouletteTable.placeBotBet(bot, spotId, amount);
 
-                    if (bot.preference === 'straight') {
-                        const luckyNum = Math.floor(Math.random() * 37);
-                        targetSpot = luckyNum.toString();
-                        targetName = `#${luckyNum}`;
-                    } else if (bot.preference === 'outside') {
-                        const outsides = [
-                            { spot: 'red', name: 'RED' },
-                            { spot: 'black', name: 'BLACK' },
-                            { spot: 'even', name: 'EVEN' },
-                            { spot: 'odd', name: 'ODD' }
-                        ];
-                        const pick = outsides[Math.floor(Math.random() * outsides.length)];
-                        targetSpot = pick.spot;
-                        targetName = pick.name;
-                    } else {
-                        const dozens = [
-                            { spot: '1-12', name: '1st 12' },
-                            { spot: '13-24', name: '2nd 12' },
-                            { spot: '25-36', name: '3rd 12' }
-                        ];
-                        const pick = dozens[Math.floor(Math.random() * dozens.length)];
-                        targetSpot = pick.spot;
-                        targetName = pick.name;
-                    }
+                    // 누적 정보 갱신
+                    bot.currentBetsCount++;
+                    bot.currentBetsAmount += amount;
 
-                    bot.lastBet = { targetSpot, targetName, amount };
+                    const betRecord = {
+                        bot: bot,
+                        spotId: spotId,
+                        betType: betType,
+                        numbersStr: rawNumbers,
+                        spotTitle: spotTitle,
+                        amount: amount
+                    };
+                    bot.roundBets.push(betRecord);
+                    this.currentAiBets.push(betRecord);
 
-                    // 테이블에 실제 봇 칩 배치
-                    window.rouletteTable.placeBotBet(bot, targetSpot, amount);
-
-                    // 참석자 바 배팅 현황 갱신
+                    // 참석자 뱃지 실시간 다채로운 업데이트
                     const badgeBet = document.getElementById(`badge-bet-${bot.id}`);
                     if (badgeBet) {
-                        badgeBet.textContent = `${amount.toLocaleString()} Chip (${targetName})`;
+                        badgeBet.textContent = `배팅 ${bot.currentBetsCount}곳 (${bot.currentBetsAmount.toLocaleString()} Chip)`;
                         badgeBet.classList.add('pop-animation');
-                        setTimeout(() => badgeBet.classList.remove('pop-animation'), 1000);
+                        setTimeout(() => badgeBet.classList.remove('pop-animation'), 600);
                     }
-
-                    this.currentAiBets.push({
-                        bot: bot,
-                        targetSpot: targetSpot,
-                        amount: amount
-                    });
                 }, delay);
 
                 this.botTimeouts.push(t);
@@ -517,8 +541,8 @@ class RouletteLobby {
         this.activeBots.forEach(bot => {
             const betEl = document.getElementById(`badge-bet-${bot.id}`);
             if (betEl) {
-                if (bot.lastBet) {
-                    betEl.textContent = `✓ 배팅 완료 (${bot.lastBet.amount.toLocaleString()} Chip)`;
+                if (bot.currentBetsCount && bot.currentBetsCount > 0) {
+                    betEl.textContent = `✓ 배팅 완료 (${bot.currentBetsCount}곳 / ${bot.currentBetsAmount.toLocaleString()} Chip)`;
                     betEl.style.color = '#10b981';
                 } else {
                     betEl.textContent = '⛔ 배팅 마감 (패스)';
@@ -529,38 +553,83 @@ class RouletteLobby {
     }
 
     /**
-     * 회차 당첨 번호 결과 시 봇 정산
+     * 딜러 당첨 번호 결과 시 봇 다중 배팅 정산
      */
     onSpinResult(winningNumber) {
-        const isRed = this.getNumberColor(winningNumber) === 'red';
-        const isEven = winningNumber !== 0 && winningNumber % 2 === 0;
+        const winNum = parseInt(winningNumber, 10);
+        const isRed = this.getNumberColor(winNum) === 'red';
+        const isEven = winNum !== 0 && winNum % 2 === 0;
+
+        // 각 봇별 배당금 집계
+        const botResults = {};
+        this.activeBots.forEach(bot => {
+            botResults[bot.id] = {
+                bot: bot,
+                totalWon: 0,
+                totalBet: bot.currentBetsAmount || 0,
+                winHits: 0
+            };
+        });
 
         this.currentAiBets.forEach(bet => {
             let won = false;
-            let winAmount = 0;
+            let payoutRatio = 0; // 원금 포함 배율
 
-            if (bet.targetSpot === winningNumber.toString()) {
+            const numbers = bet.numbersStr ? bet.numbersStr.split(',').map(n => parseInt(n.trim(), 10)).filter(n => !isNaN(n)) : [];
+
+            // 1. 숫자 포함 여부로 판정하는 인사이드 배팅
+            if (numbers.length > 0 && numbers.includes(winNum)) {
                 won = true;
-                winAmount = bet.amount * 36;
-            } else if (winningNumber !== 0) {
-                if (bet.targetSpot === 'red' && isRed) { won = true; winAmount = bet.amount * 2; }
-                else if (bet.targetSpot === 'black' && !isRed) { won = true; winAmount = bet.amount * 2; }
-                else if (bet.targetSpot === 'even' && isEven) { won = true; winAmount = bet.amount * 2; }
-                else if (bet.targetSpot === 'odd' && !isEven) { won = true; winAmount = bet.amount * 2; }
-                else if (bet.targetSpot === '1-12' && winningNumber <= 12) { won = true; winAmount = bet.amount * 3; }
-                else if (bet.targetSpot === '13-24' && winningNumber >= 13 && winningNumber <= 24) { won = true; winAmount = bet.amount * 3; }
-                else if (bet.targetSpot === '25-36' && winningNumber >= 25) { won = true; winAmount = bet.amount * 3; }
+                if (bet.betType === 'straight') payoutRatio = 36;
+                else if (bet.betType === 'split') payoutRatio = 18;
+                else if (bet.betType === 'street') payoutRatio = 12;
+                else if (bet.betType === 'corner') payoutRatio = 9;
+                else if (bet.betType === 'sixline') payoutRatio = 6;
+                else payoutRatio = 36 / numbers.length;
+            }
+            // 2. 아웃사이드 배팅 판정 (단, winNum === 0이면 하우스 독식)
+            else if (winNum !== 0) {
+                if (bet.betType === 'dozen') {
+                    if (bet.numbersStr === '1-12' && winNum >= 1 && winNum <= 12) { won = true; payoutRatio = 3; }
+                    else if (bet.numbersStr === '13-24' && winNum >= 13 && winNum <= 24) { won = true; payoutRatio = 3; }
+                    else if (bet.numbersStr === '25-36' && winNum >= 25 && winNum <= 36) { won = true; payoutRatio = 3; }
+                } else if (bet.betType === 'column') {
+                    if (bet.numbersStr === 'col1' && winNum % 3 === 1) { won = true; payoutRatio = 3; }
+                    else if (bet.numbersStr === 'col2' && winNum % 3 === 2) { won = true; payoutRatio = 3; }
+                    else if (bet.numbersStr === 'col3' && winNum % 3 === 0) { won = true; payoutRatio = 3; }
+                } else {
+                    // 이븐머니 배팅 (1:1 배당 = 원금포함 2배)
+                    if (bet.numbersStr === 'red' && isRed) { won = true; payoutRatio = 2; }
+                    else if (bet.numbersStr === 'black' && !isRed) { won = true; payoutRatio = 2; }
+                    else if (bet.numbersStr === 'even' && isEven) { won = true; payoutRatio = 2; }
+                    else if (bet.numbersStr === 'odd' && !isEven) { won = true; payoutRatio = 2; }
+                    else if ((bet.numbersStr === 'low' || bet.numbersStr === '1-18') && winNum >= 1 && winNum <= 18) { won = true; payoutRatio = 2; }
+                    else if ((bet.numbersStr === 'high' || bet.numbersStr === '19-36') && winNum >= 19 && winNum <= 36) { won = true; payoutRatio = 2; }
+                }
             }
 
-            const badgeBet = document.getElementById(`badge-bet-${bet.bot.id}`);
+            if (won && payoutRatio > 0) {
+                const winAmount = bet.amount * payoutRatio;
+                if (botResults[bet.bot.id]) {
+                    botResults[bet.bot.id].totalWon += winAmount;
+                    botResults[bet.bot.id].winHits++;
+                }
+            }
+        });
+
+        // 각 봇의 잔고 업데이트 및 뱃지 결과 표출
+        Object.values(botResults).forEach(res => {
+            const badgeBet = document.getElementById(`badge-bet-${res.bot.id}`);
+            res.bot.balance = Math.max(10000, (res.bot.balance || 1000000) + res.totalWon - res.totalBet);
+
             if (badgeBet) {
-                if (won) {
-                    bet.bot.balance += winAmount;
-                    badgeBet.textContent = `🎉 +${winAmount.toLocaleString()} Chip 적중!`;
+                if (res.totalWon > 0) {
+                    badgeBet.textContent = `🎉 +${res.totalWon.toLocaleString()} Chip 적중 (${res.winHits}건)!`;
                     badgeBet.style.color = '#fbbf24';
-                } else {
-                    bet.bot.balance -= bet.amount;
-                    badgeBet.textContent = `낙첨 (-${bet.amount.toLocaleString()})`;
+                    badgeBet.classList.add('pop-animation');
+                    setTimeout(() => badgeBet.classList.remove('pop-animation'), 1000);
+                } else if (res.totalBet > 0) {
+                    badgeBet.textContent = `낙첨 (-${res.totalBet.toLocaleString()})`;
                     badgeBet.style.color = '#94a3b8';
                 }
             }
