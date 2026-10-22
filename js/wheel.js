@@ -120,65 +120,63 @@ class RouletteWheel {
             this.ballAngle -= this.ballSpeed;
             this.ballRadius = trackRadius;
 
-            // 20초 이상 지속을 위한 정밀 물리 감속 (60FPS 기준 약 12~13초간 외곽 림 질주)
-            this.ballSpeed *= 0.9982;
+            // 6~7초 실감 나는 카지노 물리 감속
+            this.ballSpeed *= 0.992;
 
-            // 오디오 회전 소리 속도 업데이트
             if (window.rouletteAudio) {
-                const normSpeed = Math.min(1.0, this.ballSpeed / 0.16);
+                const normSpeed = Math.min(1.0, this.ballSpeed / 0.18);
                 window.rouletteAudio.updateRollingSpeed(normSpeed);
             }
 
-            // 속도가 떨어지면 림에서 내부로 낙하 시작 (약 12.5초 시점)
-            if (this.ballSpeed < 0.038) {
+            // 속도가 떨어지면 림에서 내부로 낙하 시작 (약 3.5초 시점)
+            if (this.ballSpeed < 0.065) {
                 this.ballPhase = 'dropping';
                 if (window.rouletteAudio) {
                     window.rouletteAudio.stopBallRolling();
                 }
             }
         } else if (this.ballPhase === 'dropping') {
-            // 안쪽 포켓 트랙으로 서서히 하강 (약 3.5초 소요)
+            // 안쪽 포켓 트랙으로 부드럽게 하강 (약 1.5초 소요)
             this.ballAngle -= this.ballSpeed;
-            this.ballRadius -= (this.ballRadius - pocketRadius) * 0.025;
-            this.ballSpeed *= 0.994;
+            this.ballRadius -= (this.ballRadius - pocketRadius) * 0.06;
+            this.ballSpeed *= 0.985;
 
-            if (this.ballRadius <= pocketRadius + 2.5) {
+            if (this.ballRadius <= pocketRadius + 3) {
                 this.ballPhase = 'bouncing';
-                this.bouncesLeft = 5; // 5회 이상 실감 나는 격벽 바운스
+                this.bouncesLeft = 3; // 3회 탄성 바운스
                 if (window.rouletteAudio) {
                     window.rouletteAudio.playBounce();
                 }
             }
         } else if (this.ballPhase === 'bouncing') {
-            // 포켓 격벽에 부딪히며 통통 튀는 단계 (약 4~5초 소요)
+            // 포켓 격벽에 부딪히며 통통 튀는 단계 (약 1.5~2초 소요)
             this.ballAngle -= this.ballSpeed;
 
-            // 목표 번호 포켓 각도로 부드럽게 유도
+            // 목표 번호 포켓 각도로 정밀 유도
             const targetIndex = this.numbers.indexOf(this.targetNumber);
             const targetAngle = this.wheelAngle + targetIndex * this.sliceAngle + this.sliceAngle / 2;
             let angleDiff = Math.atan2(Math.sin(targetAngle - this.ballAngle), Math.cos(targetAngle - this.ballAngle));
-            this.ballAngle += angleDiff * 0.08;
+            this.ballAngle += angleDiff * 0.12;
 
-            // 미세한 반발 탄성 궤적
-            const bounceOffset = Math.sin(this.bouncesLeft * Math.PI) * 3.5;
+            const bounceOffset = Math.sin(this.bouncesLeft * Math.PI) * 2.8;
             this.ballRadius = pocketRadius + bounceOffset;
-            this.ballSpeed *= 0.965;
+            this.ballSpeed *= 0.95;
 
-            if (this.ballSpeed < 0.005) {
+            if (this.ballSpeed < 0.007) {
                 if (this.bouncesLeft > 1) {
                     this.bouncesLeft--;
-                    this.ballSpeed = 0.008 + (this.bouncesLeft * 0.0015);
+                    this.ballSpeed = 0.012 + (this.bouncesLeft * 0.002);
                     if (window.rouletteAudio) {
                         window.rouletteAudio.playBounce();
                     }
                 } else {
-                    // 총 20~22초 경과 후 최종 포켓 안착
+                    // 최종 포켓 100% 영구 안착
                     this.ballPhase = 'pocketed';
                     this.ballActive = false;
                     this.isSpinning = false;
-                    this.wheelSpeed = 0.003; // 아이들 속도로 복귀
+                    this.wheelSpeed = 0.0025; // 부드러운 아이들 회전
 
-                    // 당첨 번호 포켓과 일치하도록 각도 정확히 고정
+                    // 당첨 번호 포켓 중심각과 구슬 각도 영구 일치 락인
                     this.ballAngle = this.wheelAngle + targetIndex * this.sliceAngle + this.sliceAngle / 2;
                     this.ballRadius = pocketRadius;
 
@@ -186,13 +184,14 @@ class RouletteWheel {
                         window.rouletteAudio.playDrop();
                     }
 
+                    // 콜백 호출: 당첨 번호 및 색상 정확히 전달
                     if (this.onCompleteCallback) {
-                        this.onCompleteCallback(this.targetNumber);
+                        this.onCompleteCallback(this.targetNumber, this.getNumberColor(this.targetNumber));
                     }
                 }
             }
         } else if (this.ballPhase === 'pocketed') {
-            // 안착 후 휠과 함께 회전
+            // 안착 후 휠과 영구적으로 일체화되어 함께 회전
             const targetIndex = this.numbers.indexOf(this.targetNumber);
             this.ballAngle = this.wheelAngle + targetIndex * this.sliceAngle + this.sliceAngle / 2;
             this.ballRadius = pocketRadius;
@@ -200,24 +199,32 @@ class RouletteWheel {
     }
 
     /**
-     * 스핀 시작 (최소 20초 회전)
+     * 스핀 시작 (6~8초 감속 물리 회전 및 100% 당첨번호 보장)
      * @param {number} winningNumber - 이번 라운드 당첨 번호 (0~36)
      * @param {function} onComplete - 회전 완료 시 콜백
      */
     spin(winningNumber, onComplete) {
         if (this.isSpinning) return;
 
-        this.targetNumber = winningNumber;
+        // 인자 방어 로직: winningNumber가 콜백인 경우 또는 유효하지 않은 경우 처리
+        if (typeof winningNumber === 'function') {
+            onComplete = winningNumber;
+            winningNumber = Math.floor(Math.random() * 37);
+        } else if (winningNumber === undefined || winningNumber === null) {
+            winningNumber = Math.floor(Math.random() * 37);
+        }
+
+        this.targetNumber = parseInt(winningNumber, 10);
         this.onCompleteCallback = onComplete;
         this.isSpinning = true;
         this.ballActive = true;
         this.ballPhase = 'rolling';
 
-        // 휠 회전 속도 부여 (약간의 감속 회전)
-        this.wheelSpeed = 0.009 + Math.random() * 0.002;
+        // 휠 회전 속도 부여
+        this.wheelSpeed = 0.012 + Math.random() * 0.003;
 
-        // 구슬 초기 속도 (20초 이상 스핀 유지)
-        this.ballSpeed = 0.185 + Math.random() * 0.015;
+        // 구슬 초기 속도 (6~8초 지속 물리 모드)
+        this.ballSpeed = 0.22 + Math.random() * 0.02;
         this.ballAngle = Math.random() * Math.PI * 2;
         this.ballRadius = this.outerRadius * 0.88;
 

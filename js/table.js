@@ -12,7 +12,6 @@ class RouletteTable {
         this.lastBets = null;      // 재베팅(Rebet)용 직전 기록
         this.dollyElement = null;  // 당첨 번호에 세워지는 황동 마커
         this.isLocked = false;     // 노 모어 벳 상태에서 베팅 잠금
-        this.betHistoryStack = []; // 1단계 배팅 취소(Undo)용 스택
 
         // 번호 색상 맵
         this.redNumbers = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
@@ -250,7 +249,6 @@ class RouletteTable {
         this.bets[spotId].amount += this.selectedChip;
         this.bets[spotId].chips.push(this.selectedChip);
         this.totalBetAmount += this.selectedChip;
-        this.betHistoryStack.push({ spotId: spotId, amount: this.selectedChip });
 
         // 사운드 재생
         if (window.rouletteAudio) {
@@ -314,7 +312,6 @@ class RouletteTable {
 
         this.bets = {};
         this.totalBetAmount = 0;
-        this.betHistoryStack = [];
 
         // 모든 칩 스택 제거
         const chipStacks = this.container.querySelectorAll('.chip-stack');
@@ -323,47 +320,6 @@ class RouletteTable {
         if (window.rouletteApp) {
             window.rouletteApp.updateBetDisplay();
         }
-    }
-
-    /**
-     * 마지막 배팅 1단계 취소 (Undo)
-     */
-    undoLastBet() {
-        if (this.isLocked || !this.betHistoryStack || this.betHistoryStack.length === 0) {
-            return false;
-        }
-
-        const lastAction = this.betHistoryStack.pop();
-        const spotId = lastAction.spotId;
-        const amount = lastAction.amount;
-
-        if (this.bets[spotId]) {
-            this.bets[spotId].amount -= amount;
-            this.totalBetAmount -= amount;
-
-            const chipIdx = this.bets[spotId].chips.lastIndexOf(amount);
-            if (chipIdx !== -1) {
-                this.bets[spotId].chips.splice(chipIdx, 1);
-            }
-
-            if (this.bets[spotId].amount <= 0) {
-                delete this.bets[spotId];
-            }
-
-            this.updateChipStack(spotId);
-
-            if (window.rouletteApp) {
-                window.rouletteApp.addBalance(amount);
-                window.rouletteApp.updateBetDisplay();
-            }
-
-            if (window.rouletteAudio) {
-                window.rouletteAudio.playChipSound();
-            }
-
-            return true;
-        }
-        return false;
     }
 
     /**
@@ -781,3 +737,4 @@ class RouletteTable {
         if (modal) modal.classList.add('hidden');
     }
 }
+

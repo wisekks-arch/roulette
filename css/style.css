@@ -1524,3 +1524,316 @@ body {
         font-size: 0.9rem;
     }
 }
+
+/* ========================================================
+   8차 개편: 테이블 착석자 바 (Table Players Bar: 최대 8명)
+   ======================================================== */
+.table-players-bar {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    background: linear-gradient(180deg, rgba(20, 25, 22, 0.95), rgba(10, 15, 12, 0.95));
+    border: 1px solid rgba(255, 215, 0, 0.25);
+    border-radius: 12px;
+    padding: 10px 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+}
+
+.players-bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 6px;
+}
+
+.players-bar-header .bar-title {
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    color: var(--color-gold);
+    font-weight: 700;
+    letter-spacing: 1px;
+}
+
+.players-bar-header .bar-count-badge {
+    font-size: 0.78rem;
+    background: rgba(255, 215, 0, 0.15);
+    color: #fbbf24;
+    padding: 2px 8px;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.players-chips-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.player-badge {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    padding: 4px 10px;
+    transition: all 0.25s ease;
+}
+
+.player-badge.is-me {
+    background: rgba(255, 215, 0, 0.15);
+    border-color: rgba(255, 215, 0, 0.5);
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.2);
+}
+
+.player-badge.empty-seat {
+    opacity: 0.45;
+    border-style: dashed;
+}
+
+.p-avatar {
+    font-size: 1.05rem;
+}
+
+.p-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.p-name {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.p-bet {
+    font-size: 0.68rem;
+    color: #94a3b8;
+    font-family: var(--font-body);
+}
+
+.player-badge.is-me .p-bet {
+    color: #fde047;
+    font-weight: 700;
+}
+
+.p-color-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-left: 4px;
+}
+
+.p-color-dot.my-dot {
+    background-color: #ffd700;
+    box-shadow: 0 0 6px #ffd700;
+}
+
+/* ========================================================
+   봇 및 소액 칩 디자인 (Chip Styling)
+   ======================================================== */
+.chip-selector-btn.chip-100 {
+    background: radial-gradient(circle, #64748b 30%, #334155 90%);
+    border-color: #cbd5e1;
+    color: #ffffff;
+}
+.chip-selector-btn.chip-500 {
+    background: radial-gradient(circle, #0284c7 30%, #0369a1 90%);
+    border-color: #7dd3fc;
+    color: #ffffff;
+}
+
+.placed-chip.chip-100 {
+    background: radial-gradient(circle, #64748b 30%, #334155 90%);
+    border: 2px dashed #cbd5e1;
+}
+.placed-chip.chip-500 {
+    background: radial-gradient(circle, #0284c7 30%, #0369a1 90%);
+    border: 2px dashed #7dd3fc;
+}
+
+/* 봇 칩들 (블루, 퍼플, 에메랄드) */
+.placed-chip.chip-bot-blue {
+    background: radial-gradient(circle, #3b82f6 30%, #1d4ed8 90%);
+    border: 2px solid #93c5fd;
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.7);
+}
+.placed-chip.chip-bot-purple {
+    background: radial-gradient(circle, #a855f7 30%, #7e22ce 90%);
+    border: 2px solid #d8b4fe;
+    box-shadow: 0 2px 8px rgba(147, 51, 234, 0.7);
+}
+.placed-chip.chip-bot-emerald {
+    background: radial-gradient(circle, #10b981 30%, #047857 90%);
+    border: 2px solid #6ee7b7;
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.7);
+}
+
+.placed-chip.bot-chip {
+    width: 28px;
+    height: 28px;
+    margin-left: -10px; /* 칩 겹침 연출 */
+    font-size: 0.6rem;
+    z-index: 5;
+}
+
+.bot-chip-avatar {
+    font-size: 0.6rem;
+    margin-right: 1px;
+}
+
+/* ========================================================
+   실사 룰렛 구슬 낙하 라이브 캠 모달 (LIVE CASINO CAM)
+   ======================================================== */
+.live-cam-modal-content {
+    background: #090d0b;
+    border: 2px solid rgba(255, 215, 0, 0.6);
+    border-radius: 16px;
+    width: 90%;
+    max-width: 620px;
+    overflow: hidden;
+    box-shadow:
+        0 10px 40px rgba(0, 0, 0, 0.9),
+        0 0 30px rgba(255, 215, 0, 0.3);
+    animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.live-cam-header {
+    background: linear-gradient(90deg, #111814, #1a231d);
+    padding: 12px 18px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.cam-title-box {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.live-rec-dot {
+    width: 10px;
+    height: 10px;
+    background: #ef4444;
+    border-radius: 50%;
+    animation: recBlink 1s infinite alternate;
+}
+
+@keyframes recBlink {
+    0% { opacity: 0.3; transform: scale(0.85); }
+    100% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 8px #ef4444; }
+}
+
+.cam-title {
+    font-family: var(--font-heading);
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #ffffff;
+    letter-spacing: 1px;
+}
+
+.cam-table-tag {
+    font-size: 0.75rem;
+    background: rgba(239, 68, 68, 0.2);
+    color: #f87171;
+    border: 1px solid #ef4444;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-weight: 700;
+}
+
+.live-cam-viewport {
+    position: relative;
+    width: 100%;
+    height: 380px;
+    background: radial-gradient(circle at center, #1a251e 0%, #070908 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+#live-cam-canvas {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.cam-crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 60px;
+    height: 60px;
+    border: 1px dashed rgba(255, 215, 0, 0.4);
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.cam-crosshair::before,
+.cam-crosshair::after {
+    content: '';
+    position: absolute;
+    background: rgba(255, 215, 0, 0.4);
+}
+.cam-crosshair::before {
+    top: 50%;
+    left: -15px;
+    right: -15px;
+    height: 1px;
+}
+.cam-crosshair::after {
+    left: 50%;
+    top: -15px;
+    bottom: -15px;
+    width: 1px;
+}
+
+.live-cam-win-badge {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.85);
+    border: 2px solid var(--color-gold);
+    border-radius: 12px;
+    padding: 8px 24px;
+    text-align: center;
+    box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+    animation: winPulse 0.6s infinite alternate;
+}
+
+.cam-win-label {
+    display: block;
+    font-size: 0.72rem;
+    color: var(--color-gold);
+    font-weight: 700;
+    letter-spacing: 2px;
+}
+
+.cam-win-num {
+    font-family: var(--font-heading);
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: #ffffff;
+    line-height: 1.1;
+}
+
+.live-cam-footer {
+    background: #0d1310;
+    padding: 10px 18px;
+    text-align: center;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.cam-status-text {
+    font-size: 0.85rem;
+    color: #fbbf24;
+    font-weight: 600;
+}
