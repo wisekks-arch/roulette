@@ -421,6 +421,17 @@ class RouletteApp {
             window.rouletteTable.setLocked(false);
         }
 
+        // 테이블 락아웃(차단) 오버레이 즉시 해제 (플레이어 배팅 허용)
+        const lockoutOverlay = document.getElementById('table-lockout-overlay');
+        if (lockoutOverlay) {
+            lockoutOverlay.classList.add('hidden');
+        }
+
+        const timerTitle = document.getElementById('betting-timer-title');
+        if (timerTitle) {
+            timerTitle.textContent = "⏳ BETTING TIME (배팅 시간)";
+        }
+
         // 라이브 캠 팝업 및 승리 모달 숨김
         const liveCamModal = document.getElementById('live-cam-modal');
         if (liveCamModal) liveCamModal.classList.add('hidden');
@@ -458,6 +469,11 @@ class RouletteApp {
             this.timerSeconds--;
             this.updateTimerDisplay(this.timerSeconds);
 
+            // 3초 이하 카운트다운 사운드 (틱)
+            if (this.timerSeconds <= 3 && this.timerSeconds > 0 && window.rouletteAudio) {
+                window.rouletteAudio.playChipSound();
+            }
+
             if (this.timerSeconds <= 0) {
                 clearInterval(this.timerInterval);
                 this.timerInterval = null;
@@ -467,7 +483,7 @@ class RouletteApp {
     }
 
     /**
-     * 10단계 시나리오 2: 배팅 마감 (BET CLOSED + 땡!! 벨 + 딜러 주도 스핀 안내)
+     * 10단계 시나리오 2: 배팅 마감 (BET CLOSED + 테이블 철통 락아웃 + 땡!! 벨 + 딜러 주도 스핀)
      */
     closeBettingPhase() {
         if (this.currentPhase !== 'BETTING') return;
@@ -478,9 +494,20 @@ class RouletteApp {
             this.timerInterval = null;
         }
 
-        // 테이블 즉시 잠금
+        // 테이블 즉시 코드단 잠금
         if (window.rouletteTable) {
             window.rouletteTable.setLocked(true);
+        }
+
+        // [핵심] 테이블 화면 전체를 물리적으로 덮는 락아웃 네온 오버레이 활성화 (클릭 100% 원천 차단)
+        const lockoutOverlay = document.getElementById('table-lockout-overlay');
+        if (lockoutOverlay) {
+            lockoutOverlay.classList.remove('hidden');
+        }
+
+        const timerTitle = document.getElementById('betting-timer-title');
+        if (timerTitle) {
+            timerTitle.textContent = "⛔ BET CLOSED (배팅 마감 - 추가 배팅 불가)";
         }
 
         // 땡!! 벨 소리 및 딜러 음성
@@ -489,10 +516,10 @@ class RouletteApp {
             window.rouletteAudio.announceNoMoreBets();
         }
 
-        // [핵심] 테이블별 전담 딜러가 스핀 및 구슬 투구를 진행함을 명확히 안내
+        // 테이블별 전담 딜러가 스핀 및 구슬 투구를 진행함을 명확히 안내
         const currentRoom = window.rouletteLobby ? window.rouletteLobby.getCurrentRoom() : null;
         const dealerName = currentRoom && currentRoom.dealer ? currentRoom.dealer.name : '카지노 전담 딜러';
-        this.updatePhaseStatus(`⛔ BET CLOSED - ${dealerName}가 룰렛 휠을 회전시키고 구슬을 투구합니다!`, "closed");
+        this.updatePhaseStatus(`⛔ NO MORE BETS! - ${dealerName}가 룰렛 휠을 회전시키고 구슬을 투구합니다!`, "closed");
         this.updateTimerDisplay(0);
 
         // 1.2초 후 실사 라이브 캠 팝업 및 회전 돌입
@@ -564,8 +591,9 @@ class RouletteApp {
     }
 
     /**
-     * 실사 라이브 캠 캔버스 클로즈업 렌더러
-     * 고해상도 룰렛 상단 휠과 구슬의 궤적을 줌인하여 시네마틱하게 연출
+     * 실사 라이브 캠 캔버스 HUD 렌더러
+     * 뒤의 실제 룰렛 비디오(assets/video/roulette_drop.mp4)가 온전히 100% 보이도록
+     * 불투명 덮개를 일절 그리지 않고, 비디오 위에 투명 시네마틱 라이브 방송 HUD만 오버레이
      */
     runLiveCamAnimation(targetNum, onDropped) {
         const canvas = document.getElementById('live-cam-canvas');
@@ -578,162 +606,130 @@ class RouletteApp {
         const w = canvas.width;
         const h = canvas.height;
         const cx = w / 2;
-        const cy = h / 2 + 30;
-        const outerR = 190;
+        const cy = h / 2;
 
-        const numbers = [
-            0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5,
-            24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
-        ];
-        const sliceAngle = (Math.PI * 2) / numbers.length;
-        const targetIdx = numbers.indexOf(targetNum);
-
-        let wheelAngle = 0;
-        let ballAngle = 0;
-        let ballRadius = outerR * 0.95;
-        let ballSpeed = 0.28;
-        let state = 'rolling'; // rolling -> dropping -> bouncing -> pocketed
-        let bounces = 3;
+        let state = 'rolling'; // rolling (고속) -> dropping (감속 낙하) -> pocketed (안착 락온)
         let startTime = Date.now();
+        let reticleAngle = 0;
+        let isDroppedCalled = false;
 
         if (this.liveCamAnimId) cancelAnimationFrame(this.liveCamAnimId);
 
         const renderFrame = () => {
             const elapsed = (Date.now() - startTime) / 1000;
+            reticleAngle += 0.025;
 
-            // 휠 회전 (구슬 안착 시 100% 완전 정지 고정)
-            if (state !== 'pocketed') {
-                wheelAngle += 0.015;
-            }
-
-            // 구슬 물리
+            // 상태 전이 (비디오의 실제 구슬 낙하 타이밍과 정밀 동기화)
             if (state === 'rolling') {
-                ballAngle -= ballSpeed;
-                ballSpeed *= 0.991;
-                if (elapsed > 2.8 || ballSpeed < 0.08) {
+                if (elapsed >= 2.4) {
                     state = 'dropping';
+                    const statusText = document.getElementById('live-cam-status-text');
+                    if (statusText) statusText.textContent = "🟡 DECELERATING: 구슬이 감속하며 번호 포켓으로 진입 중입니다...";
                 }
             } else if (state === 'dropping') {
-                ballAngle -= ballSpeed;
-                ballRadius -= (ballRadius - outerR * 0.65) * 0.06;
-                ballSpeed *= 0.98;
-                if (ballRadius <= outerR * 0.66) {
-                    state = 'bouncing';
-                }
-            } else if (state === 'bouncing') {
-                ballAngle -= ballSpeed;
-                const targetAngle = wheelAngle + targetIdx * sliceAngle + sliceAngle / 2;
-                let diff = Math.atan2(Math.sin(targetAngle - ballAngle), Math.cos(targetAngle - ballAngle));
-                ballAngle += diff * 0.15;
-                ballRadius = outerR * 0.65 + Math.sin(bounces * Math.PI) * 4;
-                ballSpeed *= 0.94;
-
-                if (ballSpeed < 0.01) {
-                    bounces--;
-                    if (bounces <= 0) {
-                        state = 'pocketed';
-                        ballAngle = wheelAngle + targetIdx * sliceAngle + sliceAngle / 2;
-                        ballRadius = outerR * 0.65;
+                if (elapsed >= 3.6) {
+                    state = 'pocketed';
+                    if (!isDroppedCalled) {
+                        isDroppedCalled = true;
                         if (onDropped) onDropped();
-                    } else {
-                        ballSpeed = 0.02 + bounces * 0.005;
                     }
                 }
-            } else if (state === 'pocketed') {
-                ballAngle = wheelAngle + targetIdx * sliceAngle + sliceAngle / 2;
-                ballRadius = outerR * 0.65;
             }
 
-            // 캔버스 그리기
+            // [핵심] 캔버스 전체를 완전히 투명하게 클리어하여 뒤의 실제 비디오가 선명히 보이도록 함
             ctx.clearRect(0, 0, w, h);
 
-            // 1. 마호가니 원목 테두리
+            // ==========================================
+            // 카지노 라이브 방송 시네마틱 HUD 오버레이
+            // ==========================================
+
+            // 1. 네 모서리 브라켓 (카메라 뷰파인더 가이드라인)
+            ctx.strokeStyle = 'rgba(255, 215, 0, 0.4)';
+            ctx.lineWidth = 2;
+            const bLen = 28;
+            const pad = 16;
+            // 좌상단
+            ctx.beginPath(); ctx.moveTo(pad, pad + bLen); ctx.lineTo(pad, pad); ctx.lineTo(pad + bLen, pad); ctx.stroke();
+            // 우상단
+            ctx.beginPath(); ctx.moveTo(w - pad - bLen, pad); ctx.lineTo(w - pad, pad); ctx.lineTo(w - pad, pad + bLen); ctx.stroke();
+            // 좌하단
+            ctx.beginPath(); ctx.moveTo(pad, h - pad - bLen); ctx.lineTo(pad, h - pad); ctx.lineTo(pad + bLen, h - pad); ctx.stroke();
+            // 우하단
+            ctx.beginPath(); ctx.moveTo(w - pad - bLen, h - pad); ctx.lineTo(w - pad, h - pad); ctx.lineTo(w - pad, h - pad - bLen); ctx.stroke();
+
+            // 2. 상단 상태 정보 바 (좌: REC 인디케이터, 우: 속도 센서)
+            ctx.fillStyle = '#ffffff';
+            ctx.font = 'bold 12px "Outfit", sans-serif';
+            ctx.textAlign = 'left';
+            ctx.fillText("CAM-02 • HIGH ROLLER CLOSE-UP HD", pad + 10, pad + 14);
+
+            // 속도 RPM 계산
+            let rpm = "28.4";
+            if (state === 'dropping') rpm = (Math.max(4.0, 28.4 - (elapsed - 2.4) * 20)).toFixed(1);
+            else if (state === 'pocketed') rpm = "0.0";
+
+            ctx.textAlign = 'right';
+            ctx.fillStyle = state === 'pocketed' ? '#ef4444' : '#fbbf24';
+            ctx.fillText(`SENSOR VELOCITY: ${rpm} RPM`, w - pad - 10, pad + 14);
+
+            // 3. 중앙 동적 타겟팅 조준선 (Cybernetic Tracking Reticle)
             ctx.save();
-            ctx.beginPath();
-            ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
-            ctx.fillStyle = '#220b04';
-            ctx.fill();
-            ctx.strokeStyle = '#d4af37';
-            ctx.lineWidth = 4;
-            ctx.stroke();
-
-            // 2. 휠 슬라이스 렌더링
             ctx.translate(cx, cy);
-            ctx.rotate(wheelAngle);
 
-            for (let i = 0; i < numbers.length; i++) {
-                const sAngle = i * sliceAngle;
-                const eAngle = sAngle + sliceAngle;
-                const n = numbers[i];
-                const isWinner = (state === 'pocketed' && n === targetNum);
-
+            if (state === 'rolling') {
+                // 고속 트랙 주행 시: 회전하는 황금 스캐닝 링
+                ctx.rotate(reticleAngle);
+                ctx.strokeStyle = 'rgba(255, 215, 0, 0.35)';
+                ctx.lineWidth = 1.5;
                 ctx.beginPath();
-                ctx.arc(0, 0, outerR * 0.92, sAngle, eAngle);
-                ctx.arc(0, 0, outerR * 0.45, eAngle, sAngle, true);
-                ctx.closePath();
-
-                if (isWinner) {
-                    ctx.fillStyle = '#ffd700';
-                } else if (n === 0) {
-                    ctx.fillStyle = '#10b981';
-                } else if ([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36].includes(n)) {
-                    ctx.fillStyle = '#dc2626';
-                } else {
-                    ctx.fillStyle = '#171717';
-                }
-                ctx.fill();
-
-                // 격벽
-                ctx.strokeStyle = isWinner ? '#ffffff' : '#f59e0b';
-                ctx.lineWidth = isWinner ? 3 : 1.2;
-                ctx.beginPath();
-                ctx.moveTo(Math.cos(sAngle) * outerR * 0.45, Math.sin(sAngle) * outerR * 0.45);
-                ctx.lineTo(Math.cos(sAngle) * outerR * 0.92, Math.sin(sAngle) * outerR * 0.92);
+                ctx.arc(0, 0, 70, 0, Math.PI * 1.5);
                 ctx.stroke();
 
-                // 번호
-                ctx.save();
-                const mAngle = sAngle + sliceAngle / 2;
-                const tx = Math.cos(mAngle) * (outerR * 0.72);
-                const ty = Math.sin(mAngle) * (outerR * 0.72);
-                ctx.translate(tx, ty);
-                ctx.rotate(mAngle + Math.PI / 2);
-                ctx.fillStyle = isWinner ? '#000000' : '#ffffff';
-                ctx.font = `bold ${isWinner ? '13px' : '10px'} 'Outfit', sans-serif`;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.2)';
+                ctx.beginPath();
+                ctx.arc(0, 0, 90, 0, Math.PI * 2);
+                ctx.stroke();
+            } else if (state === 'dropping') {
+                // 포켓 낙하 시: 중심부로 수축하며 깜빡이는 펄스 링
+                const pulseR = 50 + Math.sin(elapsed * 12) * 8;
+                ctx.strokeStyle = 'rgba(245, 158, 11, 0.6)';
+                ctx.lineWidth = 2;
+                ctx.beginPath();
+                ctx.arc(0, 0, pulseR, 0, Math.PI * 2);
+                ctx.stroke();
+
+                // 중심 십자선
+                ctx.strokeStyle = 'rgba(245, 158, 11, 0.5)';
+                ctx.beginPath();
+                ctx.moveTo(-15, 0); ctx.lineTo(15, 0);
+                ctx.moveTo(0, -15); ctx.lineTo(0, 15);
+                ctx.stroke();
+            } else if (state === 'pocketed') {
+                // 안착 락온: 네온 그린/골드 강력 락온 뱃지
+                ctx.strokeStyle = '#10b981';
+                ctx.lineWidth = 3;
+                ctx.shadowColor = '#10b981';
+                ctx.shadowBlur = 12;
+                ctx.beginPath();
+                ctx.arc(0, 0, 48, 0, Math.PI * 2);
+                ctx.stroke();
+
+                ctx.fillStyle = 'rgba(16, 185, 129, 0.15)';
+                ctx.fill();
+
+                // 락온 텍스트
+                ctx.shadowBlur = 0;
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 13px "Cinzel", serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
-                ctx.fillText(n.toString(), 0, 0);
-                ctx.restore();
+                ctx.fillText(`LOCKED #${targetNum}`, 0, 0);
             }
 
-            // 중심 콘
-            ctx.beginPath();
-            ctx.arc(0, 0, outerR * 0.42, 0, Math.PI * 2);
-            ctx.fillStyle = '#854d0e';
-            ctx.fill();
-            ctx.strokeStyle = '#ffd700';
-            ctx.lineWidth = 3;
-            ctx.stroke();
             ctx.restore();
 
-            // 3. 은구슬 렌더링
-            const bx = cx + Math.cos(ballAngle) * ballRadius;
-            const by = cy + Math.sin(ballAngle) * ballRadius;
-
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(bx, by, 7.5, 0, Math.PI * 2);
-            const ballGrad = ctx.createRadialGradient(bx - 2, by - 2, 1, bx, by, 8);
-            ballGrad.addColorStop(0, '#ffffff');
-            ballGrad.addColorStop(0.5, '#e2e8f0');
-            ballGrad.addColorStop(1, '#64748b');
-            ctx.fillStyle = ballGrad;
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-            ctx.shadowBlur = 6;
-            ctx.fill();
-            ctx.restore();
-
-            if (state !== 'pocketed' || (Date.now() - startTime) < 7000) {
+            // 애니메이션 루프 지속 (pocketed 상태 후에도 팝업 닫힐 때까지 HUD 유지)
+            if (elapsed < 6.0) {
                 this.liveCamAnimId = requestAnimationFrame(renderFrame);
             }
         };
@@ -879,12 +875,55 @@ class RouletteApp {
     }
 
     /**
-     * 타이머 UI 업데이트
+     * 타이머 UI 업데이트 (헤더 배너 + 테이블 상단 대형 게이지 바 동기화)
      */
     updateTimerDisplay(seconds) {
+        // 1. 헤더 배너 타이머
         const timerEl = document.getElementById('phase-timer');
         if (timerEl) {
             timerEl.textContent = `${seconds}s`;
+        }
+
+        // 2. 테이블 상단 대형 숫자 타이머
+        const largeTimer = document.getElementById('betting-countdown-large');
+        if (largeTimer) {
+            largeTimer.textContent = `${seconds}s`;
+            if (seconds <= 3 && seconds > 0) {
+                largeTimer.className = 'timer-large-num danger';
+            } else if (seconds <= 5 && seconds > 0) {
+                largeTimer.className = 'timer-large-num warning';
+            } else {
+                largeTimer.className = 'timer-large-num';
+            }
+        }
+
+        // 3. 대형 타이머 프로그레스 바 게이지
+        const timerProgress = document.getElementById('betting-timer-progress');
+        if (timerProgress) {
+            const pct = Math.max(0, Math.min(100, (seconds / 15) * 100));
+            timerProgress.style.width = `${pct}%`;
+            if (seconds <= 3 && seconds > 0) {
+                timerProgress.className = 'betting-timer-progress danger';
+            } else if (seconds <= 5 && seconds > 0) {
+                timerProgress.className = 'betting-timer-progress warning';
+            } else {
+                timerProgress.className = 'betting-timer-progress';
+            }
+        }
+
+        // 4. 타이머 펄스 점 색상 연동
+        const pulseDot = document.getElementById('timer-pulse-dot');
+        if (pulseDot) {
+            if (seconds <= 3 && seconds > 0) {
+                pulseDot.style.background = '#ef4444';
+                pulseDot.style.boxShadow = '0 0 12px #ef4444';
+            } else if (seconds <= 5 && seconds > 0) {
+                pulseDot.style.background = '#f59e0b';
+                pulseDot.style.boxShadow = '0 0 10px #f59e0b';
+            } else {
+                pulseDot.style.background = '#10b981';
+                pulseDot.style.boxShadow = '0 0 10px #10b981';
+            }
         }
     }
 

@@ -97,10 +97,37 @@
 
             <!-- 우측/하단: 전통 펠트 룰렛 다이 테이블 -->
             <section class="table-section">
+                <!-- 대형 배팅 카운트다운 타이머 & 상태 인디케이터 바 -->
+                <div class="betting-timer-display-bar" id="betting-timer-bar">
+                    <div class="betting-timer-info">
+                        <div class="timer-title-group">
+                            <span class="timer-pulse-dot" id="timer-pulse-dot"></span>
+                            <span class="timer-title" id="betting-timer-title">⏳ BETTING TIME (배팅 시간)</span>
+                        </div>
+                        <div class="timer-counter-group">
+                            <span class="timer-guide-text">배팅 시간 종료 시 배팅이 완전 마감됩니다</span>
+                            <span id="betting-countdown-large" class="timer-large-num">15s</span>
+                        </div>
+                    </div>
+                    <div class="betting-timer-track">
+                        <div id="betting-timer-progress" class="betting-timer-progress"></div>
+                    </div>
+                </div>
+
                 <!-- 테이블 상단 다중 참석자 바 (나 + 봇 3명, 최대 8명) -->
                 <div id="table-players-bar" class="table-players-bar"></div>
 
-                <div class="table-scroll-wrapper">
+                <div class="table-scroll-wrapper" style="position: relative;">
+                    <!-- 배팅 마감(Lockout) 시 테이블을 100% 덮어 클릭을 원천 차단하는 네온 오버레이 -->
+                    <div id="table-lockout-overlay" class="table-lockout-overlay hidden">
+                        <div class="lockout-badge">
+                            <div class="lockout-icon-box">⛔</div>
+                            <h3 class="lockout-main-text">NO MORE BETS!</h3>
+                            <p class="lockout-sub-text">배팅이 마감되었습니다. 구슬이 회전 중에는 추가 배팅을 할 수 없습니다.</p>
+                            <span class="lockout-dealer-tag">SPIN IN PROGRESS • 딜러 구슬 투구 중</span>
+                        </div>
+                    </div>
+
                     <div id="roulette-table-mount"></div>
                 </div>
 

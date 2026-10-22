@@ -1945,18 +1945,240 @@ body {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
 }
 
-/* 라이브 캠 비디오 플레이어 스타일 */
-#live-cam-video {
+/* ==========================================================================
+   11차 개편: 대형 배팅 카운트다운 게이지 바 (Betting Countdown Progress Bar)
+   ========================================================================== */
+.betting-timer-display-bar {
+    background: linear-gradient(135deg, rgba(16, 26, 20, 0.95), rgba(8, 14, 10, 0.95));
+    border: 1px solid rgba(255, 215, 0, 0.35);
+    border-radius: 12px;
+    padding: 10px 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
+}
+
+.betting-timer-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.timer-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.timer-pulse-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: #10b981;
+    box-shadow: 0 0 10px #10b981;
+    animation: pulseDot 1.2s infinite alternate;
+}
+
+@keyframes pulseDot {
+    0% { transform: scale(0.85); opacity: 0.6; }
+    100% { transform: scale(1.25); opacity: 1; box-shadow: 0 0 14px currentColor; }
+}
+
+.timer-title {
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--color-gold);
+    letter-spacing: 1px;
+}
+
+.timer-counter-group {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.timer-guide-text {
+    font-size: 0.78rem;
+    color: #94a3b8;
+}
+
+.timer-large-num {
+    font-family: var(--font-heading);
+    font-size: 1.45rem;
+    font-weight: 900;
+    color: #10b981;
+    min-width: 50px;
+    text-align: right;
+    text-shadow: 0 0 12px rgba(16, 185, 129, 0.6);
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+}
+
+.timer-large-num.warning {
+    color: #f59e0b;
+    text-shadow: 0 0 12px rgba(245, 158, 11, 0.6);
+}
+
+.timer-large-num.danger {
+    color: #ef4444;
+    text-shadow: 0 0 15px rgba(239, 68, 68, 0.85);
+    animation: numPulse 0.5s infinite alternate;
+}
+
+@keyframes numPulse {
+    0% { transform: scale(1); }
+    100% { transform: scale(1.15); }
+}
+
+.betting-timer-track {
     width: 100%;
+    height: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    border-radius: 4px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.betting-timer-progress {
     height: 100%;
-    object-fit: cover;
+    width: 100%;
+    background: linear-gradient(90deg, #059669, #10b981);
+    border-radius: 4px;
+    transition: width 0.95s linear, background 0.3s ease;
+    box-shadow: 0 0 10px rgba(16, 185, 129, 0.6);
+}
+
+.betting-timer-progress.warning {
+    background: linear-gradient(90deg, #d97706, #f59e0b);
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.6);
+}
+
+.betting-timer-progress.danger {
+    background: linear-gradient(90deg, #b91c1c, #ef4444);
+    box-shadow: 0 0 14px rgba(239, 68, 68, 0.8);
+}
+
+/* ==========================================================================
+   11차 개편: 배팅 마감(Lockout) 오버레이 (클릭 100% 완전 차단)
+   ========================================================================== */
+.table-lockout-overlay {
     position: absolute;
     top: 0;
     left: 0;
-    z-index: 1;
+    width: 100%;
+    height: 100%;
+    background: rgba(6, 11, 8, 0.82);
+    backdrop-filter: blur(4px);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: all;
+    cursor: not-allowed;
+    animation: fadeInLock 0.25s ease forwards;
 }
 
-.live-cam-viewport canvas {
+.table-lockout-overlay.hidden {
+    display: none !important;
+}
+
+@keyframes fadeInLock {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+.lockout-badge {
+    background: linear-gradient(135deg, rgba(30, 10, 10, 0.95), rgba(15, 5, 5, 0.95));
+    border: 2px solid #ef4444;
+    border-radius: 16px;
+    padding: 24px 36px;
+    text-align: center;
+    box-shadow:
+        0 10px 40px rgba(0, 0, 0, 0.9),
+        0 0 35px rgba(239, 68, 68, 0.5),
+        inset 0 0 20px rgba(239, 68, 68, 0.2);
+    animation: lockBadgePop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    max-width: 90%;
+}
+
+@keyframes lockBadgePop {
+    0% { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.lockout-icon-box {
+    font-size: 2.8rem;
+    line-height: 1;
+    margin-bottom: 8px;
+    animation: pulseLock 1s infinite alternate;
+}
+
+@keyframes pulseLock {
+    0% { transform: scale(0.9); }
+    100% { transform: scale(1.15); filter: drop-shadow(0 0 10px #ef4444); }
+}
+
+.lockout-main-text {
+    font-family: var(--font-heading);
+    font-size: 1.8rem;
+    font-weight: 900;
+    color: #ef4444;
+    letter-spacing: 2px;
+    text-shadow: 0 0 15px rgba(239, 68, 68, 0.8);
+    margin: 0;
+}
+
+.lockout-sub-text {
+    font-size: 0.95rem;
+    color: #fecaca;
+    margin: 8px 0 14px 0;
+    font-weight: 500;
+}
+
+.lockout-dealer-tag {
+    display: inline-block;
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #fbbf24;
+    letter-spacing: 1px;
+}
+
+/* ==========================================================================
+   11차 개편: 실사 룰렛 구슬 낙하 비디오 플레이어 전면 노출 및 시네마틱 HUD
+   ========================================================================== */
+#live-cam-video {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    z-index: 5 !important;
+    display: block !important;
+}
+
+#live-cam-canvas {
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    z-index: 10 !important;
+    pointer-events: none !important;
+    background: transparent !important;
+}
+
+.live-cam-viewport {
     position: relative;
-    z-index: 2;
+    width: 100%;
+    height: 400px;
+    background: #000000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
