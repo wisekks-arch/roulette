@@ -522,10 +522,14 @@ class RouletteApp {
         this.updatePhaseStatus(`⛔ NO MORE BETS! - ${dealerName}가 룰렛 휠을 회전시키고 구슬을 투구합니다!`, "closed");
         this.updateTimerDisplay(0);
 
-        // [최적화] 지체 없이 0.5초 후 즉시 구슬 회전 돌입
+        // [사용자 요청 2단계 -> 3단계 전환]
+        // NO MORE BETS 화면을 1.2초간 잠시 보여준 후 자동으로 닫아 사라지게 하고, 곧바로 구슬 떨어지는 영상 팝업으로 직행!
         setTimeout(() => {
+            if (lockoutOverlay) {
+                lockoutOverlay.classList.add('hidden');
+            }
             this.triggerSpin();
-        }, 500);
+        }, 1200);
     }
 
     /**
@@ -537,7 +541,7 @@ class RouletteApp {
 
         const targetNum = this.currentWinningNumber;
 
-        // 1. 실사 라이브 캠 클로즈업 팝업 열기
+        // 1. 실사 라이브 캠 클로즈업 팝업 열기 (전면에 확실히 표출)
         const liveCamModal = document.getElementById('live-cam-modal');
         const liveCamVideo = document.getElementById('live-cam-video');
         const winBadge = document.getElementById('live-cam-win-badge');
@@ -545,10 +549,13 @@ class RouletteApp {
 
         if (winBadge) winBadge.classList.add('hidden');
         if (statusText) statusText.textContent = "🔴 LIVE: 구슬이 외곽 림을 타고 고속 질주하고 있습니다...";
-        if (liveCamModal) liveCamModal.classList.remove('hidden');
+        if (liveCamModal) {
+            liveCamModal.classList.remove('hidden');
+            liveCamModal.style.display = 'flex';
+        }
 
         // [사운드] 구슬 굴러가는 소리 즉시 재생
-        if (window.rouletteAudio) {
+        if (window.rouletteAudio && window.rouletteAudio.startBallRolling) {
             window.rouletteAudio.startBallRolling();
         }
 
@@ -587,9 +594,12 @@ class RouletteApp {
                 statusText.textContent = `🎯 BALL DROP LOCK-ON! 당첨 번호 #${targetNum}`;
             }
 
-            // 1.5초간 당첨 클로즈업을 충분히 보여준 후 팝업 닫고 결과 화면으로 전환
+            // 1.5초간 당첨 클로즈업을 충분히 보여준 후 영상 팝업 닫고 결과 화면으로 전환
             setTimeout(() => {
-                if (liveCamModal) liveCamModal.classList.add('hidden');
+                if (liveCamModal) {
+                    liveCamModal.classList.add('hidden');
+                    liveCamModal.style.display = 'none';
+                }
                 const color = window.rouletteWheel ? window.rouletteWheel.getNumberColor(targetNum) : 'red';
                 this.onSpinResult(targetNum, color);
             }, 1500);
