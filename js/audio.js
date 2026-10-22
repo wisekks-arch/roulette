@@ -360,6 +360,76 @@ class RouletteAudio {
     }
 
     /**
+     * 배팅 마감 땡!! 정통 카지노 황동 타종 벨소리
+     */
+    playBetClosedBell() {
+        if (this.isMuted) return;
+        this.initContext();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        // 메인 황동 벨 기음 (A5, 880Hz)
+        const osc1 = this.ctx.createOscillator();
+        const gain1 = this.ctx.createGain();
+        osc1.type = 'sine';
+        osc1.frequency.setValueAtTime(880, now);
+        osc1.frequency.exponentialRampToValueAtTime(870, now + 1.2);
+
+        gain1.gain.setValueAtTime(0.65, now);
+        gain1.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+
+        osc1.connect(gain1);
+        gain1.connect(this.ctx.destination);
+        osc1.start(now);
+        osc1.stop(now + 1.2);
+
+        // 상위 하모닉 공명음 (E6, 1320Hz)
+        const osc2 = this.ctx.createOscillator();
+        const gain2 = this.ctx.createGain();
+        osc2.type = 'triangle';
+        osc2.frequency.setValueAtTime(1320, now);
+        gain2.gain.setValueAtTime(0.35, now);
+        gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+
+        osc2.connect(gain2);
+        gain2.connect(this.ctx.destination);
+        osc2.start(now);
+        osc2.stop(now + 0.8);
+    }
+
+    /**
+     * 상금 획득 시 골드 코인이 쏟아지는 짤랑짤랑 사운드
+     */
+    playWinCoinSound() {
+        if (this.isMuted) return;
+        this.initContext();
+        if (!this.ctx) return;
+
+        // 3연속 맑은 코인 타격음
+        [0, 60, 130, 210].forEach(delay => {
+            setTimeout(() => {
+                if (!this.ctx) return;
+                const now = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+
+                osc.type = 'sine';
+                const freq = 1800 + Math.random() * 800;
+                osc.frequency.setValueAtTime(freq, now);
+                osc.frequency.exponentialRampToValueAtTime(freq * 0.7, now + 0.08);
+
+                gain.gain.setValueAtTime(0.3, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(now);
+                osc.stop(now + 0.08);
+            }, delay);
+        });
+    }
+
+    /**
      * 세련된 정통 카지노 여성 딜러 영어 음성 멘트 재생 (Web Speech API)
      * @param {string} text - 음성 안내 문구
      */

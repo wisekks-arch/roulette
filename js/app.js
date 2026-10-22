@@ -510,10 +510,18 @@ class RouletteApp {
             timerTitle.textContent = "⛔ BET CLOSED (배팅 마감 - 추가 배팅 불가)";
         }
 
-        // 땡!! 벨 소리 및 딜러 음성
-        if (window.rouletteAudio) {
-            window.rouletteAudio.playBetClosedBell();
-            window.rouletteAudio.announceNoMoreBets();
+        // 땡!! 벨 소리 및 딜러 음성 (예외 발생 차단)
+        try {
+            if (window.rouletteAudio) {
+                if (typeof window.rouletteAudio.playBetClosedBell === 'function') {
+                    window.rouletteAudio.playBetClosedBell();
+                }
+                if (typeof window.rouletteAudio.announceNoMoreBets === 'function') {
+                    window.rouletteAudio.announceNoMoreBets();
+                }
+            }
+        } catch (e) {
+            console.warn("Audio play warning in closeBettingPhase:", e);
         }
 
         // 테이블별 전담 딜러가 스핀 및 구슬 투구를 진행함을 명확히 안내
@@ -523,10 +531,11 @@ class RouletteApp {
         this.updateTimerDisplay(0);
 
         // [사용자 요청 2단계 -> 3단계 전환]
-        // NO MORE BETS 화면을 1.2초간 잠시 보여준 후 자동으로 닫아 사라지게 하고, 곧바로 구슬 떨어지는 영상 팝업으로 직행!
+        // NO MORE BETS 화면을 1.2초간 잠시 보여준 후 자동으로 닫아 완전히 사라지게 하고, 곧바로 구슬 떨어지는 영상 팝업으로 직행!
         setTimeout(() => {
             if (lockoutOverlay) {
                 lockoutOverlay.classList.add('hidden');
+                lockoutOverlay.style.display = 'none';
             }
             this.triggerSpin();
         }, 1200);
