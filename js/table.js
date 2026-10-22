@@ -579,6 +579,13 @@ class RouletteTable {
     }
 
     /**
+     * 칩 정산 헬퍼 메서드 (sweepLosingBets 호환성 연결)
+     */
+    settleChips(winningNumber, winningBets) {
+        this.sweepLosingBets(winningNumber);
+    }
+
+    /**
      * 다음 라운드(새로운 판) 시작 시 테이블 위의 모든 칩 및 당첨 오라 완전 초기화
      */
     clearAllChips() {

@@ -831,69 +831,79 @@ class RouletteApp {
     onSpinResult(winningNumber, color) {
         this.currentPhase = 'RESULT';
 
-        const colorName = color === 'red' ? '레드' : (color === 'black' ? '블랙' : '싱글 제로');
-        this.updatePhaseStatus(`🎯 당첨 번호: ${winningNumber} (${colorName})`, "result");
+        try {
+            const colorName = color === 'red' ? '레드' : (color === 'black' ? '블랙' : '싱글 제로');
+            this.updatePhaseStatus(`🎯 당첨 번호: ${winningNumber} (${colorName})`, "result");
 
-        // 1. 딜러 세련된 결과 낭독 음성
-        if (window.rouletteAudio) {
-            window.rouletteAudio.announceResult(winningNumber, color);
-        }
-
-        // 2. 테이블 당첨 셀에 크리스탈 말머리 돌리 핀 세우기
-        if (window.rouletteTable) {
-            window.rouletteTable.placeDolly(winningNumber);
-        }
-
-        // 3. 최근 20회 히스토리 바 업데이트
-        this.addHistoryBadge(winningNumber, color);
-
-        // 4. 통계 시스템 기록
-        if (window.rouletteStats) {
-            window.rouletteStats.recordSpin(this.currentRound, winningNumber, color);
-        }
-
-        // 5. 배당 정산 계산
-        let totalWin = 0;
-        let totalBet = 0;
-        let winningBets = [];
-
-        if (window.rouletteTable) {
-            totalBet = window.rouletteTable.totalBetAmount;
-            const payoutResult = window.rouletteTable.calculatePayout(winningNumber);
-            totalWin = payoutResult.totalWin;
-            winningBets = payoutResult.winningBets;
-
-            // 낙첨 칩 회수 및 당첨 칩 보존
-            window.rouletteTable.settleChips(winningNumber, winningBets);
-        }
-
-        // 유저 통계 기록
-        if (window.rouletteStats) {
-            window.rouletteStats.recordUserGame(totalBet, totalWin);
-        }
-
-        // AI 플레이어 정산 연동
-        if (window.rouletteLobby) {
-            window.rouletteLobby.onSpinResult(winningNumber);
-        }
-
-        // 6. 상금 지급 및 승리 연출
-        if (totalWin > 0) {
-            this.addBalance(totalWin);
-
-            if (window.rouletteAudio) {
-                window.rouletteAudio.playWinCoinSound();
-                window.rouletteAudio.announceWin();
+            // 1. 딜러 세련된 결과 낭독 음성
+            if (window.rouletteAudio && window.rouletteAudio.announceResult) {
+                window.rouletteAudio.announceResult(winningNumber, color);
             }
 
-            this.showWinModal(winningNumber, color, totalWin, winningBets);
-        }
+            // 2. 테이블 당첨 셀에 크리스탈 말머리 돌리 핀 세우기
+            if (window.rouletteTable && window.rouletteTable.placeDolly) {
+                window.rouletteTable.placeDolly(winningNumber);
+            }
 
-        // 10단계 시나리오 6: 3.5초 후 NEXT ROUND 자동 전환
-        if (this.nextRoundTimeout) clearTimeout(this.nextRoundTimeout);
-        this.nextRoundTimeout = setTimeout(() => {
-            this.nextRound();
-        }, 3500);
+            // 3. 최근 20회 히스토리 바 업데이트
+            this.addHistoryBadge(winningNumber, color);
+
+            // 4. 통계 시스템 기록
+            if (window.rouletteStats && window.rouletteStats.recordSpin) {
+                window.rouletteStats.recordSpin(this.currentRound, winningNumber, color);
+            }
+
+            // 5. 배당 정산 계산
+            let totalWin = 0;
+            let totalBet = 0;
+            let winningBets = [];
+
+            if (window.rouletteTable) {
+                totalBet = window.rouletteTable.totalBetAmount || 0;
+                const payoutResult = window.rouletteTable.calculatePayout(winningNumber);
+                if (payoutResult) {
+                    totalWin = payoutResult.totalPayout !== undefined ? payoutResult.totalPayout : (payoutResult.totalWin || 0);
+                    winningBets = payoutResult.winningBets || [];
+                }
+
+                // 낙첨 칩 회수 및 당첨 칩 보존
+                if (typeof window.rouletteTable.sweepLosingBets === 'function') {
+                    window.rouletteTable.sweepLosingBets(winningNumber);
+                } else if (typeof window.rouletteTable.settleChips === 'function') {
+                    window.rouletteTable.settleChips(winningNumber, winningBets);
+                }
+            }
+
+            // 유저 통계 기록
+            if (window.rouletteStats && window.rouletteStats.recordUserGame) {
+                window.rouletteStats.recordUserGame(totalBet, totalWin);
+            }
+
+            // AI 플레이어 정산 연동
+            if (window.rouletteLobby && window.rouletteLobby.onSpinResult) {
+                window.rouletteLobby.onSpinResult(winningNumber);
+            }
+
+            // 6. 상금 지급 및 승리 연출
+            if (totalWin > 0) {
+                this.addBalance(totalWin);
+
+                if (window.rouletteAudio) {
+                    window.rouletteAudio.playWinCoinSound();
+                    window.rouletteAudio.announceWin();
+                }
+
+                this.showWinModal(winningNumber, color, totalWin, winningBets);
+            }
+        } catch (err) {
+            console.error("Error in onSpinResult:", err);
+        } finally {
+            // [핵심] 어떤 예외가 발생하더라도 반드시 3.5초 후 NEXT ROUND 자동 전환
+            if (this.nextRoundTimeout) clearTimeout(this.nextRoundTimeout);
+            this.nextRoundTimeout = setTimeout(() => {
+                this.nextRound();
+            }, 3500);
+        }
     }
 
     /**
