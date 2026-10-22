@@ -491,8 +491,8 @@ class RouletteApp {
             winModal.style.display = 'none';
         }
 
-        // 상태 배너 업데이트 (운영자가 20초 카운트다운 후 자동 스핀 진행)
-        this.updatePhaseStatus(`🎲 BETTING OPEN - 운영자가 20초 후 휠을 회전합니다 (ROUND #${this.currentRound})`, "betting");
+        // 상태 배너 업데이트
+        this.updatePhaseStatus(`🎲 PLACE YOUR BETS - 배팅을 진행해 주세요 (ROUND #${this.currentRound})`, "betting");
         this.updateTimerDisplay(this.timerSeconds);
 
         // 딜러 음성 안내
@@ -532,7 +532,7 @@ class RouletteApp {
     }
 
     /**
-     * 2단계: 배팅 마감 (중앙 NO MORE BETS 알림 2초 표출 ➔ 마감 알림 닫힌 후 룰렛판 및 구슬 자동 회전)
+     * 2단계: 배팅 마감 (배팅 시간 종료 즉시 지체 없이 바로 룰렛 휠 회전 및 구슬 질주 시작!)
      */
     closeBettingPhase() {
         if (this.currentPhase !== 'BETTING') return;
@@ -561,14 +561,18 @@ class RouletteApp {
             window.rouletteAudio.announceNoMoreBets();
         }
 
-        this.updatePhaseStatus("⛔ NO MORE BETS! - 배팅이 마감되었습니다 (구슬 투구 대기)", "closed");
+        this.updatePhaseStatus("⛔ NO MORE BETS! - 배팅이 마감되었습니다 (구슬 질주 중)", "closed");
         this.updateTimerDisplay(0);
 
-        // [핵심] 화면 중앙 대형 "NO MORE BETS" 배팅 마감 알림 팝업 먼저 표출!
+        // 상단 마감 알림 배너 표출 (구슬 도는 화면을 방해하지 않고 1.5초 후 자동 소멸)
         const nmbModal = document.getElementById('no-more-bets-modal');
         if (nmbModal) {
             nmbModal.classList.remove('hidden');
-            nmbModal.style.cssText = 'display: flex !important; opacity: 1 !important; visibility: visible !important; z-index: 999999 !important; pointer-events: all !important;';
+            nmbModal.style.cssText = 'display: flex !important; opacity: 1 !important; visibility: visible !important; z-index: 999999 !important; pointer-events: none !important;';
+            setTimeout(() => {
+                nmbModal.classList.add('hidden');
+                nmbModal.style.display = 'none';
+            }, 1500);
         }
 
         // 관리자 배팅 로그 기록
@@ -582,15 +586,8 @@ class RouletteApp {
             }
         }
 
-        // [순서 확립] NO MORE BETS 알림을 2.0초간 뚜렷하게 보여준 후에 알림을 닫고,
-        // 비로소 운영자가 자동으로 룰렛판을 회전시키고 구슬 투구 실사 영상(triggerSpin)을 진행!
-        setTimeout(() => {
-            if (nmbModal) {
-                nmbModal.classList.add('hidden');
-                nmbModal.style.display = 'none';
-            }
-            this.triggerSpin();
-        }, 2000);
+        // [핵심] 배팅 시간이 종료되면 기다리지 않고 0초 딜레이로 즉시 휠을 돌리고 구슬을 투구!
+        this.triggerSpin();
     }
 
     /**

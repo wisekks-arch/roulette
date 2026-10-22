@@ -406,3 +406,23 @@ Undo
 4. 배포 전 무결성 검증 및 GitHub Pages 실서버 배포:
    - Headless Edge DOM 덤프 검증 결과 스핀 버튼 0건 및 no-more-bets-modal 정상 마운트 확인 완료.
    - 캐시 버스팅 파라미터 ?v=20261022_1850 전면 갱신 및 GitHub Pages 실서버(https://wisekks-arch.github.io/roulette/index.html) 배포 완료.
+
+[28차 사용자 요청 원문 - 2026-10-22]
+"운영자가 20초후에 휠을 돌리는게 아니고 배팅 시간이 종료 되면 바로 휠을 돌리고 구슬을 돌리는거야"
+- 사용자 최종 확인: 승인 (컨펌 완료)
+
+[28차 핵심 구현 사항]
+1. 배팅 시간 종료 즉시 지체 없이 0초 딜레이 휠 회전 및 구슬 투구 (app.js):
+   - 배팅 시간(20초) 만료 시 2초간 멍하니 기다리던 인위적 지연(setTimeout 2000ms)을 전면 제거.
+   - 타이머 만료 즉시 테이블 잠금(setLocked(true))과 동시에 지체 없이 0초 딜레이로 this.triggerSpin()을 호출하여 즉각 룰렛 휠이 돌고 구슬이 질주하도록 직행.
+2. 상태 배너 문구 세련화 및 실시간 동기화 (app.js):
+   - 기존의 "운영자가 20초 후 휠을 회전합니다" 어색한 카운트다운 문구를 카지노 정통 안내 문구인 "🎲 PLACE YOUR BETS - 배팅을 진행해 주세요 (ROUND #N)"로 정돈.
+   - 마감 시 상태 배너는 "⛔ NO MORE BETS! - 배팅이 마감되었습니다 (구슬 질주 중)"으로 즉각 전환.
+3. 배팅 마감 알림(NO MORE BETS) 비간섭형 상단 플로팅 배너화 (css/style.css, app.js):
+   - 휠과 구슬이 도는 실사/애니메이션 화면을 가리지 않도록 전체 화면 암전 딤(dim)을 제거하고, 상단 슬라이드 다운 플로팅 배너(pointer-events: none)로 변경.
+   - 휠과 구슬이 역동적으로 돌아가는 동안 상단에서 1.5초간 명확히 배팅 마감을 알리고 자연스럽게 소멸.
+4. 스핀 버튼 완전 소멸 상태 유지 (style.css, index.html):
+   - 수동 스핀 버튼은 어떠한 상황에서도 절대 노출되지 않도록 전역 display: none !important 완벽 유지.
+5. 배포 전 무결성 검증 및 GitHub Pages 실서버 배포:
+   - Headless Edge DOM 덤프 검증 결과 문법 에러 0건, 스핀버튼 0건, 다중 플레이어 5인석 및 핫스팟 정상 렌더링 확인 완료.
+   - 캐시 버스팅 파라미터 ?v=20261022_1855 전면 갱신 및 GitHub Pages 실서버(https://wisekks-arch.github.io/roulette/index.html) 배포 완료.

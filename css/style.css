@@ -3574,18 +3574,19 @@ body {
     pointer-events: none !important;
 }
 
-/* 대형 배팅 마감(NO MORE BETS) 중앙 알림 모달 */
+/* 대형 배팅 마감(NO MORE BETS) 플로팅 알림 배너 */
 #no-more-bets-modal {
     position: fixed;
     top: 0;
     left: 0;
     width: 100vw;
     height: 100vh;
-    background: rgba(0, 0, 0, 0.88);
-    backdrop-filter: blur(10px);
+    background: transparent !important;
+    pointer-events: none !important;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
+    padding-top: 35px;
     z-index: 999999 !important;
     transition: opacity 0.25s ease;
 }
@@ -3599,22 +3600,23 @@ body {
 .no-more-bets-card {
     background: radial-gradient(circle at center, #2b0707 0%, #150202 70%, #080000 100%);
     border: 3px solid #ef4444;
-    border-radius: 24px;
-    padding: 36px 48px;
+    border-radius: 20px;
+    padding: 16px 36px;
     text-align: center;
-    box-shadow: 0 0 50px rgba(239, 68, 68, 0.85), inset 0 0 30px rgba(239, 68, 68, 0.4);
-    animation: nmbModalImpact 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    box-shadow: 0 0 50px rgba(239, 68, 68, 0.95), 0 10px 30px rgba(0, 0, 0, 0.9);
+    animation: nmbSlideDown 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     max-width: 90%;
-    width: 480px;
+    width: 440px;
+    pointer-events: none;
 }
 
-@keyframes nmbModalImpact {
+@keyframes nmbSlideDown {
     0% {
-        transform: scale(0.6);
+        transform: translateY(-80px) scale(0.85);
         opacity: 0;
     }
     100% {
-        transform: scale(1);
+        transform: translateY(0) scale(1);
         opacity: 1;
     }
 }
