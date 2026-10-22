@@ -8,7 +8,7 @@ class RouletteLobby {
         this.currentRoomId = 2; // 기본 2번 일반방 입장
         this.maxPlayers = 8;    // 각 방 최대 참석 정원 8명
 
-        // 정예 4대 카지노 룸 구성
+        // 정예 4대 카지노 룸 구성 (각 룰렛 테이블별 전담 딜러 공식 배정)
         this.rooms = [
             {
                 id: 1,
@@ -20,7 +20,12 @@ class RouletteLobby {
                 accentColor: "#10b981",
                 badgeClass: "badge-green",
                 history: [7, 28, 12, 35, 3, 26, 0, 32, 15, 19],
-                description: "부담 없는 소액 칩으로 즐기는 입문자 룰렛 테이블"
+                description: "부담 없는 소액 칩으로 즐기는 입문자 룰렛 테이블",
+                dealer: {
+                    name: "딜러 소피 (Dealer Sophie 🇫🇷)",
+                    avatar: "👱‍♀️",
+                    title: "모나코 수석 크루피에"
+                }
             },
             {
                 id: 2,
@@ -32,7 +37,12 @@ class RouletteLobby {
                 accentColor: "#3b82f6",
                 badgeClass: "badge-blue",
                 history: [22, 18, 29, 7, 28, 12, 17, 34, 6, 27],
-                description: "정통 카지노의 분위기를 만끽할 수 있는 스탠다드 룸"
+                description: "정통 카지노의 분위기를 만끽할 수 있는 스탠다드 룸",
+                dealer: {
+                    name: "딜러 로렌 (Dealer Lauren 🇺🇸)",
+                    avatar: "👩‍💼",
+                    title: "벨라지오 시니어 딜러"
+                }
             },
             {
                 id: 3,
@@ -44,7 +54,12 @@ class RouletteLobby {
                 accentColor: "#f59e0b",
                 badgeClass: "badge-gold",
                 history: [4, 21, 2, 25, 17, 34, 6, 20, 14, 31],
-                description: "화려한 황금빛 아시아 최대 카지노 하이롤러 룸"
+                description: "화려한 황금빛 아시아 최대 카지노 하이롤러 룸",
+                dealer: {
+                    name: "딜러 메이링 (Dealer Meiling 🇲🇴)",
+                    avatar: "👩‍🦰",
+                    title: "마카오 VIP 하이롤러 전담 딜러"
+                }
             },
             {
                 id: 4,
@@ -56,7 +71,12 @@ class RouletteLobby {
                 accentColor: "#ef4444",
                 badgeClass: "badge-red",
                 history: [0, 32, 15, 19, 4, 21, 35, 3, 26, 9],
-                description: "초호화 7성급 펜트하우스 VVIP 최고 한도 프라이빗 룸"
+                description: "초호화 7성급 펜트하우스 VVIP 최고 한도 프라이빗 룸",
+                dealer: {
+                    name: "딜러 아미라 (Dealer Amira 🇦🇪)",
+                    avatar: "👑",
+                    title: "두바이 펜트하우스 마스터 딜러"
+                }
             }
         ];
 
@@ -145,9 +165,9 @@ class RouletteLobby {
                             <span class="history-label">최근 10회 결과:</span>
                             <div class="history-chips">
                                 ${room.history.slice(-10).reverse().map(n => {
-                const color = this.getNumberColor(n);
-                return `<span class="mini-badge badge-${color}">${n}</span>`;
-            }).join('')}
+                                    const color = this.getNumberColor(n);
+                                    return `<span class="mini-badge badge-${color}">${n}</span>`;
+                                }).join('')}
                             </div>
                         </div>
 
@@ -155,6 +175,11 @@ class RouletteLobby {
                         <div class="room-hot-cold">
                             <span class="hc-item hot">🔥 HOT: ${stats.hot.join(', ')}</span>
                             <span class="hc-item cold">❄️ COLD: ${stats.cold.join(', ')}</span>
+                        </div>
+
+                        <!-- 전담 딜러 배지 -->
+                        <div class="room-dealer-badge" style="margin-top: 8px; font-size: 0.8rem; color: #fbbf24;">
+                            <span>${room.dealer ? room.dealer.avatar + ' ' + room.dealer.name : '👩‍💼 카지노 전담 딜러'}</span>
                         </div>
                     </div>
 
@@ -211,6 +236,14 @@ class RouletteLobby {
         }
         if (roomLimitEl) {
             roomLimitEl.textContent = `한도: ${room.minBet.toLocaleString()} ~ ${room.maxBet.toLocaleString()} Chip`;
+        }
+
+        // [핵심] 상단 딜러 배너의 전담 딜러 프로필 업데이트
+        if (room.dealer) {
+            const dealerAvatarEl = document.getElementById('dealer-avatar-icon');
+            const dealerNameEl = document.getElementById('dealer-name-text');
+            if (dealerAvatarEl) dealerAvatarEl.textContent = room.dealer.avatar;
+            if (dealerNameEl) dealerNameEl.textContent = room.dealer.name;
         }
 
         this.initLobbyUI();

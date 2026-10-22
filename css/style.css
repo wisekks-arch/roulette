@@ -877,26 +877,38 @@ body {
 }
 
 .action-buttons-bar {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    max-width: 680px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 .act-btn {
     font-family: var(--font-heading);
     font-weight: 700;
-    font-size: 0.85rem;
-    padding: 10px 18px;
+    font-size: 0.88rem;
+    padding: 12px 14px;
     border-radius: 8px;
     border: 1px solid #444;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    gap: 8px;
     transition: all 0.2s ease;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
+    width: 100%;
 }
+
+@media (max-width: 600px) {
+    .action-buttons-bar {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+}
+
 
 .act-btn:hover {
     transform: translateY(-2px);
@@ -955,6 +967,7 @@ body {
 }
 
 .modal-overlay.hidden {
+    display: none !important;
     opacity: 0;
     pointer-events: none;
 }
@@ -1640,7 +1653,6 @@ body {
     border-color: #cbd5e1;
     color: #ffffff;
 }
-
 .chip-selector-btn.chip-500 {
     background: radial-gradient(circle, #0284c7 30%, #0369a1 90%);
     border-color: #7dd3fc;
@@ -1651,7 +1663,6 @@ body {
     background: radial-gradient(circle, #64748b 30%, #334155 90%);
     border: 2px dashed #cbd5e1;
 }
-
 .placed-chip.chip-500 {
     background: radial-gradient(circle, #0284c7 30%, #0369a1 90%);
     border: 2px dashed #7dd3fc;
@@ -1663,13 +1674,11 @@ body {
     border: 2px solid #93c5fd;
     box-shadow: 0 2px 8px rgba(37, 99, 235, 0.7);
 }
-
 .placed-chip.chip-bot-purple {
     background: radial-gradient(circle, #a855f7 30%, #7e22ce 90%);
     border: 2px solid #d8b4fe;
     box-shadow: 0 2px 8px rgba(147, 51, 234, 0.7);
 }
-
 .placed-chip.chip-bot-emerald {
     background: radial-gradient(circle, #10b981 30%, #047857 90%);
     border: 2px solid #6ee7b7;
@@ -1679,8 +1688,7 @@ body {
 .placed-chip.bot-chip {
     width: 28px;
     height: 28px;
-    margin-left: -10px;
-    /* 칩 겹침 연출 */
+    margin-left: -10px; /* 칩 겹침 연출 */
     font-size: 0.6rem;
     z-index: 5;
 }
@@ -1730,16 +1738,8 @@ body {
 }
 
 @keyframes recBlink {
-    0% {
-        opacity: 0.3;
-        transform: scale(0.85);
-    }
-
-    100% {
-        opacity: 1;
-        transform: scale(1.2);
-        box-shadow: 0 0 8px #ef4444;
-    }
+    0% { opacity: 0.3; transform: scale(0.85); }
+    100% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 8px #ef4444; }
 }
 
 .cam-title {
@@ -1760,10 +1760,6 @@ body {
     font-weight: 700;
 }
 
-#live-cam-modal {
-    z-index: 99999 !important;
-}
-
 .live-cam-viewport {
     position: relative;
     width: 100%;
@@ -1775,23 +1771,10 @@ body {
     overflow: hidden;
 }
 
-#live-cam-video {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    z-index: 1;
-}
-
 #live-cam-canvas {
-    position: absolute;
-    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: contain;
-    z-index: 2;
-    pointer-events: none;
 }
 
 .cam-crosshair {
@@ -1812,14 +1795,12 @@ body {
     position: absolute;
     background: rgba(255, 215, 0, 0.4);
 }
-
 .cam-crosshair::before {
     top: 50%;
     left: -15px;
     right: -15px;
     height: 1px;
 }
-
 .cam-crosshair::after {
     left: 50%;
     top: -15px;
@@ -1965,22 +1946,9 @@ body {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
 }
 
-/* 라이브 캠 비디오 플레이어 스타일 */
-#live-cam-video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    position: absolute;
-    top: 0;
-    left: 0;
-    z-index: 1;
-}
-
-.live-cam-viewport canvas {
-    position: relative;
-    z-index: 2;
-}
-/* 11차 개편: 대형 배팅 카운트다운 게이지 바 (Betting Countdown Progress Bar) ========================================================================== */
+/* ==========================================================================
+   11차 개편: 대형 배팅 카운트다운 게이지 바 (Betting Countdown Progress Bar)
+   ========================================================================== */
 .betting-timer-display-bar {
     background: linear-gradient(135deg, rgba(16, 26, 20, 0.95), rgba(8, 14, 10, 0.95));
     border: 1px solid rgba(255, 215, 0, 0.35);
@@ -2013,16 +1981,8 @@ body {
 }
 
 @keyframes pulseDot {
-    0% {
-        transform: scale(0.85);
-        opacity: 0.6;
-    }
-
-    100% {
-        transform: scale(1.25);
-        opacity: 1;
-        box-shadow: 0 0 14px currentColor;
-    }
+    0% { transform: scale(0.85); opacity: 0.6; }
+    100% { transform: scale(1.25); opacity: 1; box-shadow: 0 0 14px currentColor; }
 }
 
 .timer-title {
@@ -2067,13 +2027,8 @@ body {
 }
 
 @keyframes numPulse {
-    0% {
-        transform: scale(1);
-    }
-
-    100% {
-        transform: scale(1.15);
-    }
+    0% { transform: scale(1); }
+    100% { transform: scale(1.15); }
 }
 
 .betting-timer-track {
@@ -2107,23 +2062,30 @@ body {
 /* ==========================================================================
    11차 개편: 배팅 마감(Lockout) 오버레이 (클릭 100% 완전 차단)
    ========================================================================== */
-.table-lockout-overlay,
-#table-lockout-overlay {
+.table-lockout-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(6, 11, 8, 0.82);
+    backdrop-filter: blur(4px);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    pointer-events: all;
+    cursor: not-allowed;
+    animation: fadeInLock 0.25s ease forwards;
+}
+
+.table-lockout-overlay.hidden {
     display: none !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-    visibility: hidden !important;
-    z-index: -9999 !important;
 }
 
 @keyframes fadeInLock {
-    from {
-        opacity: 0;
-    }
-
-    to {
-        opacity: 1;
-    }
+    from { opacity: 0; }
+    to { opacity: 1; }
 }
 
 .lockout-badge {
@@ -2141,15 +2103,8 @@ body {
 }
 
 @keyframes lockBadgePop {
-    0% {
-        transform: scale(0.85);
-        opacity: 0;
-    }
-
-    100% {
-        transform: scale(1);
-        opacity: 1;
-    }
+    0% { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
 }
 
 .lockout-icon-box {
@@ -2160,14 +2115,8 @@ body {
 }
 
 @keyframes pulseLock {
-    0% {
-        transform: scale(0.9);
-    }
-
-    100% {
-        transform: scale(1.15);
-        filter: drop-shadow(0 0 10px #ef4444);
-    }
+    0% { transform: scale(0.9); }
+    100% { transform: scale(1.15); filter: drop-shadow(0 0 10px #ef4444); }
 }
 
 .lockout-main-text {
@@ -2233,4 +2182,4 @@ body {
     align-items: center;
     justify-content: center;
     overflow: hidden;
-}
+}
