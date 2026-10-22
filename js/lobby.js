@@ -6,9 +6,9 @@
 class RouletteLobby {
     constructor() {
         this.currentRoomId = 2; // 기본 2번 일반방 입장
-        this.maxPlayers = 8;    // 각 방 최대 참석 정원 8명
+        this.maxPlayers = 5;    // 각 테이블 최대 참석 정원 5명
 
-        // 정예 4대 카지노 룸 구성 (각 룰렛 테이블별 전담 딜러 공식 배정)
+        // 4대 정예 카지노 룰렛 테이블 룸 구성 (각 방 5인 정원, 전담 딜러 및 2~4명 봇 상주)
         this.rooms = [
             {
                 id: 1,
@@ -16,16 +16,40 @@ class RouletteLobby {
                 subName: "Monaco Classic",
                 minBet: 100,
                 maxBet: 10000,
-                currentPlayers: 4,
+                currentPlayers: 3, // 나(1) + 봇(2) = 3/5명
                 accentColor: "#10b981",
                 badgeClass: "badge-green",
                 history: [7, 28, 12, 35, 3, 26, 0, 32, 15, 19],
-                description: "부담 없는 소액 칩으로 즐기는 입문자 룰렛 테이블",
+                description: "부담 없는 소액 칩으로 즐기는 입문자 룰렛 테이블 (봇 2명 상주)",
                 dealer: {
                     name: "딜러 소피 (Dealer Sophie 🇫🇷)",
                     avatar: "👱‍♀️",
                     title: "모나코 수석 크루피에"
-                }
+                },
+                bots: [
+                    {
+                        id: 'bot-101',
+                        name: '제임스 🇬🇧',
+                        avatar: '🎩',
+                        role: '신사 베터',
+                        balance: 450000,
+                        chipClass: 'chip-bot-blue',
+                        chipColor: '#3b82f6',
+                        preference: 'outside',
+                        lastBet: null
+                    },
+                    {
+                        id: 'bot-102',
+                        name: '소피아 🇫🇷',
+                        avatar: '👒',
+                        role: '모나코 로컬',
+                        balance: 820000,
+                        chipClass: 'chip-bot-pink',
+                        chipColor: '#f43f5e',
+                        preference: 'dozen',
+                        lastBet: null
+                    }
+                ]
             },
             {
                 id: 2,
@@ -33,16 +57,51 @@ class RouletteLobby {
                 subName: "Bellagio Suite",
                 minBet: 1000,
                 maxBet: 100000,
-                currentPlayers: 5,
+                currentPlayers: 4, // 나(1) + 봇(3) = 4/5명
                 accentColor: "#3b82f6",
                 badgeClass: "badge-blue",
                 history: [22, 18, 29, 7, 28, 12, 17, 34, 6, 27],
-                description: "정통 카지노의 분위기를 만끽할 수 있는 스탠다드 룸",
+                description: "정통 카지노의 분위기를 만끽할 수 있는 스탠다드 룸 (봇 3명 상주)",
                 dealer: {
                     name: "딜러 로렌 (Dealer Lauren 🇺🇸)",
                     avatar: "👩‍💼",
                     title: "벨라지오 시니어 딜러"
-                }
+                },
+                bots: [
+                    {
+                        id: 'bot-201',
+                        name: '제임스 🇬🇧',
+                        avatar: '🎩',
+                        role: 'VIP 하이롤러',
+                        balance: 4850000,
+                        chipClass: 'chip-bot-blue',
+                        chipColor: '#3b82f6',
+                        preference: 'straight',
+                        lastBet: null
+                    },
+                    {
+                        id: 'bot-202',
+                        name: '엘레나 🇲🇨',
+                        avatar: '💎',
+                        role: '프로 베터',
+                        balance: 12400000,
+                        chipClass: 'chip-bot-purple',
+                        chipColor: '#a855f7',
+                        preference: 'outside',
+                        lastBet: null
+                    },
+                    {
+                        id: 'bot-203',
+                        name: '마이클 🇺🇸',
+                        avatar: '⚡',
+                        role: '럭키 갬블러',
+                        balance: 3200000,
+                        chipClass: 'chip-bot-emerald',
+                        chipColor: '#10b981',
+                        preference: 'dozen',
+                        lastBet: null
+                    }
+                ]
             },
             {
                 id: 3,
@@ -50,16 +109,62 @@ class RouletteLobby {
                 subName: "Galaxy VIP Club",
                 minBet: 5000,
                 maxBet: 500000,
-                currentPlayers: 6,
+                currentPlayers: 5, // 나(1) + 봇(4) = 5/5명 만석!
                 accentColor: "#f59e0b",
                 badgeClass: "badge-gold",
                 history: [4, 21, 2, 25, 17, 34, 6, 20, 14, 31],
-                description: "화려한 황금빛 아시아 최대 카지노 하이롤러 룸",
+                description: "화려한 황금빛 아시아 최대 카지노 하이롤러 룸 (봇 4명 만석)",
                 dealer: {
                     name: "딜러 메이링 (Dealer Meiling 🇲🇴)",
                     avatar: "👩‍🦰",
                     title: "마카오 VIP 하이롤러 전담 딜러"
-                }
+                },
+                bots: [
+                    {
+                        id: 'bot-301',
+                        name: '켄지 🇯🇵',
+                        avatar: '🥷',
+                        role: '도쿄 고래',
+                        balance: 38000000,
+                        chipClass: 'chip-bot-amber',
+                        chipColor: '#f59e0b',
+                        preference: 'straight',
+                        lastBet: null
+                    },
+                    {
+                        id: 'bot-302',
+                        name: '린 🇨🇳',
+                        avatar: '🪭',
+                        role: '상하이 퀸',
+                        balance: 45000000,
+                        chipClass: 'chip-bot-pink',
+                        chipColor: '#ec4899',
+                        preference: 'outside',
+                        lastBet: null
+                    },
+                    {
+                        id: 'bot-303',
+                        name: '메이슨 🇦🇺',
+                        avatar: '🏄‍♂️',
+                        role: '시드니 베터',
+                        balance: 22000000,
+                        chipClass: 'chip-bot-cyan',
+                        chipColor: '#06b6d4',
+                        preference: 'dozen',
+                        lastBet: null
+                    },
+                    {
+                        id: 'bot-304',
+                        name: '사라 🇨🇦',
+                        avatar: '👑',
+                        role: '몬트리올 VIP',
+                        balance: 51000000,
+                        chipClass: 'chip-bot-purple',
+                        chipColor: '#8b5cf6',
+                        preference: 'straight',
+                        lastBet: null
+                    }
+                ]
             },
             {
                 id: 4,
@@ -67,56 +172,56 @@ class RouletteLobby {
                 subName: "Penthouse Suite",
                 minBet: 10000,
                 maxBet: 10000000,
-                currentPlayers: 3,
+                currentPlayers: 4, // 나(1) + 봇(3) = 4/5명
                 accentColor: "#ef4444",
                 badgeClass: "badge-red",
                 history: [0, 32, 15, 19, 4, 21, 35, 3, 26, 9],
-                description: "초호화 7성급 펜트하우스 VVIP 최고 한도 프라이빗 룸",
+                description: "초호화 7성급 펜트하우스 VVIP 최고 한도 프라이빗 룸 (봇 3명 상주)",
                 dealer: {
                     name: "딜러 아미라 (Dealer Amira 🇦🇪)",
                     avatar: "👑",
                     title: "두바이 펜트하우스 마스터 딜러"
-                }
+                },
+                bots: [
+                    {
+                        id: 'bot-401',
+                        name: '타릭 🇦🇪',
+                        avatar: '👳‍♂️',
+                        role: '두바이 셰이크',
+                        balance: 98000000,
+                        chipClass: 'chip-bot-amber',
+                        chipColor: '#f59e0b',
+                        preference: 'straight',
+                        lastBet: null
+                    },
+                    {
+                        id: 'bot-402',
+                        name: '이사벨라 🇮🇹',
+                        avatar: '💃',
+                        role: '밀라노 패션VIP',
+                        balance: 75000000,
+                        chipClass: 'chip-bot-purple',
+                        chipColor: '#a855f7',
+                        preference: 'outside',
+                        lastBet: null
+                    },
+                    {
+                        id: 'bot-403',
+                        name: '빅토르 🇷🇺',
+                        avatar: '🦁',
+                        role: '모스크바 거물',
+                        balance: 89000000,
+                        chipClass: 'chip-bot-cyan',
+                        chipColor: '#0ea5e9',
+                        preference: 'dozen',
+                        lastBet: null
+                    }
+                ]
             }
         ];
 
-        // 테이블에 함께 착석하여 배팅하는 3명의 AI 봇 플레이어
-        this.activeBots = [
-            {
-                id: 'bot-1',
-                name: '제임스 🇬🇧',
-                avatar: '🎩',
-                role: 'VIP 하이롤러',
-                balance: 4850000,
-                chipClass: 'chip-bot-blue',
-                chipColor: '#2563eb',
-                preference: 'straight', // 스트레이트/인사이드 선호
-                lastBet: null
-            },
-            {
-                id: 'bot-2',
-                name: '엘레나 🇲🇨',
-                avatar: '💎',
-                role: '프로 베터',
-                balance: 12400000,
-                chipClass: 'chip-bot-purple',
-                chipColor: '#9333ea',
-                preference: 'outside', // 빨강/검정/홀짝 선호
-                lastBet: null
-            },
-            {
-                id: 'bot-3',
-                name: '마이클 🇺🇸',
-                avatar: '⚡',
-                role: '럭키 갬블러',
-                balance: 3200000,
-                chipClass: 'chip-bot-emerald',
-                chipColor: '#059669',
-                preference: 'dozen', // 다즌/컬럼 선호
-                lastBet: null
-            }
-        ];
-
+        // 현재 입장 룸의 봇 리스트 (기본 2번방 봇들)
+        this.activeBots = this.rooms[1].bots;
         this.currentAiBets = [];
         this.botTimeouts = [];
 
@@ -224,6 +329,12 @@ class RouletteLobby {
         this.currentRoomId = roomId;
         const room = this.getCurrentRoom();
 
+        // 룸에 소속된 2~4명의 봇 풀로 전환
+        this.activeBots = room.bots || [];
+        this.botTimeouts.forEach(t => clearTimeout(t));
+        this.botTimeouts = [];
+        this.currentAiBets = [];
+
         // 모달 닫기
         const lobbyModal = document.getElementById('lobby-modal');
         if (lobbyModal) lobbyModal.classList.add('hidden');
@@ -255,7 +366,7 @@ class RouletteLobby {
     }
 
     /**
-     * 테이블 상단 참석자 바 렌더링 (나 + 봇 3명, 최대 8명)
+     * 테이블 상단 참석자 바 렌더링 (나 + 봇 2~4명, 최대 5명 정원)
      */
     renderTablePlayersBar() {
         const container = document.getElementById('table-players-bar');
@@ -263,11 +374,12 @@ class RouletteLobby {
 
         const room = this.getCurrentRoom();
         const userBet = window.rouletteTable ? window.rouletteTable.totalBetAmount : 0;
+        const totalJoined = 1 + this.activeBots.length;
 
         let html = `
             <div class="players-bar-header">
-                <span class="bar-title">👥 TABLE PLAYERS</span>
-                <span class="bar-count-badge">${room.currentPlayers} / ${this.maxPlayers}명 참석 중</span>
+                <span class="bar-title">👥 TABLE SEATS (정원 5인)</span>
+                <span class="bar-count-badge">${totalJoined} / ${this.maxPlayers}명 참석 중</span>
             </div>
             <div class="players-chips-list">
                 <!-- 나 (Player) -->
@@ -277,13 +389,13 @@ class RouletteLobby {
                         <span class="p-name">나 (YOU)</span>
                         <span class="p-bet" id="my-bar-bet">${userBet > 0 ? userBet.toLocaleString() + ' Chip' : '배팅 대기'}</span>
                     </div>
-                    <span class="p-color-dot my-dot"></span>
+                    <span class="p-color-dot my-dot" title="내 배팅 칩 색상"></span>
                 </div>
         `;
 
-        // 봇 플레이어들
+        // 봇 플레이어들 (2~4명)
         this.activeBots.forEach(bot => {
-            const betText = bot.lastBet ? `${bot.lastBet.amount.toLocaleString()} Chip (${bot.lastBet.targetName})` : '배팅 중...';
+            const betText = bot.lastBet ? `${bot.lastBet.amount.toLocaleString()} Chip` : '배팅 고민 중...';
             html += `
                 <div class="player-badge bot-badge" id="player-badge-${bot.id}">
                     <span class="p-avatar">${bot.avatar}</span>
@@ -291,18 +403,21 @@ class RouletteLobby {
                         <span class="p-name">${bot.name}</span>
                         <span class="p-bet" id="badge-bet-${bot.id}">${betText}</span>
                     </div>
-                    <span class="p-color-dot" style="background-color: ${bot.chipColor}"></span>
+                    <span class="p-color-dot" style="background-color: ${bot.chipColor}" title="${bot.name}의 고유 칩"></span>
                 </div>
             `;
         });
 
-        // 빈 좌석 (최대 8명 표시)
-        const emptySeats = this.maxPlayers - (1 + this.activeBots.length);
+        // 빈 좌석 (최대 5석 중 남은 좌석)
+        const emptySeats = Math.max(0, this.maxPlayers - totalJoined);
         for (let i = 0; i < emptySeats; i++) {
             html += `
                 <div class="player-badge empty-seat">
                     <span class="p-avatar">🪑</span>
-                    <span class="p-name">빈 좌석</span>
+                    <div class="p-info">
+                        <span class="p-name">빈 좌석</span>
+                        <span class="p-bet">입장 가능</span>
+                    </div>
                 </div>
             `;
         }
@@ -313,7 +428,7 @@ class RouletteLobby {
 
     /**
      * 봇 플레이어들의 실시간 테이블 배팅 시뮬레이션
-     * 배팅 타임(15초) 동안 봇들이 1~9초 간격으로 테이블 여러 스팟에 직접 칩을 배치
+     * 배팅 타임(20초) 동안 봇들이 1~12초 간격으로 테이블 여러 스팟에 직접 칩을 배치
      */
     simulateAiBets() {
         this.botTimeouts.forEach(t => clearTimeout(t));
@@ -328,14 +443,14 @@ class RouletteLobby {
             if (betEl) betEl.textContent = '배팅 고민 중...';
 
             // 각 봇마다 1~2회에 걸쳐 분산 배팅 수행
-            const betCount = Math.random() > 0.4 ? 2 : 1;
+            const betCount = Math.random() > 0.35 ? 2 : 1;
             for (let b = 0; b < betCount; b++) {
-                const delay = 1200 + index * 1400 + b * 3200 + Math.random() * 1800;
+                const delay = 1200 + index * 1300 + b * 2800 + Math.random() * 1600;
 
                 const t = setTimeout(() => {
                     if (!window.rouletteTable || (window.rouletteApp && window.rouletteApp.currentPhase !== 'BETTING')) return;
 
-                    const chipUnit = room.minBet >= 1000 ? (room.minBet >= 5000 ? 10000 : 5000) : 500;
+                    const chipUnit = room.minBet >= 5000 ? 10000 : (room.minBet >= 1000 ? 5000 : 500);
                     const multiplier = Math.floor(Math.random() * 3) + 1;
                     const amount = Math.min(room.maxBet, Math.max(room.minBet, chipUnit * multiplier));
 
@@ -388,6 +503,27 @@ class RouletteLobby {
                 }, delay);
 
                 this.botTimeouts.push(t);
+            }
+        });
+    }
+
+    /**
+     * 배팅 마감(Lockout) 시 봇 타이머 일제 정지 및 배팅 상태 마감 처리
+     */
+    onBettingClosed() {
+        this.botTimeouts.forEach(t => clearTimeout(t));
+        this.botTimeouts = [];
+
+        this.activeBots.forEach(bot => {
+            const betEl = document.getElementById(`badge-bet-${bot.id}`);
+            if (betEl) {
+                if (bot.lastBet) {
+                    betEl.textContent = `✓ 배팅 완료 (${bot.lastBet.amount.toLocaleString()} Chip)`;
+                    betEl.style.color = '#10b981';
+                } else {
+                    betEl.textContent = '⛔ 배팅 마감 (패스)';
+                    betEl.style.color = '#94a3b8';
+                }
             }
         });
     }

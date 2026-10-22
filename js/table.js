@@ -256,7 +256,12 @@ class RouletteTable {
      * 칩 배팅 수행
      */
     placeBet(spotId, betType, numbersStr) {
-        if (this.isLocked) return;
+        if (this.isLocked) {
+            if (window.rouletteApp && window.rouletteApp.showToast) {
+                window.rouletteApp.showToast("⛔ 배팅이 마감되었습니다. 다음 라운드에 참여해 주세요!");
+            }
+            return;
+        }
 
         // 플레이어 보유 잔고 확인 (app에서 주입)
         if (window.rouletteApp && window.rouletteApp.balance < this.selectedChip) {
@@ -416,12 +421,12 @@ class RouletteTable {
                 : (bb.amount >= 1000 ? (bb.amount / 1000) + 'K' : bb.amount);
 
             const botClass = bb.bot.chipClass || 'chip-bot-blue';
-            const offsetClass = `bot-chip-offset-${idx % 3}`;
+            const offsetClass = `bot-chip-offset-${idx % 4}`;
 
             html += `
                 <div class="placed-chip bot-placed-chip ${botClass} ${offsetClass}" 
                      style="box-shadow: 0 4px 10px ${bb.bot.chipColor || '#3b82f6'}88;"
-                     title="${bb.bot.name}: ${bb.amount.toLocaleString()} Chip">
+                     title="${bb.bot.name} (${bb.bot.role || '플레이어'}): ${bb.amount.toLocaleString()} Chip">
                     <span class="chip-avatar-tag">${bb.bot.avatar || '🤖'}</span>
                     <span class="chip-val">${bAmount}</span>
                 </div>
@@ -429,10 +434,13 @@ class RouletteTable {
         });
 
         chipContainer.innerHTML = html;
-        if ((userHasBet ? 1 : 0) + botsOnSpot.length > 1) {
+        const totalChipsCount = (userHasBet ? 1 : 0) + botsOnSpot.length;
+        if (totalChipsCount > 1) {
             chipContainer.classList.add('has-multiple-chips');
+            chipContainer.setAttribute('data-stack-count', `${totalChipsCount}인`);
         } else {
             chipContainer.classList.remove('has-multiple-chips');
+            chipContainer.removeAttribute('data-stack-count');
         }
     }
 
@@ -515,6 +523,10 @@ class RouletteTable {
      */
     setLocked(locked) {
         this.isLocked = locked;
+        const feltTable = this.container.querySelector('.roulette-felt-table');
+        if (feltTable) {
+            feltTable.classList.toggle('table-locked', locked);
+        }
         const spots = this.container.querySelectorAll('.bet-spot');
         spots.forEach(s => {
             if (locked) s.classList.add('locked');

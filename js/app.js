@@ -559,6 +559,11 @@ class RouletteApp {
             window.rouletteTable.setLocked(true);
         }
 
+        // 봇 배팅 타임아웃 정리 및 마감 상태 갱신
+        if (window.rouletteLobby) {
+            window.rouletteLobby.onBettingClosed();
+        }
+
         // 땡!! 벨 소리 및 딜러 음성
         if (window.rouletteAudio) {
             window.rouletteAudio.playBetClosedBell();

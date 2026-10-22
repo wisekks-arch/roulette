@@ -3097,4 +3097,271 @@ body {
     outline: 2px dashed #ffd700 !important;
     background: rgba(255, 215, 0, 0.35) !important;
     box-shadow: 0 0 15px rgba(255, 215, 0, 0.8) !important;
+}
+
+/* ==========================================================================
+   25차 고도화: 테이블 5인석 참석자 바 & 다중 플레이어 칩 가시화 & 배팅 마감 락아웃
+   ========================================================================== */
+
+/* 1. 테이블 상단 참석자 바 (정원 5인석) */
+.table-players-bar {
+    background: rgba(15, 17, 26, 0.85);
+    border: 1px solid rgba(255, 215, 0, 0.25);
+    border-radius: 12px;
+    padding: 10px 16px;
+    margin-bottom: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(8px);
+}
+
+.players-bar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 4px;
+}
+
+.bar-title {
+    font-family: var(--font-heading);
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: #ffd700;
+    letter-spacing: 1px;
+}
+
+.bar-count-badge {
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #10b981;
+    background: rgba(16, 185, 129, 0.15);
+    padding: 2px 8px;
+    border-radius: 10px;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.players-chips-list {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+}
+
+.player-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(30, 41, 59, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    padding: 6px 10px;
+    position: relative;
+    transition: all 0.25s ease;
+}
+
+.player-badge.is-me {
+    background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(15, 23, 42, 0.8));
+    border-color: #f59e0b;
+    box-shadow: 0 0 10px rgba(245, 158, 11, 0.2);
+}
+
+.player-badge.empty-seat {
+    opacity: 0.45;
+    border-style: dashed;
+    background: rgba(15, 23, 42, 0.3);
+}
+
+.player-badge .p-avatar {
+    font-size: 1.25rem;
+    flex-shrink: 0;
+}
+
+.player-badge .p-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1;
+}
+
+.player-badge .p-name {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #f8fafc;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.player-badge .p-bet {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.player-badge.is-me .p-bet {
+    color: #fcd34d;
+    font-weight: 700;
+}
+
+.player-badge .p-color-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    box-shadow: 0 0 6px currentColor;
+}
+
+.player-badge .p-color-dot.my-dot {
+    background-color: #ffd700;
+    box-shadow: 0 0 6px #ffd700;
+}
+
+/* 2. 테이블 락아웃 (Lockout) 스타일 */
+.roulette-felt-table.table-locked {
+    position: relative;
+}
+
+.roulette-felt-table.table-locked::after {
+    content: "⛔ NO MORE BETS - 배팅 마감 (추가 배팅 불가)";
+    position: absolute;
+    top: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(220, 38, 38, 0.92);
+    color: #ffffff;
+    font-family: var(--font-heading);
+    font-size: 0.82rem;
+    font-weight: 800;
+    padding: 6px 18px;
+    border-radius: 20px;
+    border: 1px solid #fecaca;
+    box-shadow: 0 4px 15px rgba(220, 38, 38, 0.7);
+    pointer-events: none;
+    z-index: 95;
+    animation: lockBannerPulse 1.2s infinite alternate;
+}
+
+@keyframes lockBannerPulse {
+    from { opacity: 0.85; transform: translateX(-50%) scale(0.98); }
+    to { opacity: 1; transform: translateX(-50%) scale(1.02); }
+}
+
+.bet-spot.locked {
+    cursor: not-allowed !important;
+    filter: brightness(0.9);
+}
+
+.bet-spot.locked:hover {
+    background: inherit !important;
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* 3. 다중 플레이어 칩 스택 및 봇 칩 시각화 */
+.chip-stack {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.chip-stack.has-multiple-chips {
+    width: 36px;
+    height: 36px;
+}
+
+.placed-chip {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed rgba(255, 255, 255, 0.8);
+    position: absolute;
+    transition: all 0.2s ease;
+    filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.8));
+}
+
+.placed-chip .chip-avatar-tag {
+    font-size: 0.6rem;
+    line-height: 1;
+    margin-bottom: -1px;
+}
+
+.placed-chip .chip-val {
+    font-size: 0.55rem;
+    font-weight: 900;
+    font-family: var(--font-heading);
+    color: #fff;
+    line-height: 1;
+    text-shadow: 0 1px 2px #000;
+}
+
+/* 유저(나)의 칩 */
+.user-placed-chip {
+    z-index: 25;
+    border-color: #ffd700;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+}
+
+/* 봇 플레이어들의 칩 오프셋 (4방향 부채꼴 스택) */
+.bot-placed-chip.bot-chip-offset-0 {
+    transform: translate(-6px, -6px);
+    z-index: 21;
+}
+
+.bot-placed-chip.bot-chip-offset-1 {
+    transform: translate(6px, -6px);
+    z-index: 22;
+}
+
+.bot-placed-chip.bot-chip-offset-2 {
+    transform: translate(-6px, 6px);
+    z-index: 23;
+}
+
+.bot-placed-chip.bot-chip-offset-3 {
+    transform: translate(6px, 6px);
+    z-index: 24;
+}
+
+/* 봇 칩 컬러 테마 */
+.chip-bot-blue { background: radial-gradient(circle, #3b82f6 20%, #1d4ed8 80%); }
+.chip-bot-purple { background: radial-gradient(circle, #a855f7 20%, #6b21a8 80%); }
+.chip-bot-emerald { background: radial-gradient(circle, #10b981 20%, #047857 80%); }
+.chip-bot-pink { background: radial-gradient(circle, #f43f5e 20%, #be123c 80%); }
+.chip-bot-amber { background: radial-gradient(circle, #f59e0b 20%, #b45309 80%); }
+.chip-bot-cyan { background: radial-gradient(circle, #06b6d4 20%, #0e7490 80%); }
+
+/* 다중 칩 참여자 수 뱃지 */
+.chip-stack.has-multiple-chips::before {
+    content: attr(data-stack-count);
+    position: absolute;
+    bottom: -8px;
+    right: -8px;
+    background: #000;
+    color: #ffd700;
+    font-size: 0.55rem;
+    font-weight: 800;
+    padding: 1px 4px;
+    border-radius: 6px;
+    border: 1px solid #ffd700;
+    z-index: 30;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.9);
+}
+
+/* 모바일 5인석 반응형 */
+@media (max-width: 768px) {
+    .players-chips-list {
+        grid-template-columns: repeat(3, 1fr);
+    }
 }
