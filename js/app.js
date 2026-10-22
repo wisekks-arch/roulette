@@ -186,22 +186,7 @@ class RouletteApp {
             });
         }
 
-        // 3. 스핀 버튼 (즉시 배팅 마감 및 회전 시작)
-        const spinBtn = document.getElementById('btn-spin');
-        if (spinBtn) {
-            spinBtn.addEventListener('click', () => {
-                if (this.currentPhase === 'BETTING') {
-                    const currentBet = window.rouletteTable ? (window.rouletteTable.totalBetAmount || 0) : 0;
-                    if (currentBet <= 0) {
-                        this.showToast("⚠️ 먼저 테이블에 칩을 베팅해 주세요!");
-                        return;
-                    }
-                    this.closeBettingPhase();
-                }
-            });
-        }
-
-        // 4. 전체 베팅 취소 (Clear)
+        // 3. 전체 베팅 취소 (Clear)
         const clearBtn = document.getElementById('btn-clear');
         if (clearBtn) {
             clearBtn.addEventListener('click', () => {
@@ -500,8 +485,8 @@ class RouletteApp {
             winModal.style.display = 'none';
         }
 
-        // 상태 배너 업데이트
-        this.updatePhaseStatus(`🎲 BETTING OPEN - 배팅을 진행해 주세요 (ROUND #${this.currentRound})`, "betting");
+        // 상태 배너 업데이트 (운영자가 20초 카운트다운 후 자동 스핀 진행)
+        this.updatePhaseStatus(`🎲 BETTING OPEN - 운영자가 20초 후 휠을 회전합니다 (ROUND #${this.currentRound})`, "betting");
         this.updateTimerDisplay(this.timerSeconds);
 
         // 딜러 음성 안내

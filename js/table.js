@@ -51,17 +51,68 @@ class RouletteTable {
             const n2 = col * 3 - 1;
             const n3 = col * 3 - 2;
 
-            html += `<div class="table-column-group">`;
+            html += `<div class="table-column-group" data-col="${col}">`;
             [n1, n2, n3].forEach(n => {
                 const isRed = this.redNumbers.includes(n);
                 const colorClass = isRed ? 'spot-red' : 'spot-black';
                 html += `
-                    <button class="bet-spot spot-number ${colorClass}" data-bet="straight" data-numbers="${n}" id="spot-${n}">
+                    <button class="bet-spot spot-number ${colorClass}" data-bet="straight" data-numbers="${n}" id="spot-${n}" title="스트레이트 (35배): #${n}">
                         <span class="num-text">${n}</span>
                         <div class="chip-stack" id="chips-${n}"></div>
                     </button>
                 `;
             });
+
+            // [정통 룰렛 핫스팟 1] 열 내 상하 스플릿 (Split 17배)
+            // n1과 n2 사이 경계선
+            html += `
+                <button class="bet-spot bet-hotspot hotspot-split-h pos-split-h-top" data-bet="split" data-numbers="${n2},${n1}" id="spot-split-${n2}-${n1}" title="스플릿 (17배): ${n2}, ${n1}">
+                    <div class="chip-stack" id="chips-split-${n2}-${n1}"></div>
+                </button>
+            `;
+            // n2과 n3 사이 경계선
+            html += `
+                <button class="bet-spot bet-hotspot hotspot-split-h pos-split-h-bot" data-bet="split" data-numbers="${n3},${n2}" id="spot-split-${n3}-${n2}" title="스플릿 (17배): ${n3}, ${n2}">
+                    <div class="chip-stack" id="chips-split-${n3}-${n2}"></div>
+                </button>
+            `;
+
+            // [정통 룰렛 핫스팟 2] 스트리트 (Street 11배) - 1열 하단 외곽선
+            html += `
+                <button class="bet-spot bet-hotspot hotspot-street pos-street" data-bet="street" data-numbers="${n3},${n2},${n1}" id="spot-street-${n3}-${n2}-${n1}" title="스트리트 (11배): ${n3}, ${n2}, ${n1}">
+                    <div class="chip-stack" id="chips-street-${n3}-${n2}-${n1}"></div>
+                </button>
+            `;
+
+            // [정통 룰렛 핫스팟 3] 인접 열과의 교차점 (col 1~11만 해당)
+            if (col < 12) {
+                // 수직 스플릿 3개 (우측 경계선, 17배)
+                html += `
+                    <button class="bet-spot bet-hotspot hotspot-split-v pos-split-v-1" data-bet="split" data-numbers="${n1},${n1 + 3}" id="spot-split-${n1}-${n1 + 3}" title="스플릿 (17배): ${n1}, ${n1 + 3}">
+                        <div class="chip-stack" id="chips-split-${n1}-${n1 + 3}"></div>
+                    </button>
+                    <button class="bet-spot bet-hotspot hotspot-split-v pos-split-v-2" data-bet="split" data-numbers="${n2},${n2 + 3}" id="spot-split-${n2}-${n2 + 3}" title="스플릿 (17배): ${n2}, ${n2 + 3}">
+                        <div class="chip-stack" id="chips-split-${n2}-${n2 + 3}"></div>
+                    </button>
+                    <button class="bet-spot bet-hotspot hotspot-split-v pos-split-v-3" data-bet="split" data-numbers="${n3},${n3 + 3}" id="spot-split-${n3}-${n3 + 3}" title="스플릿 (17배): ${n3}, ${n3 + 3}">
+                        <div class="chip-stack" id="chips-split-${n3}-${n3 + 3}"></div>
+                    </button>
+
+                    <!-- 모서리 코너 2개 (Corner 8배) -->
+                    <button class="bet-spot bet-hotspot hotspot-corner pos-corner-top" data-bet="corner" data-numbers="${n2},${n1},${n2 + 3},${n1 + 3}" id="spot-corner-${n2}-${n1}-${n2 + 3}-${n1 + 3}" title="코너 (8배): ${n2}, ${n1}, ${n2 + 3}, ${n1 + 3}">
+                        <div class="chip-stack" id="chips-corner-${n2}-${n1}-${n2 + 3}-${n1 + 3}"></div>
+                    </button>
+                    <button class="bet-spot bet-hotspot hotspot-corner pos-corner-bot" data-bet="corner" data-numbers="${n3},${n2},${n3 + 3},${n2 + 3}" id="spot-corner-${n3}-${n2}-${n3 + 3}-${n2 + 3}" title="코너 (8배): ${n3}, ${n2}, ${n3+3}, ${n2+3}">
+                        <div class="chip-stack" id="chips-corner-${n3}-${n2}-${n3 + 3}-${n2 + 3}"></div>
+                    </button>
+
+                    <!-- 두 열 사이 식스라인 (Six Line 5배) -->
+                    <button class="bet-spot bet-hotspot hotspot-sixline pos-sixline" data-bet="sixline" data-numbers="${n3},${n2},${n1},${n3 + 3},${n2 + 3},${n1 + 3}" id="spot-sixline-${n3}-${n3 + 5}" title="식스라인 (5배): ${n3} ~ ${n3 + 5}">
+                        <div class="chip-stack" id="chips-sixline-${n3}-${n3 + 5}"></div>
+                    </button>
+                `;
+            }
+
             html += `</div>`;
         }
 
@@ -217,6 +268,24 @@ class RouletteTable {
                 const numbersStr = spot.getAttribute('data-numbers');
                 const spotId = spot.id;
                 this.placeBet(spotId, betType, numbersStr);
+            });
+
+            // 핫스팟 호버 시 연관 번호 동시 골드 하이라이트 인터랙션
+            spot.addEventListener('mouseenter', () => {
+                if (this.isLocked) return;
+                const numsStr = spot.getAttribute('data-numbers');
+                if (numsStr && spot.classList.contains('bet-hotspot')) {
+                    const nums = numsStr.split(',').map(n => n.trim());
+                    nums.forEach(n => {
+                        const numSpot = this.container.querySelector(`#spot-${n}`);
+                        if (numSpot) numSpot.classList.add('spot-hovered');
+                    });
+                }
+            });
+
+            spot.addEventListener('mouseleave', () => {
+                const hoveredSpots = this.container.querySelectorAll('.spot-hovered');
+                hoveredSpots.forEach(s => s.classList.remove('spot-hovered'));
             });
         });
 

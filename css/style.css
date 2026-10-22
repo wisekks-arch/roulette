@@ -487,6 +487,7 @@ body {
     flex-direction: column;
     gap: 5px;
     flex: 1;
+    position: relative;
 }
 
 /* 베팅 스팟 공통 버튼 스타일 */
@@ -3363,5 +3364,199 @@ body {
 @media (max-width: 768px) {
     .players-chips-list {
         grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ==========================================================================
+   26차 고도화: 정통 룰렛 인터랙티브 핫스팟 시스템 (스플릿, 코너, 스트리트, 식스라인)
+   ========================================================================== */
+
+/* 핫스팟 기본 인터랙티브 영역 */
+.bet-hotspot {
+    position: absolute;
+    background: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    z-index: 18;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: all 0.15s ease;
+}
+
+/* 핫스팟 마우스 오버 시 골드 타겟 인디케이터 */
+.bet-hotspot::after {
+    content: '';
+    position: absolute;
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.7) 0%, rgba(255, 215, 0, 0.2) 65%, transparent 75%);
+    border-radius: 50%;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    border: 1.5px dashed #ffd700;
+}
+
+.bet-hotspot:hover:not(.locked)::after {
+    opacity: 1;
+    transform: scale(1.15);
+}
+
+/* 1. 수평 스플릿 (상하 인접 2번호 사이) */
+.pos-split-h-top {
+    top: calc(33.333% - 2.5px);
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 75%;
+    height: 18px;
+}
+.pos-split-h-top::after {
+    width: 44px;
+    height: 12px;
+    border-radius: 6px;
+}
+
+.pos-split-h-bot {
+    top: calc(66.666% - 2.5px);
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 75%;
+    height: 18px;
+}
+.pos-split-h-bot::after {
+    width: 44px;
+    height: 12px;
+    border-radius: 6px;
+}
+
+/* 2. 스트리트 (열 하단 3개 번호 외곽선) */
+.pos-street {
+    top: calc(100% - 2px);
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80%;
+    height: 18px;
+}
+.pos-street::after {
+    width: 48px;
+    height: 12px;
+    border-bottom: 2.5px solid #ffd700;
+    border-radius: 4px;
+}
+
+/* 3. 수직 스플릿 (인접 열 좌우 2번호 사이) */
+.pos-split-v-1 {
+    top: calc(16.666% - 2px);
+    right: -6px;
+    transform: translate(50%, -50%);
+    width: 22px;
+    height: 38px;
+}
+.pos-split-v-1::after {
+    width: 12px;
+    height: 32px;
+    border-radius: 6px;
+}
+
+.pos-split-v-2 {
+    top: calc(50% - 2px);
+    right: -6px;
+    transform: translate(50%, -50%);
+    width: 22px;
+    height: 38px;
+}
+.pos-split-v-2::after {
+    width: 12px;
+    height: 32px;
+    border-radius: 6px;
+}
+
+.pos-split-v-3 {
+    top: calc(83.333% - 2px);
+    right: -6px;
+    transform: translate(50%, -50%);
+    width: 22px;
+    height: 38px;
+}
+.pos-split-v-3::after {
+    width: 12px;
+    height: 32px;
+    border-radius: 6px;
+}
+
+/* 4. 코너 (4개 모서리 십자 교차점) */
+.pos-corner-top {
+    top: calc(33.333% - 2px);
+    right: -6px;
+    transform: translate(50%, -50%);
+    width: 26px;
+    height: 26px;
+    z-index: 24;
+}
+.pos-corner-top::after {
+    width: 22px;
+    height: 22px;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.9);
+}
+
+.pos-corner-bot {
+    top: calc(66.666% - 2px);
+    right: -6px;
+    transform: translate(50%, -50%);
+    width: 26px;
+    height: 26px;
+    z-index: 24;
+}
+.pos-corner-bot::after {
+    width: 22px;
+    height: 22px;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.9);
+}
+
+/* 5. 식스라인 (두 열 하단 외곽 교차점) */
+.pos-sixline {
+    top: calc(100% - 2px);
+    right: -6px;
+    transform: translate(50%, -50%);
+    width: 26px;
+    height: 22px;
+    z-index: 24;
+}
+.pos-sixline::after {
+    width: 22px;
+    height: 18px;
+    border: 1.5px solid #60a5fa;
+    box-shadow: 0 0 10px rgba(96, 165, 250, 0.85);
+}
+
+/* 핫스팟 호버 시 연관 번호 동시 골드 하이라이트 효과 */
+.bet-spot.spot-number.spot-hovered {
+    outline: 2.5px solid #ffd700 !important;
+    box-shadow: 0 0 18px rgba(255, 215, 0, 0.95), inset 0 0 14px rgba(255, 215, 0, 0.5) !important;
+    filter: brightness(1.28) !important;
+    z-index: 8;
+    transform: scale(1.02);
+}
+
+/* 스핀 버튼 제거 후 4대 편의 버튼 바 레이아웃 정돈 */
+.action-buttons-bar {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 12px !important;
+    max-width: 640px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+.action-buttons-bar .act-btn {
+    justify-content: center;
+    padding: 12px 16px;
+    font-size: 0.9rem;
+}
+
+@media (max-width: 600px) {
+    .action-buttons-bar {
+        grid-template-columns: repeat(2, 1fr) !important;
     }
 }
