@@ -384,3 +384,25 @@ Undo
 4. 배포 전 무결성 검증 및 GitHub Pages 실서버 배포:
    - Headless Edge DOM 덤프 검증 결과 스핀버튼 완전 소멸 및 핫스팟 100% 정상 마운트 검증 완료.
    - 캐시 버스팅 파라미터 ?v=20261022_1840 전면 갱신 및 GitHub Pages 실서버(https://wisekks-arch.github.io/roulette/index.html) 배포 완료.
+
+[27차 사용자 요청 원문 - 2026-10-22]
+"NO MORE BETS - 배팅 마감  알림이 뜬 후에  룰렛판이 돌고 구슬이 돌아가야지 
+진행해줘
+스핀 버튼 삭제 해 주고 운영자가 자동으로 스핀을 해 주어야지"
+- 사용자 최종 확인: 승인 (컨펌 완료)
+
+[27차 핵심 구현 사항]
+1. 스핀 버튼 전역 완전 박멸 (index.html, style.css):
+   - index.html의 btn-spin 버튼 완전 삭제 유지 확인.
+   - 브라우저 로컬 캐시로 인한 잔여 버튼 표출을 원천 방지하기 위해 style.css에 #btn-spin, .btn-spin, .btn-spin-gold { display: none !important; visibility: hidden !important; pointer-events: none !important; } 전역 강제 숨김 부여.
+2. 대형 "⛔ NO MORE BETS" 배팅 마감 전용 모달 신설 (index.html, style.css):
+   - 화면 중앙에 대형 록(Lock) 아이콘(🔒)과 "⛔ NO MORE BETS! - 배팅이 마감되었습니다. 운영자가 룰렛 휠을 회전시키고 구슬을 투구합니다!" 안내 모달(no-more-bets-modal) 구축.
+   - 네온 레드 및 골드 펄스 글로우 애니메이션으로 극적이고 명확한 마감 피드백 제공.
+3. 운영자 주도 자동 시퀀스 타임라인 정밀 동기화 (app.js):
+   - 배팅 타이머 종료 즉시:
+     1) 테이블 완전 잠금(table.setLocked(true)) 및 봇 마감 처리.
+     2) 화면 중앙 대형 NO MORE BETS 마감 팝업 2.0초간 최우선 표출 및 땡!! 카지노 벨/딜러 마감 음성 재생.
+     3) 2.0초 동안 마감 알림을 뚜렷이 보여준 '후에' 모달을 닫고, 비로소 운영자가 자동으로 룰렛판 회전 및 구슬 질주 실사 영상(4.0초)으로 직행!
+4. 배포 전 무결성 검증 및 GitHub Pages 실서버 배포:
+   - Headless Edge DOM 덤프 검증 결과 스핀 버튼 0건 및 no-more-bets-modal 정상 마운트 확인 완료.
+   - 캐시 버스팅 파라미터 ?v=20261022_1850 전면 갱신 및 GitHub Pages 실서버(https://wisekks-arch.github.io/roulette/index.html) 배포 완료.

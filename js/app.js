@@ -472,7 +472,13 @@ class RouletteApp {
             window.rouletteTable.setLocked(false);
         }
 
-        // 라이브 캠 팝업 및 승리 모달 숨김
+        // 마감 알림 모달, 라이브 캠 팝업 및 승리 모달 숨김
+        const nmbModal = document.getElementById('no-more-bets-modal');
+        if (nmbModal) {
+            nmbModal.classList.add('hidden');
+            nmbModal.style.display = 'none';
+        }
+
         const liveCamModal = document.getElementById('live-cam-modal');
         if (liveCamModal) {
             liveCamModal.classList.add('hidden');
@@ -526,7 +532,7 @@ class RouletteApp {
     }
 
     /**
-     * 2단계: 배팅 마감 (1.5초간 마감 안내 후 즉시 구슬 낙하 영상 직행)
+     * 2단계: 배팅 마감 (중앙 NO MORE BETS 알림 2초 표출 ➔ 마감 알림 닫힌 후 룰렛판 및 구슬 자동 회전)
      */
     closeBettingPhase() {
         if (this.currentPhase !== 'BETTING') return;
@@ -539,7 +545,7 @@ class RouletteApp {
             this.timerInterval = null;
         }
 
-        // 테이블 즉시 잠금
+        // 테이블 즉시 잠금 (추가 배팅 원천 차단)
         if (window.rouletteTable) {
             window.rouletteTable.setLocked(true);
         }
@@ -549,14 +555,21 @@ class RouletteApp {
             window.rouletteLobby.onBettingClosed();
         }
 
-        // 땡!! 벨 소리 및 딜러 음성
+        // 땡!! 벨 소리 및 딜러 마감 음성
         if (window.rouletteAudio) {
             window.rouletteAudio.playBetClosedBell();
             window.rouletteAudio.announceNoMoreBets();
         }
 
-        this.updatePhaseStatus("⛔ NO MORE BETS! - 배팅이 마감되었습니다 (구슬 투구 중)", "closed");
+        this.updatePhaseStatus("⛔ NO MORE BETS! - 배팅이 마감되었습니다 (구슬 투구 대기)", "closed");
         this.updateTimerDisplay(0);
+
+        // [핵심] 화면 중앙 대형 "NO MORE BETS" 배팅 마감 알림 팝업 먼저 표출!
+        const nmbModal = document.getElementById('no-more-bets-modal');
+        if (nmbModal) {
+            nmbModal.classList.remove('hidden');
+            nmbModal.style.cssText = 'display: flex !important; opacity: 1 !important; visibility: visible !important; z-index: 999999 !important; pointer-events: all !important;';
+        }
 
         // 관리자 배팅 로그 기록
         if (window.rouletteTable && window.rouletteStats) {
@@ -569,10 +582,15 @@ class RouletteApp {
             }
         }
 
-        // 정확히 1.5초(1500ms) 후 구슬 낙하 영상 팝업 표출
+        // [순서 확립] NO MORE BETS 알림을 2.0초간 뚜렷하게 보여준 후에 알림을 닫고,
+        // 비로소 운영자가 자동으로 룰렛판을 회전시키고 구슬 투구 실사 영상(triggerSpin)을 진행!
         setTimeout(() => {
+            if (nmbModal) {
+                nmbModal.classList.add('hidden');
+                nmbModal.style.display = 'none';
+            }
             this.triggerSpin();
-        }, 1500);
+        }, 2000);
     }
 
     /**

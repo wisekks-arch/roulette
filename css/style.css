@@ -3559,4 +3559,114 @@ body {
     .action-buttons-bar {
         grid-template-columns: repeat(2, 1fr) !important;
     }
+}
+
+/* ==========================================================================
+   27차 고도화: 스핀 버튼 완전 박멸 및 대형 "NO MORE BETS" 배팅 마감 우선 팝업
+   ========================================================================== */
+
+/* 스핀 버튼 전역 완전 박멸 (캐시 잔여 방지) */
+#btn-spin,
+.btn-spin,
+.btn-spin-gold {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+
+/* 대형 배팅 마감(NO MORE BETS) 중앙 알림 모달 */
+#no-more-bets-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.88);
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999999 !important;
+    transition: opacity 0.25s ease;
+}
+
+#no-more-bets-modal.hidden {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
+
+.no-more-bets-card {
+    background: radial-gradient(circle at center, #2b0707 0%, #150202 70%, #080000 100%);
+    border: 3px solid #ef4444;
+    border-radius: 24px;
+    padding: 36px 48px;
+    text-align: center;
+    box-shadow: 0 0 50px rgba(239, 68, 68, 0.85), inset 0 0 30px rgba(239, 68, 68, 0.4);
+    animation: nmbModalImpact 0.45s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    max-width: 90%;
+    width: 480px;
+}
+
+@keyframes nmbModalImpact {
+    0% {
+        transform: scale(0.6);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+}
+
+.nmb-lock-icon {
+    font-size: 3.5rem;
+    margin-bottom: 8px;
+    animation: lockIconBounce 0.8s infinite alternate ease-in-out;
+}
+
+@keyframes lockIconBounce {
+    from { transform: translateY(0) scale(1); }
+    to { transform: translateY(-8px) scale(1.1); filter: drop-shadow(0 0 15px #ef4444); }
+}
+
+.nmb-title {
+    font-family: var(--font-heading);
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: #ef4444;
+    text-shadow: 0 0 20px rgba(239, 68, 68, 0.9), 0 2px 4px #000;
+    letter-spacing: 2px;
+    margin: 0;
+}
+
+.nmb-subtitle {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #fca5a5;
+    margin: 8px 0 18px 0;
+    letter-spacing: 1px;
+}
+
+.nmb-desc-box {
+    background: rgba(0, 0, 0, 0.65);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: 12px;
+    padding: 12px 18px;
+}
+
+.nmb-dealer-tag {
+    font-size: 0.82rem;
+    color: #ffd700;
+    font-weight: 700;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.nmb-message {
+    font-size: 0.95rem;
+    color: #ffffff;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.4;
 }
