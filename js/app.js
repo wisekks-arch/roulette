@@ -186,11 +186,16 @@ class RouletteApp {
             });
         }
 
-        // 3. 스핀 버튼 (즉시 배팅 마감)
+        // 3. 스핀 버튼 (즉시 배팅 마감 및 회전 시작)
         const spinBtn = document.getElementById('btn-spin');
         if (spinBtn) {
             spinBtn.addEventListener('click', () => {
                 if (this.currentPhase === 'BETTING') {
+                    const currentBet = window.rouletteTable ? (window.rouletteTable.totalBetAmount || 0) : 0;
+                    if (currentBet <= 0) {
+                        this.showToast("⚠️ 먼저 테이블에 칩을 베팅해 주세요!");
+                        return;
+                    }
                     this.closeBettingPhase();
                 }
             });
@@ -226,21 +231,6 @@ class RouletteApp {
                 if (this.currentPhase === 'BETTING' && window.rouletteTable) {
                     window.rouletteTable.doubleBets();
                     this.updateBetDisplay();
-                }
-            });
-        }
-
-        // 6-1. 수동 즉시 스핀 (SPIN)
-        const spinBtn = document.getElementById('btn-spin');
-        if (spinBtn) {
-            spinBtn.addEventListener('click', () => {
-                if (this.currentPhase === 'BETTING') {
-                    const currentBet = window.rouletteTable ? (window.rouletteTable.totalBetAmount || 0) : 0;
-                    if (currentBet <= 0) {
-                        this.showToast("⚠️ 먼저 테이블에 칩을 베팅해 주세요!");
-                        return;
-                    }
-                    this.closeBettingPhase();
                 }
             });
         }

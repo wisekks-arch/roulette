@@ -86,7 +86,8 @@ class RouletteStats {
     loadNotice() {
         try {
             const notice = localStorage.getItem(this.STORAGE_KEY_NOTICE);
-            return notice || "👑 VIP European Roulette에 오신 것을 환영합니다! 공정한 라이브 난수 시스템과 즉시 출금 지원.";
+            if (notice && !notice.includes('출금')) return notice;
+            return "👑 VIP European Roulette에 오신 것을 환영합니다! 실감나는 전통 카지노 룰렛 시뮬레이션을 즐겨보세요.";
         } catch (e) {
             return "VIP European Roulette 라이브 테이블 가동 중";
         }
