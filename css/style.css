@@ -1980,8 +1980,8 @@ body {
     position: relative;
     z-index: 2;
 }
-
-11차 개편: 대형 배팅 카운트다운 게이지 바 (Betting Countdown Progress Bar)==========================================================================*/ .betting-timer-display-bar {
+/* 11차 개편: 대형 배팅 카운트다운 게이지 바 (Betting Countdown Progress Bar) ========================================================================== */
+.betting-timer-display-bar {
     background: linear-gradient(135deg, rgba(16, 26, 20, 0.95), rgba(8, 14, 10, 0.95));
     border: 1px solid rgba(255, 215, 0, 0.35);
     border-radius: 12px;

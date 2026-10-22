@@ -998,9 +998,28 @@ class RouletteApp {
             toast.classList.remove('show');
         }, 2800);
     }
+
+    /**
+     * 로비에서 방 선택/변경 시 호출
+     */
+    onRoomChanged(room) {
+        if (window.rouletteTable) {
+            window.rouletteTable.clearBets();
+        }
+        this.showToast(`[${room.name}] 테이블에 입장하셨습니다.`);
+        this.startBettingPhase();
+    }
 }
 
-// 브라우저 로드 시 앱 기동
-window.addEventListener('DOMContentLoaded', () => {
-    window.rouletteApp = new RouletteApp();
-});
+// 브라우저 로드 시 앱 기동 (DOMContentLoaded 완료 상태 및 캐시 환경에서도 100% 즉시 초기화 보장)
+function initRouletteApp() {
+    if (!window.rouletteApp) {
+        window.rouletteApp = new RouletteApp();
+    }
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initRouletteApp);
+} else {
+    initRouletteApp();
+}
