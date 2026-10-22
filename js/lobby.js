@@ -280,7 +280,7 @@ class RouletteLobby {
 
     /**
      * 봇 플레이어들의 실시간 테이블 배팅 시뮬레이션
-     * 배팅 타임(15초) 동안 봇들이 1~4초 간격으로 테이블에 직접 칩을 배치
+     * 배팅 타임(15초) 동안 봇들이 1~9초 간격으로 테이블 여러 스팟에 직접 칩을 배치
      */
     simulateAiBets() {
         this.botTimeouts.forEach(t => clearTimeout(t));
@@ -294,64 +294,68 @@ class RouletteLobby {
             const betEl = document.getElementById(`badge-bet-${bot.id}`);
             if (betEl) betEl.textContent = '배팅 고민 중...';
 
-            const delay = 1500 + index * 1200 + Math.random() * 1500;
+            // 각 봇마다 1~2회에 걸쳐 분산 배팅 수행
+            const betCount = Math.random() > 0.4 ? 2 : 1;
+            for (let b = 0; b < betCount; b++) {
+                const delay = 1200 + index * 1400 + b * 3200 + Math.random() * 1800;
 
-            const t = setTimeout(() => {
-                if (!window.rouletteTable || (window.rouletteApp && window.rouletteApp.currentPhase !== 'BETTING')) return;
+                const t = setTimeout(() => {
+                    if (!window.rouletteTable || (window.rouletteApp && window.rouletteApp.currentPhase !== 'BETTING')) return;
 
-                const chipUnit = room.minBet >= 1000 ? 5000 : 500;
-                const multiplier = Math.floor(Math.random() * 3) + 1;
-                const amount = Math.min(room.maxBet, Math.max(room.minBet, chipUnit * multiplier));
+                    const chipUnit = room.minBet >= 1000 ? (room.minBet >= 5000 ? 10000 : 5000) : 500;
+                    const multiplier = Math.floor(Math.random() * 3) + 1;
+                    const amount = Math.min(room.maxBet, Math.max(room.minBet, chipUnit * multiplier));
 
-                let targetSpot = '';
-                let targetName = '';
+                    let targetSpot = '';
+                    let targetName = '';
 
-                if (bot.preference === 'straight') {
-                    const luckyNum = Math.floor(Math.random() * 37);
-                    targetSpot = luckyNum.toString();
-                    targetName = `#${luckyNum}`;
-                } else if (bot.preference === 'outside') {
-                    const outsides = [
-                        { spot: 'red', name: 'RED' },
-                        { spot: 'black', name: 'BLACK' },
-                        { spot: 'even', name: 'EVEN' },
-                        { spot: 'odd', name: 'ODD' }
-                    ];
-                    const pick = outsides[Math.floor(Math.random() * outsides.length)];
-                    targetSpot = pick.spot;
-                    targetName = pick.name;
-                } else {
-                    const dozens = [
-                        { spot: '1-12', name: '1st 12' },
-                        { spot: '13-24', name: '2nd 12' },
-                        { spot: '25-36', name: '3rd 12' }
-                    ];
-                    const pick = dozens[Math.floor(Math.random() * dozens.length)];
-                    targetSpot = pick.spot;
-                    targetName = pick.name;
-                }
+                    if (bot.preference === 'straight') {
+                        const luckyNum = Math.floor(Math.random() * 37);
+                        targetSpot = luckyNum.toString();
+                        targetName = `#${luckyNum}`;
+                    } else if (bot.preference === 'outside') {
+                        const outsides = [
+                            { spot: 'red', name: 'RED' },
+                            { spot: 'black', name: 'BLACK' },
+                            { spot: 'even', name: 'EVEN' },
+                            { spot: 'odd', name: 'ODD' }
+                        ];
+                        const pick = outsides[Math.floor(Math.random() * outsides.length)];
+                        targetSpot = pick.spot;
+                        targetName = pick.name;
+                    } else {
+                        const dozens = [
+                            { spot: '1-12', name: '1st 12' },
+                            { spot: '13-24', name: '2nd 12' },
+                            { spot: '25-36', name: '3rd 12' }
+                        ];
+                        const pick = dozens[Math.floor(Math.random() * dozens.length)];
+                        targetSpot = pick.spot;
+                        targetName = pick.name;
+                    }
 
-                bot.lastBet = { targetSpot, targetName, amount };
+                    bot.lastBet = { targetSpot, targetName, amount };
 
-                // 테이블에 실제 봇 칩 배치
-                window.rouletteTable.placeBotBet(bot, targetSpot, amount);
+                    // 테이블에 실제 봇 칩 배치
+                    window.rouletteTable.placeBotBet(bot, targetSpot, amount);
 
-                // 참석자 바 배팅 현황 갱신
-                const badgeBet = document.getElementById(`badge-bet-${bot.id}`);
-                if (badgeBet) {
-                    badgeBet.textContent = `${amount.toLocaleString()} Chip (${targetName})`;
-                    badgeBet.classList.add('pop-animation');
-                    setTimeout(() => badgeBet.classList.remove('pop-animation'), 1000);
-                }
+                    // 참석자 바 배팅 현황 갱신
+                    const badgeBet = document.getElementById(`badge-bet-${bot.id}`);
+                    if (badgeBet) {
+                        badgeBet.textContent = `${amount.toLocaleString()} Chip (${targetName})`;
+                        badgeBet.classList.add('pop-animation');
+                        setTimeout(() => badgeBet.classList.remove('pop-animation'), 1000);
+                    }
 
-                this.currentAiBets.push({
-                    bot: bot,
-                    targetSpot: targetSpot,
-                    amount: amount
-                });
-            }, delay);
+                    this.currentAiBets.push({
+                        bot: bot,
+                        targetSpot: targetSpot,
+                        amount: amount
+                    });
+                }, delay);
 
-            this.botTimeouts.push(t);
+                this.botTimeouts.push(t);
+            }
         });
     }
 

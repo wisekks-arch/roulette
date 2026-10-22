@@ -516,37 +516,53 @@ class RouletteApp {
 
         // 1. 실사 라이브 캠 클로즈업 팝업 열기
         const liveCamModal = document.getElementById('live-cam-modal');
+        const liveCamVideo = document.getElementById('live-cam-video');
         const winBadge = document.getElementById('live-cam-win-badge');
         const statusText = document.getElementById('live-cam-status-text');
 
         if (winBadge) winBadge.classList.add('hidden');
-        if (statusText) statusText.textContent = "🎡 구슬이 트랙을 고속 질주하고 있습니다...";
+        if (statusText) statusText.textContent = "🔴 LIVE: 구슬이 외곽 림을 타고 고속 질주하고 있습니다...";
         if (liveCamModal) liveCamModal.classList.remove('hidden');
 
-        // 2. 실사 라이브 캠 캔버스 클로즈업 애니메이션 가동
+        // [핵심] 실사 룰렛 비디오 영상 자동 재생
+        if (liveCamVideo) {
+            liveCamVideo.currentTime = 0;
+            const playPromise = liveCamVideo.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(err => {
+                    console.log("Video autoplay policy fallback to canvas:", err);
+                });
+            }
+        }
+
+        // 2. 실사 라이브 캠 캔버스 클로즈업 시네마틱 애니메이션 가동
         this.runLiveCamAnimation(targetNum, () => {
-            // 구슬 안착 시 팝업 뱃지 연출
+            // 구슬 안착 시 팝업 뱃지 연출 및 비디오 일시 정지
+            if (liveCamVideo) {
+                liveCamVideo.pause();
+            }
+
             if (winBadge) {
                 const winNumEl = document.getElementById('live-cam-win-num');
                 if (winNumEl) winNumEl.textContent = targetNum;
                 winBadge.classList.remove('hidden');
             }
             if (statusText) {
-                statusText.textContent = `🎯 구슬 안착! 당첨 번호 #${targetNum}`;
+                statusText.textContent = `🎯 BALL DROP LOCK-ON! 당첨 번호 #${targetNum}`;
             }
 
-            // 1.5초 후 팝업 닫고 결과 화면으로 전환
+            // 1.8초간 당첨 클로즈업을 충분히 보여준 후 팝업 닫고 결과 화면으로 전환
             setTimeout(() => {
                 if (liveCamModal) liveCamModal.classList.add('hidden');
                 const color = window.rouletteWheel ? window.rouletteWheel.getNumberColor(targetNum) : 'red';
                 this.onSpinResult(targetNum, color);
-            }, 1500);
+            }, 1800);
         });
 
-        // 3. 메인 휠 캔버스도 동일한 targetNum으로 동기화 회전
+        // 3. 메인 휠 캔버스도 동일한 targetNum으로 동기화 회전 및 안착 후 100% 완전 정지
         if (window.rouletteWheel) {
             window.rouletteWheel.spin(targetNum, (winningNumber, color) => {
-                // 실사 캠이 결과를 총괄하므로 메인 휠 회전 동기화 유지
+                // 회전 완료 후 휠과 구슬이 완전 고정 정지 상태를 유지함
             });
         }
     }
@@ -589,8 +605,10 @@ class RouletteApp {
         const renderFrame = () => {
             const elapsed = (Date.now() - startTime) / 1000;
 
-            // 휠 회전
-            wheelAngle += 0.015;
+            // 휠 회전 (구슬 안착 시 100% 완전 정지 고정)
+            if (state !== 'pocketed') {
+                wheelAngle += 0.015;
+            }
 
             // 구슬 물리
             if (state === 'rolling') {

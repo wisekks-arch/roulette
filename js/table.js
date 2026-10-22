@@ -8,6 +8,7 @@ class RouletteTable {
         this.container = document.getElementById(containerId);
         this.selectedChip = 10000; // 기본 선택 칩: 10,000원
         this.bets = {};            // { betKey: { type, numbers, amount, chips: [...] } }
+        this.botBets = {};         // { spotId: [ { bot, amount } ] } - 다른 플레이어(AI 봇)들의 테이블 배팅
         this.totalBetAmount = 0;
         this.lastBets = null;      // 재베팅(Rebet)용 직전 기록
         this.dollyElement = null;  // 당첨 번호에 세워지는 황동 마커
@@ -265,42 +266,129 @@ class RouletteTable {
     }
 
     /**
-     * 해당 스팟의 칩 시각적 스택 업데이트
+     * 다른 플레이어(AI 봇)들의 테이블 칩 배팅 수행
+     * @param {object} bot - 봇 플레이어 객체 { id, name, avatar, chipClass, chipColor }
+     * @param {string} rawTargetSpot - 배팅 목표 ('17', 'red', 'black', 'even', '1-12' 등)
+     * @param {number} amount - 배팅 칩 금액
+     */
+    placeBotBet(bot, rawTargetSpot, amount) {
+        // 스팟 ID 표준화
+        let spotId = '';
+        const rawStr = String(rawTargetSpot).trim();
+
+        if (!isNaN(rawStr)) {
+            spotId = `spot-${rawStr}`;
+        } else if (rawStr === 'red') spotId = 'spot-red';
+        else if (rawStr === 'black') spotId = 'spot-black';
+        else if (rawStr === 'even') spotId = 'spot-even';
+        else if (rawStr === 'odd') spotId = 'spot-odd';
+        else if (rawStr === 'low' || rawStr === '1-18') spotId = 'spot-low';
+        else if (rawStr === 'high' || rawStr === '19-36') spotId = 'spot-high';
+        else if (rawStr === '1-12') spotId = 'spot-dozen1';
+        else if (rawStr === '13-24') spotId = 'spot-dozen2';
+        else if (rawStr === '25-36') spotId = 'spot-dozen3';
+        else if (rawStr === 'col1') spotId = 'spot-col1';
+        else if (rawStr === 'col2') spotId = 'spot-col2';
+        else if (rawStr === 'col3') spotId = 'spot-col3';
+        else if (rawStr.startsWith('spot-')) spotId = rawStr;
+        else spotId = `spot-${rawStr}`;
+
+        const spotEl = this.container.querySelector(`#${spotId}`);
+        if (!spotEl) return;
+
+        // 봇 배팅 데이터 기록
+        if (!this.botBets[spotId]) {
+            this.botBets[spotId] = [];
+        }
+
+        const existing = this.botBets[spotId].find(b => b.bot.id === bot.id);
+        if (existing) {
+            existing.amount += amount;
+        } else {
+            this.botBets[spotId].push({ bot, amount });
+        }
+
+        // 경쾌한 칩 낙하 사운드
+        if (window.rouletteAudio) {
+            window.rouletteAudio.playChipSound();
+        }
+
+        // 스팟 칩 스택 시각화
+        this.updateChipStack(spotId);
+    }
+
+    /**
+     * 해당 스팟의 칩 시각적 스택 업데이트 (유저 칩 + 다른 플레이어 봇 칩 동시 렌더링)
      */
     updateChipStack(spotId) {
         const chipContainer = this.container.querySelector(`#chips-${spotId.replace('spot-', '')}`);
         if (!chipContainer) return;
 
         const betInfo = this.bets[spotId];
-        if (!betInfo || betInfo.amount === 0) {
+        const userHasBet = betInfo && betInfo.amount > 0;
+        const botsOnSpot = this.botBets[spotId] || [];
+        const botHasBet = botsOnSpot.length > 0;
+
+        if (!userHasBet && !botHasBet) {
             chipContainer.innerHTML = '';
+            chipContainer.classList.remove('has-multiple-chips');
             return;
         }
 
-        // 상위 칩 색상 결정
-        const lastChip = betInfo.chips[betInfo.chips.length - 1];
-        let chipClass = 'chip-10k';
-        if (lastChip >= 500000) chipClass = 'chip-500k';
-        else if (lastChip >= 100000) chipClass = 'chip-100k';
-        else if (lastChip >= 50000) chipClass = 'chip-50k';
-        else if (lastChip >= 10000) chipClass = 'chip-10k';
-        else if (lastChip >= 5000) chipClass = 'chip-5k';
-        else chipClass = 'chip-1k';
+        let html = '';
 
-        // 금액 표시 포맷 (예: 50K, 1M, 10K 등)
-        let displayAmount = betInfo.amount >= 1000000
-            ? (betInfo.amount / 1000000).toFixed(1) + 'M'
-            : (betInfo.amount >= 1000 ? (betInfo.amount / 1000) + 'K' : betInfo.amount);
+        // 1. 유저(나)의 배팅 칩 (골드/세라믹 VIP 칩)
+        if (userHasBet) {
+            const lastChip = betInfo.chips[betInfo.chips.length - 1];
+            let chipClass = 'chip-10k';
+            if (lastChip >= 500000) chipClass = 'chip-500k';
+            else if (lastChip >= 100000) chipClass = 'chip-100k';
+            else if (lastChip >= 50000) chipClass = 'chip-50k';
+            else if (lastChip >= 10000) chipClass = 'chip-10k';
+            else if (lastChip >= 5000) chipClass = 'chip-5k';
+            else chipClass = 'chip-1k';
 
-        chipContainer.innerHTML = `
-            <div class="placed-chip ${chipClass}">
-                <span>${displayAmount}</span>
-            </div>
-        `;
+            let displayAmount = betInfo.amount >= 1000000
+                ? (betInfo.amount / 1000000).toFixed(1) + 'M'
+                : (betInfo.amount >= 1000 ? (betInfo.amount / 1000) + 'K' : betInfo.amount);
+
+            html += `
+                <div class="placed-chip ${chipClass} user-placed-chip" title="나 (YOU): ${betInfo.amount.toLocaleString()} Chip">
+                    <span class="chip-avatar-tag">🧑</span>
+                    <span class="chip-val">${displayAmount}</span>
+                </div>
+            `;
+        }
+
+        // 2. 다른 플레이어(AI 봇들)의 배팅 칩 (고유 색상 및 아바타 뱃지)
+        botsOnSpot.forEach((bb, idx) => {
+            const bAmount = bb.amount >= 1000000
+                ? (bb.amount / 1000000).toFixed(1) + 'M'
+                : (bb.amount >= 1000 ? (bb.amount / 1000) + 'K' : bb.amount);
+
+            const botClass = bb.bot.chipClass || 'chip-bot-blue';
+            const offsetClass = `bot-chip-offset-${idx % 3}`;
+
+            html += `
+                <div class="placed-chip bot-placed-chip ${botClass} ${offsetClass}" 
+                     style="box-shadow: 0 4px 10px ${bb.bot.chipColor || '#3b82f6'}88;"
+                     title="${bb.bot.name}: ${bb.amount.toLocaleString()} Chip">
+                    <span class="chip-avatar-tag">${bb.bot.avatar || '🤖'}</span>
+                    <span class="chip-val">${bAmount}</span>
+                </div>
+            `;
+        });
+
+        chipContainer.innerHTML = html;
+        if ((userHasBet ? 1 : 0) + botsOnSpot.length > 1) {
+            chipContainer.classList.add('has-multiple-chips');
+        } else {
+            chipContainer.classList.remove('has-multiple-chips');
+        }
     }
 
     /**
-     * 베팅 취소 (Clear)
+     * 베팅 취소 (Clear) - 유저 배팅만 취소하고 봇 배팅은 보존
      */
     clearBets() {
         if (this.isLocked || this.totalBetAmount === 0) return;
@@ -310,12 +398,14 @@ class RouletteTable {
             window.rouletteApp.addBalance(this.totalBetAmount);
         }
 
+        const userSpotIds = Object.keys(this.bets);
         this.bets = {};
         this.totalBetAmount = 0;
 
-        // 모든 칩 스택 제거
-        const chipStacks = this.container.querySelectorAll('.chip-stack');
-        chipStacks.forEach(el => el.innerHTML = '');
+        // 유저가 배팅했던 스팟들 갱신
+        userSpotIds.forEach(spotId => {
+            this.updateChipStack(spotId);
+        });
 
         if (window.rouletteApp) {
             window.rouletteApp.updateBetDisplay();
@@ -492,10 +582,14 @@ class RouletteTable {
      * 다음 라운드(새로운 판) 시작 시 테이블 위의 모든 칩 및 당첨 오라 완전 초기화
      */
     clearAllChips() {
+        this.botBets = {};
+        this.bets = {};
+        this.totalBetAmount = 0;
+
         const allChipStacks = this.container.querySelectorAll('.chip-stack');
         allChipStacks.forEach(stack => {
             stack.innerHTML = '';
-            stack.classList.remove('chip-sweep-away', 'winning-chip-glowing');
+            stack.classList.remove('chip-sweep-away', 'winning-chip-glowing', 'has-multiple-chips');
         });
     }
 

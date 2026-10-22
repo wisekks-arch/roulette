@@ -81,18 +81,22 @@ class RouletteWheel {
      */
     update() {
         if (!this.isSpinning) {
-            // 평상시 부드러운 아이들 회전
+            // [사용자 요청] 당첨 번호에 구슬이 안착되면 룰렛판과 구슬이 100% 완벽히 정지/고정됨
+            if (this.ballPhase === 'pocketed') {
+                this.wheelSpeed = 0;
+                if (this.targetNumber !== null) {
+                    const targetIndex = this.numbers.indexOf(this.targetNumber);
+                    if (targetIndex !== -1) {
+                        this.ballAngle = this.wheelAngle + targetIndex * this.sliceAngle + this.sliceAngle / 2;
+                    }
+                }
+                return;
+            }
+
+            // 스핀 전 대기 상태에서의 부드러운 기본 회전
             this.wheelAngle += this.wheelSpeed;
             if (this.wheelAngle >= Math.PI * 2) {
                 this.wheelAngle -= Math.PI * 2;
-            }
-
-            // [핵심 보정] 안착된 구슬이 있다면, 휠 회전 각도에 맞춰 구슬 각도를 실시간 100% 밀착 동기화
-            if (this.ballPhase === 'pocketed' && this.targetNumber !== null) {
-                const targetIndex = this.numbers.indexOf(this.targetNumber);
-                if (targetIndex !== -1) {
-                    this.ballAngle = this.wheelAngle + targetIndex * this.sliceAngle + this.sliceAngle / 2;
-                }
             }
             return;
         }
@@ -170,11 +174,11 @@ class RouletteWheel {
                         window.rouletteAudio.playBounce();
                     }
                 } else {
-                    // 최종 포켓 100% 영구 안착
+                    // [핵심 변경] 최종 포켓 안착 시 룰렛판 및 구슬 100% 완전 고정 정지 (속도 0)
                     this.ballPhase = 'pocketed';
                     this.ballActive = false;
                     this.isSpinning = false;
-                    this.wheelSpeed = 0.0025; // 부드러운 아이들 회전
+                    this.wheelSpeed = 0; // 룰렛판 완전 정지 (더 이상 회전하지 않고 고정)
 
                     // 당첨 번호 포켓 중심각과 구슬 각도 영구 일치 락인
                     this.ballAngle = this.wheelAngle + targetIndex * this.sliceAngle + this.sliceAngle / 2;
@@ -191,10 +195,13 @@ class RouletteWheel {
                 }
             }
         } else if (this.ballPhase === 'pocketed') {
-            // 안착 후 휠과 영구적으로 일체화되어 함께 회전
+            // 안착 후 룰렛판과 구슬이 완전 고정 정지 상태 유지
+            this.wheelSpeed = 0;
             const targetIndex = this.numbers.indexOf(this.targetNumber);
-            this.ballAngle = this.wheelAngle + targetIndex * this.sliceAngle + this.sliceAngle / 2;
-            this.ballRadius = pocketRadius;
+            if (targetIndex !== -1) {
+                this.ballAngle = this.wheelAngle + targetIndex * this.sliceAngle + this.sliceAngle / 2;
+                this.ballRadius = pocketRadius;
+            }
         }
     }
 
