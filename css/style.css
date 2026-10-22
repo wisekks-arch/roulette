@@ -448,14 +448,14 @@ body {
    ========================================================================== */
 .roulette-felt-table {
     position: relative;
-    background: 
+    background:
         radial-gradient(ellipse at 50% 35%, rgba(10, 80, 48, 0.95) 0%, rgba(3, 40, 22, 0.98) 70%, #01160c 100%),
         repeating-linear-gradient(45deg, rgba(255, 215, 0, 0.018) 0px, rgba(255, 215, 0, 0.018) 2px, transparent 2px, transparent 12px);
     border: 14px solid #1c0803;
     outline: 2px solid var(--gold-primary);
     border-radius: 20px;
     padding: 20px;
-    box-shadow: 
+    box-shadow:
         inset 0 0 60px rgba(0, 0, 0, 0.9),
         0 0 0 4px #421808,
         0 18px 45px rgba(0, 0, 0, 0.95);
@@ -480,141 +480,6 @@ body {
     display: flex;
     flex: 1;
     gap: 5px;
-    position: relative;
-}
-
-/* ==========================================================================
-   전통 카지노 선/교차점 전방위 배팅 오버레이 (스플릿, 코너, 스트리트, 식스라인)
-   ========================================================================== */
-.inside-bets-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 15;
-}
-
-/* 오버레이 스팟 공통 인터랙티브 스타일 */
-.overlay-spot {
-    position: absolute;
-    transform: translate(-50%, -50%);
-    pointer-events: auto;
-    cursor: pointer;
-    z-index: 16;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.15s ease;
-    border-radius: 4px;
-}
-
-/* 1. 수직 스플릿 (상하 인접 2개 숫자 사이 선) */
-.spot-split-v {
-    width: 38px;
-    height: 16px;
-    background: transparent;
-}
-.spot-split-v:hover:not(.locked) {
-    background: rgba(255, 215, 0, 0.45);
-    box-shadow: 0 0 10px #ffd700, inset 0 0 4px #ffffff;
-    border: 1px solid #ffffff;
-}
-
-/* 2. 수평 스플릿 (좌우 인접 2개 숫자 사이 선) */
-.spot-split-h {
-    width: 16px;
-    height: 38px;
-    background: transparent;
-}
-.spot-split-h:hover:not(.locked) {
-    background: rgba(255, 215, 0, 0.45);
-    box-shadow: 0 0 10px #ffd700, inset 0 0 4px #ffffff;
-    border: 1px solid #ffffff;
-}
-
-/* 3. 코너 배팅 (4개 숫자 십자 교차점) */
-.spot-corner {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: transparent;
-}
-.spot-corner:hover:not(.locked) {
-    background: rgba(255, 215, 0, 0.6);
-    box-shadow: 0 0 12px #ffd700, 0 0 4px #ffffff;
-    border: 1.5px solid #ffffff;
-    transform: translate(-50%, -50%) scale(1.15);
-}
-
-/* 4. 스트리트 배팅 (가로 3개 숫자 행 하단 라인) */
-.spot-street {
-    width: 42px;
-    height: 18px;
-    border-radius: 4px;
-    background: transparent;
-}
-.spot-street:hover:not(.locked) {
-    background: rgba(255, 215, 0, 0.45);
-    box-shadow: 0 0 10px #ffd700, inset 0 0 4px #ffffff;
-    border: 1px solid #ffffff;
-}
-
-/* 5. 식스 라인 배팅 (두 줄 6개 숫자 하단 T자 교차점) */
-.spot-sixline {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: transparent;
-}
-.spot-sixline:hover:not(.locked) {
-    background: rgba(255, 215, 0, 0.6);
-    box-shadow: 0 0 12px #ffd700, 0 0 4px #ffffff;
-    border: 1.5px solid #ffffff;
-    transform: translate(-50%, -50%) scale(1.15);
-}
-
-/* 칩이 놓여 있는 오버레이 스팟 표시 */
-.overlay-spot.has-bet {
-    z-index: 20;
-}
-.overlay-spot.has-bet .chip-stack {
-    display: block;
-}
-
-/* 호버 시 커버되는 번호 셀 스마트 골드 네온 하이라이트 */
-.spot-number.preview-highlight {
-    outline: 2px solid #ffffff !important;
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.95), inset 0 0 14px rgba(255, 215, 0, 0.5) !important;
-    transform: scale(1.03);
-    z-index: 8;
-    transition: transform 0.12s ease, box-shadow 0.12s ease;
-}
-
-/* 실시간 배팅 안내 툴팁 */
-.bet-info-tooltip {
-    position: absolute;
-    transform: translate(-50%, -100%);
-    background: rgba(12, 18, 28, 0.95);
-    border: 1.5px solid #ffd700;
-    color: #ffffff;
-    font-family: var(--font-heading);
-    font-size: 0.8rem;
-    font-weight: 700;
-    padding: 5px 10px;
-    border-radius: 6px;
-    white-space: nowrap;
-    pointer-events: none;
-    z-index: 100;
-    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.9), 0 0 8px rgba(255, 215, 0, 0.4);
-    letter-spacing: 0.5px;
-    animation: tooltipFadeIn 0.15s ease-out;
-}
-
-@keyframes tooltipFadeIn {
-    from { opacity: 0; transform: translate(-50%, -85%); }
-    to { opacity: 1; transform: translate(-50%, -100%); }
 }
 
 .table-column-group {
@@ -744,6 +609,7 @@ body {
         box-shadow: inset 0 0 15px #ffd700, 0 0 16px #ffd700;
         background-color: rgba(255, 215, 0, 0.55);
     }
+
     to {
         box-shadow: inset 0 0 25px #ffffff, 0 0 32px #ffd700;
         background-color: rgba(255, 215, 0, 0.85);
@@ -783,7 +649,7 @@ body {
     background: linear-gradient(to right, #ffd700, #b8860b, #ffeaa7);
     margin: -3px auto 0 auto;
     border-radius: 2px;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.6);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
 }
 
 .knight-brass-pedestal {
@@ -806,13 +672,16 @@ body {
         transform: translate(-50%, -180%) scale(1.8);
         opacity: 0;
     }
+
     70% {
         transform: translate(-50%, -90%) scale(0.96);
         opacity: 1;
     }
+
     85% {
         transform: translate(-50%, -96%) scale(1.04);
     }
+
     100% {
         transform: translate(-50%, -92%) scale(1);
     }
@@ -841,7 +710,7 @@ body {
     font-weight: 900;
     font-family: var(--font-body);
     color: #ffffff;
-    box-shadow: 
+    box-shadow:
         0 4px 8px rgba(0, 0, 0, 0.85),
         inset 0 0 0 2px rgba(255, 255, 255, 0.45),
         inset 0 0 5px rgba(0, 0, 0, 0.6);
@@ -849,8 +718,15 @@ body {
 }
 
 @keyframes chipDrop {
-    0% { transform: scale(1.5); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
+    0% {
+        transform: scale(1.5);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 /* 낙첨 칩 일제 회수(스위핑) 애니메이션 */
@@ -863,10 +739,12 @@ body {
         transform: translate(-50%, -50%) scale(1);
         opacity: 1;
     }
+
     50% {
         transform: translate(-50%, -180%) scale(0.85);
         opacity: 0.8;
     }
+
     100% {
         transform: translate(-50%, -320%) scale(0.3);
         opacity: 0;
@@ -885,6 +763,7 @@ body {
         transform: scale(1);
         filter: drop-shadow(0 0 6px rgba(255, 215, 0, 0.8));
     }
+
     100% {
         transform: scale(1.18);
         filter: drop-shadow(0 0 20px rgba(255, 215, 0, 1)) drop-shadow(0 0 30px rgba(255, 255, 255, 0.9));
@@ -893,7 +772,7 @@ body {
 
 /* 1K: 로열 사파이어 딥블루 & 아이보리 엣지 스트라이프 */
 .chip-1k {
-    background: 
+    background:
         radial-gradient(circle at center, #1b3d6c 0%, #0d223f 62%, transparent 63%),
         repeating-conic-gradient(#ffffff 0deg 20deg, #163660 20deg 40deg);
     border: 2px solid #a4cafe;
@@ -902,7 +781,7 @@ body {
 
 /* 5K: 루비 크림슨 & 버건디 골드 엣지 스트라이프 */
 .chip-5k {
-    background: 
+    background:
         radial-gradient(circle at center, #8a1414 0%, #520707 62%, transparent 63%),
         repeating-conic-gradient(#ffd700 0deg 20deg, #781010 20deg 40deg);
     border: 2px solid #ff9999;
@@ -911,7 +790,7 @@ body {
 
 /* 10K: 에메랄드 제이드 & 샴페인 골드 엣지 스트라이프 */
 .chip-10k {
-    background: 
+    background:
         radial-gradient(circle at center, #136338 0%, #083c20 62%, transparent 63%),
         repeating-conic-gradient(#ffffff 0deg 20deg, #105931 20deg 40deg);
     border: 2px solid #a3f7c4;
@@ -920,7 +799,7 @@ body {
 
 /* 50K: 임페리얼 퍼플 & 플래티넘 바이올렛 엣지 스트라이프 */
 .chip-50k {
-    background: 
+    background:
         radial-gradient(circle at center, #5b217a 0%, #350f4a 62%, transparent 63%),
         repeating-conic-gradient(#ffd700 0deg 20deg, #4f1b6b 20deg 40deg);
     border: 2px solid #e1b4f7;
@@ -929,7 +808,7 @@ body {
 
 /* 100K: 럭셔리 오닉스 블랙 & 24K 순금 인레이 */
 .chip-100k {
-    background: 
+    background:
         radial-gradient(circle at center, #222222 0%, #0d0d0d 62%, transparent 63%),
         repeating-conic-gradient(#ffd700 0deg 20deg, #181818 20deg 40deg);
     border: 2px solid var(--gold-primary);
@@ -939,7 +818,7 @@ body {
 
 /* 500K: 티타늄 펄 화이트 & 로즈 골드 리미티드 */
 .chip-500k {
-    background: 
+    background:
         radial-gradient(circle at center, #fff6eb 0%, #d8b688 62%, transparent 63%),
         repeating-conic-gradient(#b8860b 0deg 20deg, #ffffff 20deg 40deg);
     border: 2px solid #ffffff;
@@ -965,7 +844,7 @@ body {
     padding: 12px 18px;
     border-radius: 40px;
     border: 1px solid #5a3d1c;
-    box-shadow: inset 0 2px 8px rgba(0,0,0,0.8), 0 8px 20px rgba(0,0,0,0.6);
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8), 0 8px 20px rgba(0, 0, 0, 0.6);
 }
 
 .chip-selector-btn {
@@ -979,10 +858,10 @@ body {
     font-weight: 900;
     font-family: var(--font-body);
     cursor: pointer;
-    box-shadow: 
+    box-shadow:
         0 6px 12px rgba(0, 0, 0, 0.7),
         inset 0 0 0 2px rgba(255, 255, 255, 0.4),
-        inset 0 0 6px rgba(0,0,0,0.5);
+        inset 0 0 6px rgba(0, 0, 0, 0.5);
     transition: all 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
@@ -1355,49 +1234,6 @@ body {
     margin-top: 4px;
 }
 
-/* 승리 모달 내부 적중 상세 목록 */
-.win-bets-detail {
-    margin-top: 14px;
-    background: rgba(0, 0, 0, 0.5);
-    border: 1px solid rgba(255, 215, 0, 0.3);
-    border-radius: 10px;
-    padding: 10px 14px;
-    max-height: 140px;
-    overflow-y: auto;
-}
-
-.win-detail-title {
-    font-size: 0.78rem;
-    color: var(--gold-primary);
-    font-weight: 700;
-    margin-bottom: 6px;
-    border-bottom: 1px solid rgba(255, 215, 0, 0.2);
-    padding-bottom: 4px;
-}
-
-.win-detail-items {
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.win-detail-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 0.8rem;
-    color: #e0e0e0;
-}
-
-.win-detail-item .detail-name {
-    font-family: var(--font-body);
-}
-
-.win-detail-item .detail-val {
-    color: #2ecc71;
-    font-weight: 700;
-}
-
 .toast-box {
     position: fixed;
     bottom: 24px;
@@ -1510,6 +1346,7 @@ body {
         transform: translateX(-50%) translateY(-20px) scale(0.7);
         opacity: 0;
     }
+
     100% {
         transform: translateX(-50%) translateY(0) scale(1);
         opacity: 1;
@@ -1532,6 +1369,7 @@ body {
         transform: scale(1);
         box-shadow: 0 0 12px rgba(255, 215, 0, 0.6), inset 0 0 8px rgba(255, 215, 0, 0.4);
     }
+
     100% {
         transform: scale(1.04);
         box-shadow: 0 0 26px rgba(255, 215, 0, 1), inset 0 0 18px rgba(255, 215, 0, 0.8);
@@ -1611,13 +1449,16 @@ body {
         transform: translate(-50%, -240%) scale(1.4);
         opacity: 0;
     }
+
     60% {
         transform: translate(-50%, -92%) scale(0.92, 1.08);
         opacity: 1;
     }
+
     80% {
         transform: translate(-50%, -102%) scale(1.04, 0.96);
     }
+
     100% {
         transform: translate(-50%, -92%) scale(1, 1);
         opacity: 1;

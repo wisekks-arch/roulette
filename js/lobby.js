@@ -128,9 +128,9 @@ class RouletteLobby {
                         <span class="history-label">최근 당첨 번호:</span>
                         <div class="history-chips">
                             ${room.history.slice(-6).map(n => {
-                                const c = this.getNumberColor(n);
-                                return `<span class="h-chip h-${c}">${n}</span>`;
-                            }).join('')}
+                const c = this.getNumberColor(n);
+                return `<span class="h-chip h-${c}">${n}</span>`;
+            }).join('')}
                         </div>
                     </div>
 
@@ -244,16 +244,7 @@ class RouletteLobby {
                 const outsides = ['red', 'black', 'even', 'odd', 'low', 'high'];
                 betTarget = outsides[Math.floor(Math.random() * outsides.length)];
             } else if (ai.betPreference === 'straight') {
-                const rand = Math.random();
-                if (rand < 0.5) {
-                    betTarget = Math.floor(Math.random() * 37).toString();
-                } else if (rand < 0.8) {
-                    const n1 = Math.floor(Math.random() * 35) + 1;
-                    betTarget = `스플릿(${n1}/${n1+1})`;
-                } else {
-                    const n1 = Math.floor(Math.random() * 32) + 1;
-                    betTarget = `코너(${n1}~${n1+4})`;
-                }
+                betTarget = Math.floor(Math.random() * 37).toString();
             } else if (ai.betPreference === 'dozen') {
                 const dozens = ['1-12', '13-24', '25-36'];
                 betTarget = dozens[Math.floor(Math.random() * dozens.length)];
@@ -342,3 +333,5 @@ class RouletteLobby {
 
 // 글로벌 인스턴스
 window.rouletteLobby = new RouletteLobby();
+
+

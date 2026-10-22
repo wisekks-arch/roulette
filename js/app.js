@@ -1,16 +1,26 @@
 /**
- * 🎡 최고급 전통 카지노 룰렛 메인 게임 컨트롤러
- * 전체 게임 루프, 베팅 페이즈, 노 모어 벳, 스핀, 배당 판정 및 UI 반응형 총괄
+ * 🎰 Lucky Roulette 메인 게임 컨트롤러
+ * 10단계 시나리오 루프 (15초 배팅 -> 배팅 마감 -> 7초 회전 -> 결과 발표 -> 정산 -> 3초 후 다음 회차)
+ * 오토 배팅(Auto Play), Undo(배팅 취소), 실시간 통계 및 관리자 모달 연동
  */
 
 class RouletteApp {
     constructor() {
-        this.balance = 10000000; // 초기 무료 머니: 1,000만 원
-        this.currentPhase = 'BETTING'; // 'BETTING', 'NO_MORE_BETS', 'SPINNING', 'RESULT'
-        this.timerSeconds = 20;
+        this.balance = 1250000;       // 초기 잔고: 1,250,000 Chip
+        this.currentRound = 1521;     // 시작 회차: ROUND #1521
+        this.currentPhase = 'BETTING'; // 'BETTING', 'CLOSED', 'SPINNING', 'RESULT'
+        this.timerSeconds = 15;        // 배팅 시간 15초
         this.timerInterval = null;
-        this.autoSpinTimer = null;
-        this.isLiveVideoMode = true; // 기본값: 실사 카지노 영상 모드 ON
+        this.nextRoundTimeout = null;
+
+        // 오토플레이 설정
+        this.autoPlay = {
+            enabled: false,
+            remainingRounds: 0,
+            initialBalance: 0,
+            targetProfit: 0,
+            stopLoss: 0
+        };
 
         this.init();
     }
@@ -19,31 +29,86 @@ class RouletteApp {
      * 메인 앱 초기화
      */
     init() {
-        // 테이블 인스턴스 생성
-        window.rouletteTable = new RouletteTable('roulette-table-mount');
-
-        // 휠 인스턴스 생성
-        window.rouletteWheel = new RouletteWheel('roulette-wheel-canvas');
-
-        // 초기 UI 렌더링
-        this.updateBalanceDisplay();
-        this.updateBetDisplay();
-        this.attachControlEvents();
-
-        // 첫 입장 시 1번 룸으로 진입
-        if (window.rouletteLobby) {
-            window.rouletteLobby.enterRoom(1);
+        // 테이블 인스턴스
+        if (!window.rouletteTable) {
+            window.rouletteTable = new RouletteTable('roulette-table-mount');
         }
 
-        // 첫 베팅 라운드 시작
+        // 휠 인스턴스
+        if (!window.rouletteWheel) {
+            window.rouletteWheel = new RouletteWheel('roulette-wheel-canvas');
+        }
+
+        // 초기 UI 업데이트
+        this.updateBalanceDisplay();
+        this.updateBetDisplay();
+        this.updateRoundDisplay();
+        this.attachControlEvents();
+
+        // 2번 일반방으로 기본 입장
+        if (window.rouletteLobby) {
+            window.rouletteLobby.enterRoom(2);
+        }
+
+        // 첫 배팅 라운드 시작
         this.startBettingPhase();
+    }
+
+    /**
+     * 회차 UI 표시 업데이트
+     */
+    updateRoundDisplay() {
+        const roundEl = document.getElementById('current-round-text');
+        if (roundEl) {
+            roundEl.textContent = `ROUND #${this.currentRound}`;
+        }
+    }
+
+    /**
+     * 유저 잔고 표시 업데이트
+     */
+    updateBalanceDisplay() {
+        const balanceEl = document.getElementById('user-balance-text');
+        if (balanceEl) {
+            balanceEl.textContent = `${this.balance.toLocaleString()} Chip`;
+        }
+        const autoBalEl = document.getElementById('auto-current-balance');
+        if (autoBalEl) {
+            autoBalEl.textContent = `${this.balance.toLocaleString()} Chip`;
+        }
+    }
+
+    /**
+     * 총 배팅액 표시 업데이트
+     */
+    updateBetDisplay() {
+        const betEl = document.getElementById('user-bet-text');
+        if (betEl && window.rouletteTable) {
+            betEl.textContent = `${window.rouletteTable.totalBetAmount.toLocaleString()} Chip`;
+        }
+    }
+
+    /**
+     * 잔고 차감
+     */
+    deductBalance(amount) {
+        this.balance = Math.max(0, this.balance - amount);
+        this.updateBalanceDisplay();
+    }
+
+    /**
+     * 잔고 추가
+     */
+    addBalance(amount) {
+        this.balance += amount;
+        this.updateBalanceDisplay();
     }
 
     /**
      * 컨트롤 버튼 이벤트 바인딩
      */
     attachControlEvents() {
-        // 1. 칩 선택 버튼들
+        // 1. 칩 선택 버튼들 (100 ~ 500K)
         const chipButtons = document.querySelectorAll('.chip-selector-btn');
         chipButtons.forEach(btn => {
             btn.addEventListener('click', () => {
@@ -59,27 +124,47 @@ class RouletteApp {
             });
         });
 
-        // 2. 스핀 버튼 (즉시 스핀)
-        const spinBtn = document.getElementById('btn-spin');
-        if (spinBtn) {
-            spinBtn.addEventListener('click', () => {
-                if (this.currentPhase === 'BETTING') {
-                    this.triggerSpin();
+        // 2. Undo (마지막 배팅 1단계 취소) 버튼
+        const undoBtn = document.getElementById('btn-undo-bet');
+        if (undoBtn) {
+            undoBtn.addEventListener('click', () => {
+                if (this.currentPhase !== 'BETTING') {
+                    this.showToast("배팅 진행 중에만 취소할 수 있습니다.");
+                    return;
+                }
+                if (window.rouletteTable) {
+                    const success = window.rouletteTable.undoLastBet();
+                    if (success) {
+                        this.showToast("마지막 배팅이 취소되었습니다.");
+                    } else {
+                        this.showToast("취소할 배팅 내역이 없습니다.");
+                    }
                 }
             });
         }
 
-        // 3. 베팅 취소 버튼 (Clear)
+        // 3. 스핀 버튼 (즉시 배팅 마감 및 회전)
+        const spinBtn = document.getElementById('btn-spin');
+        if (spinBtn) {
+            spinBtn.addEventListener('click', () => {
+                if (this.currentPhase === 'BETTING') {
+                    this.closeBettingPhase();
+                }
+            });
+        }
+
+        // 4. 전체 베팅 취소 버튼 (Clear)
         const clearBtn = document.getElementById('btn-clear');
         if (clearBtn) {
             clearBtn.addEventListener('click', () => {
                 if (this.currentPhase === 'BETTING' && window.rouletteTable) {
                     window.rouletteTable.clearBets();
+                    this.showToast("모든 배팅이 취소되었습니다.");
                 }
             });
         }
 
-        // 4. 재베팅 버튼 (Rebet)
+        // 5. 재베팅 버튼 (Rebet)
         const rebetBtn = document.getElementById('btn-rebet');
         if (rebetBtn) {
             rebetBtn.addEventListener('click', () => {
@@ -89,7 +174,7 @@ class RouletteApp {
             });
         }
 
-        // 5. 2배 베팅 버튼 (Double)
+        // 6. 2배 베팅 버튼 (Double)
         const doubleBtn = document.getElementById('btn-double');
         if (doubleBtn) {
             doubleBtn.addEventListener('click', () => {
@@ -99,28 +184,104 @@ class RouletteApp {
             });
         }
 
-        // 6. 로비 버튼
+        // 7. 로비 모달 열기/닫기
         const lobbyBtn = document.getElementById('btn-open-lobby');
         if (lobbyBtn) {
             lobbyBtn.addEventListener('click', () => {
-                const lobbyModal = document.getElementById('lobby-modal');
-                if (lobbyModal) {
-                    lobbyModal.classList.remove('hidden');
-                }
+                const modal = document.getElementById('lobby-modal');
+                if (modal) modal.classList.remove('hidden');
             });
         }
-
         const closeLobbyBtn = document.getElementById('btn-close-lobby');
         if (closeLobbyBtn) {
             closeLobbyBtn.addEventListener('click', () => {
-                const lobbyModal = document.getElementById('lobby-modal');
-                if (lobbyModal) {
-                    lobbyModal.classList.add('hidden');
+                const modal = document.getElementById('lobby-modal');
+                if (modal) modal.classList.add('hidden');
+            });
+        }
+
+        // 8. 통계 모달 열기/닫기
+        const statsBtn = document.getElementById('btn-open-stats');
+        if (statsBtn) {
+            statsBtn.addEventListener('click', () => {
+                if (window.rouletteStats) {
+                    window.rouletteStats.renderStatsModal();
+                }
+                const modal = document.getElementById('stats-modal');
+                if (modal) modal.classList.remove('hidden');
+            });
+        }
+        const closeStatsBtn = document.getElementById('btn-close-stats');
+        if (closeStatsBtn) {
+            closeStatsBtn.addEventListener('click', () => {
+                const modal = document.getElementById('stats-modal');
+                if (modal) modal.classList.add('hidden');
+            });
+        }
+
+        // 9. 오토 플레이 모달 및 제어
+        const autoBtn = document.getElementById('btn-open-autoplay');
+        if (autoBtn) {
+            autoBtn.addEventListener('click', () => {
+                const modal = document.getElementById('autoplay-modal');
+                if (modal) modal.classList.remove('hidden');
+            });
+        }
+        const closeAutoBtn = document.getElementById('btn-close-autoplay');
+        if (closeAutoBtn) {
+            closeAutoBtn.addEventListener('click', () => {
+                const modal = document.getElementById('autoplay-modal');
+                if (modal) modal.classList.add('hidden');
+            });
+        }
+
+        const startAutoBtn = document.getElementById('btn-start-autoplay');
+        if (startAutoBtn) {
+            startAutoBtn.addEventListener('click', () => {
+                this.startAutoPlay();
+            });
+        }
+
+        const stopAutoBtn = document.getElementById('btn-stop-autoplay');
+        if (stopAutoBtn) {
+            stopAutoBtn.addEventListener('click', () => {
+                this.stopAutoPlay("사용자에 의해 자동 배팅이 정지되었습니다.");
+            });
+        }
+
+        // 10. 관리자 모달 열기/닫기
+        const adminBtn = document.getElementById('btn-open-admin');
+        if (adminBtn) {
+            adminBtn.addEventListener('click', () => {
+                if (window.rouletteStats) {
+                    window.rouletteStats.renderAdminModal();
+                }
+                const modal = document.getElementById('admin-modal');
+                if (modal) modal.classList.remove('hidden');
+            });
+        }
+        const closeAdminBtn = document.getElementById('btn-close-admin');
+        if (closeAdminBtn) {
+            closeAdminBtn.addEventListener('click', () => {
+                const modal = document.getElementById('admin-modal');
+                if (modal) modal.classList.add('hidden');
+            });
+        }
+
+        // 11. BGM 토글 버튼
+        const bgmBtn = document.getElementById('btn-toggle-bgm');
+        if (bgmBtn) {
+            bgmBtn.addEventListener('click', () => {
+                if (window.rouletteAudio) {
+                    const isPlaying = window.rouletteAudio.toggleBGM();
+                    bgmBtn.textContent = isPlaying ? '🎷 BGM ON' : '🎷 BGM OFF';
+                    bgmBtn.classList.toggle('active', isPlaying);
+                    this.showToast(isPlaying ? "카지노 재즈 BGM이 시작되었습니다." : "카지노 BGM이 정지되었습니다.");
                 }
             });
         }
 
-        // 7. 사운드 토글
+        // 12. 사운드 효과음 토글 버튼
         const soundBtn = document.getElementById('btn-toggle-sound');
         if (soundBtn) {
             soundBtn.addEventListener('click', () => {
@@ -132,342 +293,387 @@ class RouletteApp {
             });
         }
 
-        // 8. 무료 충전 버튼
+        // 13. 무료 충전 버튼
         const refillBtn = document.getElementById('btn-refill-balance');
         if (refillBtn) {
             refillBtn.addEventListener('click', () => {
-                this.addBalance(10000000);
-                this.showToast("머니 10,000,000원이 무료 충전되었습니다!");
+                this.addBalance(1000000);
+                this.showToast("1,000,000 Chip이 무료 충전되었습니다!");
                 if (window.rouletteAudio) {
-                    window.rouletteAudio.playChipSound();
+                    window.rouletteAudio.playWinCoinSound();
                 }
             });
         }
 
-        // 9. 실사 영상 / 3D 그래픽 뷰모드 토글
-        const viewModeBtn = document.getElementById('btn-toggle-viewmode');
-        if (viewModeBtn) {
-            viewModeBtn.addEventListener('click', () => {
-                this.isLiveVideoMode = !this.isLiveVideoMode;
-                viewModeBtn.textContent = this.isLiveVideoMode ? '🎬 실사 영상 ON' : '🎨 3D 그래픽 ON';
-                this.showToast(this.isLiveVideoMode ? "실제 카지노 라이브 영상 모드가 켜졌습니다." : "3D 그래픽 캔버스 모드가 켜졌습니다.");
-                const videoLayer = document.getElementById('live-video-layer');
-                if (videoLayer && !this.isLiveVideoMode) {
-                    videoLayer.classList.add('hidden');
-                }
-            });
-        }
+        // 14. 모달 배경 클릭 시 닫기
+        window.addEventListener('click', (e) => {
+            if (e.target.classList.contains('modal-overlay')) {
+                e.target.classList.add('hidden');
+            }
+        });
     }
 
     /**
-     * 룸 변경 시 처리
+     * 오토 플레이 시작
      */
-    onRoomChanged(room) {
-        if (window.rouletteTable) {
-            window.rouletteTable.clearBets();
+    startAutoPlay() {
+        if (!window.rouletteTable || window.rouletteTable.totalBetAmount === 0) {
+            this.showToast("먼저 테이블에 원하시는 배팅 칩을 배치해 주세요.");
+            return;
         }
-        this.showToast(`[${room.name}] 테이블에 입장하셨습니다.`);
-        this.startBettingPhase();
+
+        const roundsInput = document.getElementById('auto-rounds-input');
+        const profitInput = document.getElementById('auto-profit-input');
+        const stopLossInput = document.getElementById('auto-stoploss-input');
+
+        const rounds = roundsInput ? parseInt(roundsInput.value, 10) || 10 : 10;
+        const targetProfit = profitInput ? parseInt(profitInput.value, 10) || 0 : 0;
+        const stopLoss = stopLossInput ? parseInt(stopLossInput.value, 10) || 0 : 0;
+
+        this.autoPlay = {
+            enabled: true,
+            remainingRounds: rounds,
+            initialBalance: this.balance + window.rouletteTable.totalBetAmount,
+            targetProfit: targetProfit,
+            stopLoss: stopLoss
+        };
+
+        const indicator = document.getElementById('autoplay-active-indicator');
+        if (indicator) indicator.style.display = 'inline-block';
+
+        const autoModal = document.getElementById('autoplay-modal');
+        if (autoModal) autoModal.classList.add('hidden');
+
+        this.showToast(`자동 배팅(총 ${rounds}회)이 활성화되었습니다.`);
     }
 
     /**
-     * 베팅 페이즈 시작 (Place your bets)
+     * 오토 플레이 정지
+     */
+    stopAutoPlay(reason) {
+        if (!this.autoPlay.enabled) return;
+
+        this.autoPlay.enabled = false;
+        this.autoPlay.remainingRounds = 0;
+
+        const indicator = document.getElementById('autoplay-active-indicator');
+        if (indicator) indicator.style.display = 'none';
+
+        if (reason) {
+            this.showToast(reason);
+        }
+    }
+
+    /**
+     * 오토 플레이 조건 체크
+     */
+    checkAutoPlayConditions() {
+        if (!this.autoPlay.enabled) return;
+
+        this.autoPlay.remainingRounds--;
+        const profit = this.balance - this.autoPlay.initialBalance;
+
+        // 1. 목표 수익 도달 체크
+        if (this.autoPlay.targetProfit > 0 && profit >= this.autoPlay.targetProfit) {
+            this.stopAutoPlay(`🎉 목표 수익(+${this.autoPlay.targetProfit.toLocaleString()} Chip)에 도달하여 자동 정지되었습니다!`);
+            return;
+        }
+
+        // 2. 손절가 도달 체크
+        if (this.autoPlay.stopLoss > 0 && profit <= -this.autoPlay.stopLoss) {
+            this.stopAutoPlay(`⚠️ 손절 기준(-${this.autoPlay.stopLoss.toLocaleString()} Chip)에 도달하여 자동 정지되었습니다.`);
+            return;
+        }
+
+        // 3. 횟수 소진 체크
+        if (this.autoPlay.remainingRounds <= 0) {
+            this.stopAutoPlay("설정한 자동 배팅 횟수가 모두 완료되었습니다.");
+            return;
+        }
+    }
+
+    /**
+     * 10단계 시나리오 1: 배팅 페이즈 시작 (15초 카운트다운)
      */
     startBettingPhase() {
         this.currentPhase = 'BETTING';
-        this.timerSeconds = 20;
+        this.timerSeconds = 15;
 
-        // 돌리 핀 제거 및 휠 당첨 배너 숨김
+        // 테이블 언락 및 돌리 핀 제거
         if (window.rouletteTable) {
             window.rouletteTable.removeDolly();
             window.rouletteTable.setLocked(false);
         }
+
+        // 휠 배너 및 승리 모달 숨김
         const wheelBanner = document.getElementById('wheel-win-banner');
-        if (wheelBanner) {
-            wheelBanner.classList.add('hidden');
-        }
+        if (wheelBanner) wheelBanner.classList.add('hidden');
 
-        // 안내 상태바 업데이트
-        this.updatePhaseStatus("🎲 베팅을 진행해 주세요 (Place your bets)", "betting");
+        const winModal = document.getElementById('win-celebration-modal');
+        if (winModal) winModal.classList.add('hidden');
 
-        // 음성 안내
+        // 상태 배너 업데이트
+        this.updatePhaseStatus(`🎲 BETTING OPEN - 배팅을 진행해 주세요 (ROUND #${this.currentRound})`, "betting");
+        this.updateTimerDisplay(this.timerSeconds);
+
+        // 딜러 음성 안내
         if (window.rouletteAudio) {
             window.rouletteAudio.announcePlaceBets();
         }
 
-        // 가상 AI 플레이어들의 베팅 시뮬레이션
+        // AI 가상 플레이어들 배팅 시뮬레이션
         if (window.rouletteLobby) {
             window.rouletteLobby.simulateAiBets();
         }
 
-        // 카운트다운 타이머 시작
-        this.startTimer();
-    }
+        // 오토플레이 진행 중인 경우 직전 배팅 자동 재배팅
+        if (this.autoPlay.enabled && window.rouletteTable) {
+            window.rouletteTable.rebet();
+        }
 
-    /**
-     * 카운트다운 타이머
-     */
-    startTimer() {
+        // 15초 타이머 카운트다운
         if (this.timerInterval) clearInterval(this.timerInterval);
-
-        const timerEl = document.getElementById('phase-timer');
-        if (timerEl) timerEl.textContent = `${this.timerSeconds}s`;
-
         this.timerInterval = setInterval(() => {
             this.timerSeconds--;
-            if (timerEl) timerEl.textContent = `${this.timerSeconds}s`;
+            this.updateTimerDisplay(this.timerSeconds);
 
             if (this.timerSeconds <= 0) {
                 clearInterval(this.timerInterval);
-                this.triggerSpin();
+                this.timerInterval = null;
+                this.closeBettingPhase();
             }
         }, 1000);
     }
 
     /**
-     * 스핀 개시: 노 모어 벳 선언 및 휠 회전
+     * 10단계 시나리오 2: 배팅 마감 (BET CLOSED + 땡!! 벨 알림음)
      */
-    triggerSpin() {
+    closeBettingPhase() {
         if (this.currentPhase !== 'BETTING') return;
-        if (this.timerInterval) clearInterval(this.timerInterval);
+        this.currentPhase = 'CLOSED';
 
-        this.currentPhase = 'NO_MORE_BETS';
+        if (this.timerInterval) {
+            clearInterval(this.timerInterval);
+            this.timerInterval = null;
+        }
 
-        // 베팅 잠금
+        // 테이블 즉시 잠금
         if (window.rouletteTable) {
             window.rouletteTable.setLocked(true);
         }
 
-        // "노 모어 벳 (No more bets)" 안내
-        this.updatePhaseStatus("⛔ 노 모어 벳! 배팅 마감 (No more bets)", "nomorebets");
-
+        // 땡!! 벨 사운드 및 딜러 음성
         if (window.rouletteAudio) {
+            window.rouletteAudio.playBetClosedBell();
             window.rouletteAudio.announceNoMoreBets();
         }
 
-        // 1초 후 휠 스핀 실행
+        this.updatePhaseStatus("⛔ BET CLOSED - 배팅이 마감되었습니다", "closed");
+        this.updateTimerDisplay(0);
+
+        // 1.2초 후 룰렛 물리 회전 돌입
         setTimeout(() => {
-            this.executeSpin();
+            this.triggerSpin();
         }, 1200);
     }
 
     /**
-     * 실제 물리 휠 스핀 및 결과 판정 (최소 20초 실감 물리 회전)
+     * 10단계 시나리오 3: 룰렛 감속 물리 회전 (6~8초)
      */
-    executeSpin() {
+    triggerSpin() {
         this.currentPhase = 'SPINNING';
-        this.updatePhaseStatus("🎡 휠 회전 중... 결과 추첨 (Spinning)", "spinning");
+        this.updatePhaseStatus("🎡 룰렛 휠 회전 중... 행운을 빕니다!", "spinning");
 
-        // 0부터 36까지 공정한 무작위 당첨 번호 추첨 (유러피언 룰렛)
-        const winningNumber = Math.floor(Math.random() * 37);
-
-        // 스핀 진행 20초 카운트다운 표시
-        let spinSeconds = 20;
-        const timerEl = document.getElementById('phase-timer');
-        if (timerEl) timerEl.textContent = `${spinSeconds}s`;
-
-        const spinInterval = setInterval(() => {
-            spinSeconds--;
-            if (timerEl && spinSeconds >= 0) {
-                timerEl.textContent = `${spinSeconds}s`;
-            }
-            if (spinSeconds <= 0) {
-                clearInterval(spinInterval);
-            }
-        }, 1000);
-
-        // 20초 이상 지속되는 Canvas 3D 룰렛 휠 물리 시뮬레이션 실행
         if (window.rouletteWheel) {
-            window.rouletteWheel.spin(winningNumber, (finalNumber) => {
-                clearInterval(spinInterval);
-                this.onSpinFinished(finalNumber);
+            window.rouletteWheel.spin((winningNumber, color) => {
+                this.onSpinResult(winningNumber, color);
             });
         }
     }
 
     /**
-     * 구슬 안착 완료 시 호출 (결과 발표 및 배당 정산)
+     * 10단계 시나리오 4 & 5: 당첨 결과 발표 및 배당 정산 (+36,000 Chip 사운드)
      */
-    onSpinFinished(winningNumber) {
+    onSpinResult(winningNumber, color) {
         this.currentPhase = 'RESULT';
 
-        const color = window.rouletteWheel ? window.rouletteWheel.getNumberColor(winningNumber) : 'green';
-        const colorKor = color === 'red' ? '빨강(Red)' : (color === 'black' ? '검정(Black)' : '초록(Zero)');
+        const colorName = color === 'red' ? '레드' : (color === 'black' ? '블랙' : '싱글 제로');
+        this.updatePhaseStatus(`🎯 당첨 번호: ${winningNumber} (${colorName})`, "result");
 
-        // 상태 배너 업데이트
-        this.updatePhaseStatus(`🎯 당첨 번호: [ ${winningNumber} ] ${colorKor}`, "result");
-
-        // 휠 상단 실시간 당첨 번호 3D 오버레이 뱃지 표시
-        const wheelBanner = document.getElementById('wheel-win-banner');
-        const badgeNum = document.getElementById('wheel-badge-number');
-        const badgeDesc = document.getElementById('wheel-badge-desc');
-        if (wheelBanner && badgeNum && badgeDesc) {
-            badgeNum.textContent = winningNumber;
-            badgeNum.className = `win-banner-badge badge-${color}-text`;
-            badgeDesc.textContent = colorKor;
-            wheelBanner.classList.remove('hidden');
-        }
-
-        // 1. 여성 딜러 목소리로 당첨 번호 낭독
+        // 1. 딜러 세련된 결과 낭독 음성
         if (window.rouletteAudio) {
             window.rouletteAudio.announceResult(winningNumber, color);
         }
 
-        // 2. 베팅 테이블의 당첨 번호 위에 크리스탈 말머리 돌리(Dolly) 핀 세우기
+        // 2. 테이블 당첨 셀에 크리스탈 말머리 돌리 핀 세우기
         if (window.rouletteTable) {
             window.rouletteTable.placeDolly(winningNumber);
         }
 
-        // 3. 구슬이 떨어지고 돌리 핀이 꽂힌 후: 낙첨된 칩 모두 회수(스위핑)하고 당첨된 번호 칩만 남기기
-        setTimeout(() => {
-            if (window.rouletteTable) {
-                window.rouletteTable.sweepLosingBets(winningNumber);
-            }
-        }, 800);
+        // 3. 최근 20회 히스토리 바 업데이트
+        this.addHistoryBadge(winningNumber, color);
 
-        // 4. 최근 히스토리 기록
+        // 4. 통계 시스템 기록
+        if (window.rouletteStats) {
+            window.rouletteStats.recordSpin(this.currentRound, winningNumber, color);
+        }
+
+        // 5. 배당 정산 계산
+        let totalWin = 0;
+        let totalBet = 0;
+        let winningBets = [];
+
+        if (window.rouletteTable) {
+            totalBet = window.rouletteTable.totalBetAmount;
+            const payoutResult = window.rouletteTable.calculatePayout(winningNumber);
+            totalWin = payoutResult.totalWin;
+            winningBets = payoutResult.winningBets;
+
+            // 낙첨 칩 회수 애니메이션 및 당첨 칩 보존
+            window.rouletteTable.settleChips(winningNumber, winningBets);
+        }
+
+        // 유저 통계 기록
+        if (window.rouletteStats) {
+            window.rouletteStats.recordUserGame(totalBet, totalWin);
+        }
+
+        // AI 플레이어 정산 연동
         if (window.rouletteLobby) {
-            window.rouletteLobby.recordWinningNumber(winningNumber);
-            window.rouletteLobby.evaluateAiWins(winningNumber);
+            window.rouletteLobby.onSpinResult(winningNumber);
         }
 
-        // 5. 배당금 정산 및 당첨 축하 연출 (스위핑 완료 후 당첨 칩만 남은 상태에서 진행)
-        setTimeout(() => {
-            this.settlePayouts(winningNumber);
-        }, 1500);
-    }
+        // 6. 상금 지급 및 승리 연출
+        if (totalWin > 0) {
+            this.addBalance(totalWin);
 
-    /**
-     * 배당금 정산 및 축하 연출
-     */
-    settlePayouts(winningNumber) {
-        if (!window.rouletteTable) return;
-
-        const { totalPayout, winningBets } = window.rouletteTable.calculatePayout(winningNumber);
-
-        if (totalPayout > 0) {
-            // 플레이어 당첨!
-            this.addBalance(totalPayout);
             if (window.rouletteAudio) {
-                window.rouletteAudio.playWinSound();
-                setTimeout(() => window.rouletteAudio.announceWin(), 600);
-            }
-            setTimeout(() => {
-                this.showWinModal(winningNumber, totalPayout, winningBets);
-            }, 800);
-        }
-
-        this.updateBetDisplay();
-
-        // 7초 후 다음 라운드 자동 시작
-        setTimeout(() => {
-            this.hideWinModal();
-            this.startBettingPhase();
-        }, 7000);
-    }
-
-    /**
-     * 승리 축하 모달 표시
-     */
-    showWinModal(number, payout, bets = []) {
-        const modal = document.getElementById('win-celebration-modal');
-        const amountEl = document.getElementById('win-amount-text');
-        const numberEl = document.getElementById('win-number-badge');
-        const detailEl = document.getElementById('win-bets-detail');
-
-        if (modal && amountEl && numberEl) {
-            const color = window.rouletteWheel ? window.rouletteWheel.getNumberColor(number) : 'green';
-            numberEl.textContent = number;
-            numberEl.className = `win-badge badge-${color}`;
-            amountEl.textContent = `+₩ ${payout.toLocaleString()}`;
-
-            if (detailEl && bets && bets.length > 0) {
-                let detailHtml = '<div class="win-detail-title">적중 배팅 내역</div><div class="win-detail-items">';
-                bets.forEach(b => {
-                    const typeName = b.typeName || b.type;
-                    detailHtml += `
-                        <div class="win-detail-item">
-                            <span class="detail-name">${typeName}</span>
-                            <span class="detail-val">+₩ ${b.payout.toLocaleString()}</span>
-                        </div>
-                    `;
-                });
-                detailHtml += '</div>';
-                detailEl.innerHTML = detailHtml;
-            } else if (detailEl) {
-                detailEl.innerHTML = '';
+                window.rouletteAudio.playWinCoinSound();
+                window.rouletteAudio.announceWin();
             }
 
-            modal.classList.remove('hidden');
+            this.showWinModal(winningNumber, color, totalWin, winningBets);
         }
+
+        // 10단계 시나리오 6: 3초 후 NEXT ROUND 자동 전환
+        if (this.nextRoundTimeout) clearTimeout(this.nextRoundTimeout);
+        this.nextRoundTimeout = setTimeout(() => {
+            this.nextRound();
+        }, 3500);
     }
 
     /**
-     * 승리 모달 숨김
+     * 10단계 시나리오 6: 다음 회차 자동 생성 및 시작
      */
-    hideWinModal() {
+    nextRound() {
+        // 승리 팝업 닫기
+        const winModal = document.getElementById('win-celebration-modal');
+        if (winModal) winModal.classList.add('hidden');
+
+        // 오토플레이 조건 검사
+        this.checkAutoPlayConditions();
+
+        // 회차 증가
+        this.currentRound++;
+        this.updateRoundDisplay();
+
+        // 새 배팅 페이즈 시작
+        this.startBettingPhase();
+    }
+
+    /**
+     * 대형 승리 축하 모달 표시
+     */
+    showWinModal(winningNumber, color, winAmount, winningBets) {
         const modal = document.getElementById('win-celebration-modal');
-        if (modal) modal.classList.add('hidden');
+        const numBadge = document.getElementById('win-number-badge');
+        const amountText = document.getElementById('win-amount-text');
+        const detailBox = document.getElementById('win-bets-detail');
+
+        if (!modal) return;
+
+        if (numBadge) {
+            numBadge.textContent = winningNumber;
+            numBadge.className = `win-badge ${color === 'red' ? 'badge-red' : (color === 'black' ? 'badge-black' : 'badge-green')}`;
+        }
+
+        if (amountText) {
+            amountText.textContent = `+${winAmount.toLocaleString()} Chip`;
+        }
+
+        if (detailBox && winningBets) {
+            detailBox.innerHTML = winningBets.map(b => `
+                <div class="win-bet-item">
+                    <span>${b.type.toUpperCase()} 적중 (${b.payoutRatio}:1)</span>
+                    <span class="bet-win-amount">+${b.win.toLocaleString()} Chip</span>
+                </div>
+            `).join('');
+        }
+
+        modal.classList.remove('hidden');
     }
 
     /**
-     * 안내 상태 바 텍스트 업데이트
+     * 상단 상태바 메시지 및 클래스 변경
      */
-    updatePhaseStatus(msg, className) {
-        const statusEl = document.getElementById('status-message-text');
-        const bannerEl = document.getElementById('announcement-banner');
-        if (statusEl) statusEl.textContent = msg;
-        if (bannerEl) {
-            bannerEl.className = `announcement-banner banner-${className}`;
+    updatePhaseStatus(message, phaseClass) {
+        const banner = document.getElementById('announcement-banner');
+        const text = document.getElementById('status-message-text');
+
+        if (banner) {
+            banner.className = `announcement-banner banner-${phaseClass}`;
+        }
+        if (text) {
+            text.textContent = message;
         }
     }
 
     /**
-     * 보유 잔고 차감
+     * 타이머 UI 업데이트
      */
-    deductBalance(amount) {
-        this.balance = Math.max(0, this.balance - amount);
-        this.updateBalanceDisplay();
+    updateTimerDisplay(seconds) {
+        const timerEl = document.getElementById('phase-timer');
+        if (timerEl) {
+            timerEl.textContent = `${seconds}s`;
+        }
     }
 
     /**
-     * 보유 잔고 추가
+     * 최근 20회 히스토리 바에 배지 추가
      */
-    addBalance(amount) {
-        this.balance += amount;
-        this.updateBalanceDisplay();
+    addHistoryBadge(number, color) {
+        const historyList = document.getElementById('table-history-list');
+        if (!historyList) return;
+
+        const badge = document.createElement('span');
+        badge.className = `history-badge badge-${color}`;
+        badge.textContent = number;
+
+        historyList.insertBefore(badge, historyList.firstChild);
+
+        // 최대 20개 유지
+        while (historyList.children.length > 20) {
+            historyList.removeChild(historyList.lastChild);
+        }
     }
 
     /**
-     * 보유 잔고 UI 표시
-     */
-    updateBalanceDisplay() {
-        const el = document.getElementById('user-balance-text');
-        if (el) el.textContent = `₩ ${this.balance.toLocaleString()}`;
-    }
-
-    /**
-     * 현재 총 배팅액 UI 표시
-     */
-    updateBetDisplay() {
-        const total = window.rouletteTable ? window.rouletteTable.totalBetAmount : 0;
-        const el = document.getElementById('user-bet-text');
-        if (el) el.textContent = `₩ ${total.toLocaleString()}`;
-    }
-
-    /**
-     * 화면 상단 간단 토스트 알림
+     * 토스트 알림 팝업
      */
     showToast(msg) {
         const toast = document.getElementById('toast-notification');
         if (!toast) return;
+
         toast.textContent = msg;
         toast.classList.add('show');
-        setTimeout(() => toast.classList.remove('show'), 3000);
+
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2800);
     }
 }
 
-// DOM 준비 시 앱 초기화
+// 브라우저 로드 시 앱 기동
 window.addEventListener('DOMContentLoaded', () => {
     window.rouletteApp = new RouletteApp();
 });

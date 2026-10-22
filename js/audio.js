@@ -47,13 +47,13 @@ class RouletteAudio {
         if (!this.synth) return;
         this.voices = this.synth.getVoices();
         // 최고급 영국식(en-GB) 또는 프리미엄 미국식(en-US) 여성 딜러 음성 우선 탐색
-        this.dealerVoice = this.voices.find(v => 
+        this.dealerVoice = this.voices.find(v =>
             v.lang.startsWith('en-GB') && (v.name.includes('Female') || v.name.includes('Libby') || v.name.includes('Sonia') || v.name.includes('Victoria'))
-        ) || this.voices.find(v => 
+        ) || this.voices.find(v =>
             v.lang.startsWith('en') && (v.name.includes('Female') || v.name.includes('Samantha') || v.name.includes('Jenny') || v.name.includes('Karen') || v.name.includes('Zira') || v.name.includes('Natural'))
-        ) || this.voices.find(v => v.lang.startsWith('en-GB')) 
-          || this.voices.find(v => v.lang.startsWith('en'))
-          || this.voices.find(v => v.lang.startsWith('ko'));
+        ) || this.voices.find(v => v.lang.startsWith('en-GB'))
+            || this.voices.find(v => v.lang.startsWith('en'))
+            || this.voices.find(v => v.lang.startsWith('ko'));
     }
 
     /**
@@ -411,7 +411,7 @@ class RouletteAudio {
         if (number > 0) {
             parityEng = number % 2 === 0 ? ", Even" : ", Odd";
         }
-        
+
         // 정통 카지노 낭독 스타일: "Number 17, Black, Odd."
         const phrase = `Number ${number}, ${colorEng}${parityEng}.`;
         this.speak(phrase);
@@ -423,7 +423,140 @@ class RouletteAudio {
     announceWin() {
         this.speak("Congratulations, winner!");
     }
+
+    /**
+     * 배팅 마감 안내 땡!! (카지노 벨/차임 사운드)
+     */
+    playBetClosedBell() {
+        if (this.isMuted) return;
+        this.initContext();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, now); // A5 (맑은 벨 소리)
+        osc.frequency.exponentialRampToValueAtTime(440, now + 1.2);
+
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 1.2);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 1.2);
+    }
+
+    /**
+     * 당첨 정산 코인 획득 사운드 (+Chip 짤랑거리는 소리)
+     */
+    playWinCoinSound() {
+        if (this.isMuted) return;
+        this.initContext();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const freqs = [1046.5, 1318.5, 1567.98, 2093.0]; // C6, E6, G6, C7 (아르페지오)
+
+        freqs.forEach((freq, idx) => {
+            const osc = this.ctx.createOscillator();
+            const gain = this.ctx.createGain();
+
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(freq, now + idx * 0.08);
+
+            gain.gain.setValueAtTime(0.2, now + idx * 0.08);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + idx * 0.08 + 0.3);
+
+            osc.connect(gain);
+            gain.connect(this.ctx.destination);
+
+            osc.start(now + idx * 0.08);
+            osc.stop(now + idx * 0.08 + 0.3);
+        });
+    }
+
+    /**
+     * 카지노 재즈 라운지 BGM 시작 (부드러운 재즈 코드 프로그레션 루프)
+     */
+    startBGM() {
+        if (this.isBgmPlaying) return;
+        this.initContext();
+        if (!this.ctx) return;
+
+        this.isBgmPlaying = true;
+        this.bgmStep = 0;
+
+        // 재즈 4마디 화음 루프 (Fmaj7 - Em7 - Dm7 - Cmaj7)
+        const jazzChords = [
+            [174.61, 220.00, 261.63, 329.63], // Fmaj7
+            [164.81, 196.00, 246.94, 293.66], // Em7
+            [146.83, 174.61, 220.00, 261.63], // Dm7
+            [130.81, 164.81, 196.00, 246.94]  // Cmaj7
+        ];
+
+        const playJazzChord = () => {
+            if (!this.isBgmPlaying || this.isMuted) return;
+            const now = this.ctx.currentTime;
+            const chord = jazzChords[this.bgmStep % jazzChords.length];
+            this.bgmStep++;
+
+            chord.forEach((freq, i) => {
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                const filter = this.ctx.createBiquadFilter();
+
+                osc.type = i === 0 ? 'sine' : 'triangle'; // 베이스 + 웜 EP 톤
+                osc.frequency.setValueAtTime(freq, now);
+
+                filter.type = 'lowpass';
+                filter.frequency.setValueAtTime(800, now);
+
+                gain.gain.setValueAtTime(0.001, now);
+                gain.gain.linearRampToValueAtTime(0.04, now + 0.5); // 잔잔한 볼륨
+                gain.gain.exponentialRampToValueAtTime(0.005, now + 2.8);
+
+                osc.connect(filter);
+                filter.connect(gain);
+                gain.connect(this.ctx.destination);
+
+                osc.start(now);
+                osc.stop(now + 3.0);
+            });
+        };
+
+        playJazzChord();
+        this.bgmInterval = setInterval(playJazzChord, 3000);
+    }
+
+    /**
+     * 카지노 BGM 정지
+     */
+    stopBGM() {
+        this.isBgmPlaying = false;
+        if (this.bgmInterval) {
+            clearInterval(this.bgmInterval);
+            this.bgmInterval = null;
+        }
+    }
+
+    /**
+     * 카지노 BGM 토글
+     */
+    toggleBGM() {
+        if (this.isBgmPlaying) {
+            this.stopBGM();
+            return false;
+        } else {
+            this.startBGM();
+            return true;
+        }
+    }
 }
 
 // 글로벌 인스턴스
 window.rouletteAudio = new RouletteAudio();
+

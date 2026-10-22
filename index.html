@@ -158,35 +158,152 @@
             </div>
         </div>
 
-        <!-- 승리 축하 모달 -->
-        <div id="win-celebration-modal" class="modal-overlay hidden">
-            <div class="win-modal-card">
-                <div class="win-confetti">🎉</div>
-                <h2 class="win-title">CONGRATULATIONS!</h2>
-                <p class="win-subtitle">당첨을 진심으로 축하합니다!</p>
-                <div class="win-number-display">
-                    <span class="label">당첨 번호:</span>
-                    <span id="win-number-badge" class="win-badge badge-red">17</span>
+        <!-- 2. 실시간 통계 모달 -->
+        <div id="stats-modal" class="modal-overlay hidden">
+            <div class="stats-modal-content">
+                <div class="stats-modal-header">
+                    <div class="stats-modal-title">
+                        <h2>📊 실시간 통계 및 핫/콜드 분석</h2>
+                        <p>최근 100회 결과 분석, 핫/콜드 번호 및 개인 게임 전적을 확인하세요.</p>
+                    </div>
+                    <button id="btn-close-stats" class="btn-close-modal">✕ 닫기</button>
                 </div>
-                <div class="win-amount-box">
-                    <span class="amount-label">획득 상금</span>
-                    <span id="win-amount-text" class="amount-value">+₩ 3,600,000</span>
-                </div>
-                <!-- 적중된 상세 배팅 목록 -->
-                <div id="win-bets-detail" class="win-bets-detail"></div>
+                <div id="stats-modal-body" class="stats-modal-body"></div>
             </div>
         </div>
 
-        <!-- 간단 토스트 알림 -->
-        <div id="toast-notification" class="toast-box"></div>
-    </div>
 
-    <!-- 스크립트 모듈 로드 -->
-    <script src="js/audio.js"></script>
-    <script src="js/wheel.js"></script>
-    <script src="js/table.js"></script>
-    <script src="js/lobby.js"></script>
-    <script src="js/app.js"></script>
+<!-- 3. 자동 배팅 (Auto Play) 모달 -->
+<div id="autoplay-modal" class="modal-overlay hidden">
+    <div class="autoplay-modal-content">
+        <div class="autoplay-modal-header">
+            <div class="autoplay-modal-title">
+                <h2>🤖 자동 배팅 설정 (AUTO PLAY)</h2>
+                <p>테이블에 배팅 후 횟수와 목표 수익/손절가를 지정하여 자동으로 반복 플레이합니다.</p>
+            </div>
+            <button id="btn-close-autoplay" class="btn-close-modal">✕ 닫기</button>
+        </div>
+        <div class="autoplay-modal-body">
+            <div class="auto-input-group">
+                <label>현재 보유 칩</label>
+                <span id="auto-current-balance" class="auto-val-text">1,250,000 Chip</span>
+            </div>
+            <div class="auto-input-group">
+                <label for="auto-rounds-input">자동 진행 횟수 (회)</label>
+                <input type="number" id="auto-rounds-input" value="10" min="1" max="100">
+            </div>
+            <div class="auto-input-group">
+                <label for="auto-profit-input">목표 수익 달성 시 자동 정지 (Chip, 0=미사용)</label>
+                <input type="number" id="auto-profit-input" value="500000" step="10000">
+            </div>
+            <div class="auto-input-group">
+                <label for="auto-stoploss-input">손절 한도 도달 시 자동 정지 (Chip, 0=미사용)</label>
+                <input type="number" id="auto-stoploss-input" value="300000" step="10000">
+            </div>
+            <div class="autoplay-actions">
+                <button id="btn-start-autoplay" class="btn-auto-start">▶ 자동 배팅 시작</button>
+                <button id="btn-stop-autoplay" class="btn-auto-stop">⏹ 자동 배팅 중지</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 4. 카지노 관리자(Admin) 패널 모달 -->
+<div id="admin-modal" class="modal-overlay hidden">
+    <div class="admin-modal-content">
+        <div class="admin-modal-header">
+            <div class="admin-modal-title">
+                <h2>⚙️ 카지노 관리자 패널 (ADMIN CONSOLE)</h2>
+                <p>회원 이용 상태 관리, 정통 배당률 확인 및 최근 회차별 배팅/정산 로그</p>
+            </div>
+            <button id="btn-close-admin" class="btn-close-modal">✕ 닫기</button>
+        </div>
+        <div class="admin-modal-body">
+            <!-- 탭 1: 회원 관리 -->
+            <div class="admin-section">
+                <h3>👥 회원 관리 현황</h3>
+                <div class="admin-table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>회원 닉네임</th>
+                                <th>보유 칩</th>
+                                <th>플레이 횟수</th>
+                                <th>상태</th>
+                                <th>관리</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-member-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 탭 2: 정통 배당률 테이블 -->
+            <div class="admin-section">
+                <h3>💰 정통 유럽식 룰렛 공식 배당률</h3>
+                <div class="payout-grid">
+                    <div class="p-item"><span>스트레이트 (1개)</span><strong>35 : 1</strong></div>
+                    <div class="p-item"><span>스플릿 (2개)</span><strong>17 : 1</strong></div>
+                    <div class="p-item"><span>스트리트 (3개)</span><strong>11 : 1</strong></div>
+                    <div class="p-item"><span>코너 (4개)</span><strong>8 : 1</strong></div>
+                    <div class="p-item"><span>식스 라인 (6개)</span><strong>5 : 1</strong></div>
+                    <div class="p-item"><span>다즌 / 컬럼 (12개)</span><strong>2 : 1</strong></div>
+                    <div class="p-item"><span>빨강 / 검정 / 홀짝 / 하이로우</span><strong>1 : 1</strong></div>
+                </div>
+            </div>
+
+            <!-- 탭 3: 최근 회차별 로그 -->
+            <div class="admin-section">
+                <h3>📜 실시간 회차별 배팅 및 당첨 로그</h3>
+                <div class="admin-table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>회차</th>
+                                <th>당첨 번호</th>
+                                <th>총 배팅액</th>
+                                <th>정산 지급금</th>
+                                <th>시간</th>
+                            </tr>
+                        </thead>
+                        <tbody id="admin-logs-table-body"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 5. 승리 축하 모달 -->
+<div id="win-celebration-modal" class="modal-overlay hidden">
+    <div class="win-modal-card">
+        <div class="win-confetti">🎉</div>
+        <h2 class="win-title">CONGRATULATIONS!</h2>
+        <p class="win-subtitle">당첨을 진심으로 축하합니다!</p>
+        <div class="win-number-display">
+            <span class="label">당첨 번호:</span>
+            <span id="win-number-badge" class="win-badge badge-red">17</span>
+        </div>
+        <div class="win-amount-box">
+            <span class="amount-label">획득 상금</span>
+            <span id="win-amount-text" class="amount-value">+36,000 Chip</span>
+        </div>
+        <!-- 적중된 상세 배팅 목록 -->
+        <div id="win-bets-detail" class="win-bets-detail"></div>
+    </div>
+</div>
+
+<!-- 간단 토스트 알림 -->
+<div id="toast-notification" class="toast-box"></div>
+</div>
+
+<!-- 스크립트 모듈 로드 -->
+<script src="js/audio.js"></script>
+<script src="js/wheel.js"></script>
+<script src="js/table.js"></script>
+<script src="js/stats.js"></script>
+<script src="js/lobby.js"></script>
+<script src="js/app.js"></script>
 </body>
 
 </html>
