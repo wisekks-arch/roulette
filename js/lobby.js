@@ -244,7 +244,16 @@ class RouletteLobby {
                 const outsides = ['red', 'black', 'even', 'odd', 'low', 'high'];
                 betTarget = outsides[Math.floor(Math.random() * outsides.length)];
             } else if (ai.betPreference === 'straight') {
-                betTarget = Math.floor(Math.random() * 37).toString();
+                const rand = Math.random();
+                if (rand < 0.5) {
+                    betTarget = Math.floor(Math.random() * 37).toString();
+                } else if (rand < 0.8) {
+                    const n1 = Math.floor(Math.random() * 35) + 1;
+                    betTarget = `스플릿(${n1}/${n1+1})`;
+                } else {
+                    const n1 = Math.floor(Math.random() * 32) + 1;
+                    betTarget = `코너(${n1}~${n1+4})`;
+                }
             } else if (ai.betPreference === 'dozen') {
                 const dozens = ['1-12', '13-24', '25-36'];
                 betTarget = dozens[Math.floor(Math.random() * dozens.length)];

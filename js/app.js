@@ -369,16 +369,35 @@ class RouletteApp {
     /**
      * 승리 축하 모달 표시
      */
-    showWinModal(number, payout, bets) {
+    showWinModal(number, payout, bets = []) {
         const modal = document.getElementById('win-celebration-modal');
         const amountEl = document.getElementById('win-amount-text');
         const numberEl = document.getElementById('win-number-badge');
+        const detailEl = document.getElementById('win-bets-detail');
 
         if (modal && amountEl && numberEl) {
             const color = window.rouletteWheel ? window.rouletteWheel.getNumberColor(number) : 'green';
             numberEl.textContent = number;
             numberEl.className = `win-badge badge-${color}`;
             amountEl.textContent = `+₩ ${payout.toLocaleString()}`;
+
+            if (detailEl && bets && bets.length > 0) {
+                let detailHtml = '<div class="win-detail-title">적중 배팅 내역</div><div class="win-detail-items">';
+                bets.forEach(b => {
+                    const typeName = b.typeName || b.type;
+                    detailHtml += `
+                        <div class="win-detail-item">
+                            <span class="detail-name">${typeName}</span>
+                            <span class="detail-val">+₩ ${b.payout.toLocaleString()}</span>
+                        </div>
+                    `;
+                });
+                detailHtml += '</div>';
+                detailEl.innerHTML = detailHtml;
+            } else if (detailEl) {
+                detailEl.innerHTML = '';
+            }
+
             modal.classList.remove('hidden');
         }
     }
