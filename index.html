@@ -15,7 +15,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Outfit:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=20261022_1750">
+    <link rel="stylesheet" href="css/style.css?v=20261022_1800">
 </head>
 
 <body>
@@ -25,7 +25,11 @@
             <div class="header-left">
                 <button id="btn-open-lobby" class="nav-btn lobby-btn">
                     <span class="icon">🏛️</span>
-                    <span class="text">ROOM LOBBY (방 목록)</span>
+                    <span class="text">ROOM LOBBY</span>
+                </button>
+                <button id="btn-open-auth" class="nav-btn auth-nav-btn" title="회원가입 / 로그인 / 프로필">
+                    <span class="icon">👤</span>
+                    <span class="text">로그인 / 회원</span>
                 </button>
                 <div class="current-room-badge">
                     <span id="nav-room-name" class="room-title-text">모나코 클래식 (Monaco Classic)</span>
@@ -41,6 +45,19 @@
             </div>
 
             <div class="header-right">
+                <button id="btn-open-stats" class="nav-btn stats-nav-btn" title="실시간 100회 통계 및 분석">
+                    <span class="icon">📊</span>
+                    <span class="text">통계 분석</span>
+                </button>
+                <button id="btn-open-autoplay" class="nav-btn auto-nav-btn" title="자동 배팅 설정">
+                    <span class="icon">🤖</span>
+                    <span class="text">자동 배팅</span>
+                </button>
+                <button id="btn-open-admin" class="nav-btn admin-nav-btn" title="카지노 관리자 콘솔">
+                    <span class="icon">⚙️</span>
+                    <span class="text">관리자</span>
+                </button>
+
                 <div class="balance-box">
                     <span class="balance-label">보유 머니</span>
                     <span id="user-balance-text" class="balance-val">₩ 10,000,000</span>
@@ -55,6 +72,14 @@
                 </button>
             </div>
         </header>
+
+        <!-- 실시간 긴급 공지사항 티커 바 -->
+        <div id="notice-ticker-bar" class="notice-ticker-bar">
+            <span class="ticker-badge">📢 VIP NOTICE</span>
+            <div class="ticker-scroll-wrapper">
+                <span id="ticker-text" class="ticker-text">👑 VIP European Roulette에 오신 것을 환영합니다! 공정한 라이브 난수 시스템과 즉시 출금 지원.</span>
+            </div>
+        </div>
 
         <!-- 딜러 아나운스 & 안내 상태 배너 -->
         <div id="announcement-banner" class="announcement-banner banner-betting">
@@ -289,7 +314,7 @@
             </div>
         </div>
 
-        <!-- 4-1. 실사 룰렛 구슬 낙하 라이브 캠 클로즈업 팝업 모달 -->
+        <!-- 4-1. 실사 룰렛 구슬 낙하 라이브 캠 클로즈업 팝업 모달 (보라색 단색 배경 & 대형 뷰포트) -->
         <div id="live-cam-modal" class="modal-overlay hidden">
             <div class="live-cam-modal-content">
                 <div class="live-cam-header">
@@ -300,11 +325,8 @@
                     <span class="cam-table-tag">TABLE #02 LIVE</span>
                 </div>
                 <div class="live-cam-viewport">
-                    <!-- 룰렛 구슬 낙하 실사 시네마틱 비디오 플레이어 -->
-                    <video id="live-cam-video" playsinline muted loop preload="auto">
-                        <source src="assets/video/roulette_drop.mp4" type="video/mp4">
-                    </video>
-                    <canvas id="live-cam-canvas" width="560" height="400"></canvas>
+                    <!-- 대형 실사 3D 룰렛 캔버스 (760 x 540) -->
+                    <canvas id="live-cam-canvas" width="760" height="540"></canvas>
                     <div class="cam-crosshair"></div>
                     <!-- 구슬 안착 시 팝업 상단 대형 당첨 번호 뱃지 -->
                     <div id="live-cam-win-badge" class="live-cam-win-badge hidden">
@@ -337,17 +359,32 @@
             </div>
         </div>
 
+        <!-- 6. VIP 회원가입 / 로그인 / 프로필 관리 모달 -->
+        <div id="auth-modal" class="modal-overlay hidden">
+            <div class="auth-modal-content">
+                <div class="auth-modal-header">
+                    <div class="auth-modal-title">
+                        <h2>👤 VIP CASINO MEMBERSHIP</h2>
+                        <p>무료 회원가입 및 로그인하여 1,000만 칩 혜택과 전적을 관리하세요.</p>
+                    </div>
+                    <button id="btn-close-auth" class="btn-close-modal">✕ 닫기</button>
+                </div>
+                <div id="auth-modal-body" class="auth-modal-body"></div>
+            </div>
+        </div>
+
         <!-- 간단 토스트 알림 -->
         <div id="toast-notification" class="toast-box"></div>
     </div>
 
     <!-- 스크립트 모듈 로드 (강력한 캐시 방지 쿼리스트링 적용) -->
-    <script src="js/audio.js?v=20261022_1750"></script>
-    <script src="js/wheel.js?v=20261022_1750"></script>
-    <script src="js/table.js?v=20261022_1750"></script>
-    <script src="js/stats.js?v=20261022_1750"></script>
-    <script src="js/lobby.js?v=20261022_1750"></script>
-    <script src="js/app.js?v=20261022_1750"></script>
+    <script src="js/audio.js?v=20261022_1800"></script>
+    <script src="js/wheel.js?v=20261022_1800"></script>
+    <script src="js/table.js?v=20261022_1800"></script>
+    <script src="js/auth.js?v=20261022_1800"></script>
+    <script src="js/stats.js?v=20261022_1800"></script>
+    <script src="js/lobby.js?v=20261022_1800"></script>
+    <script src="js/app.js?v=20261022_1800"></script>
 </body>
 
 </html>

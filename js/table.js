@@ -180,17 +180,66 @@ class RouletteTable {
     }
 
     /**
-     * 베팅 스팟 클릭/터치 이벤트 리스너 등록
+     * 베팅 스팟 클릭/터치 및 드래그 앤 드롭 이벤트 리스너 등록
      */
     attachEvents() {
         const spots = this.container.querySelectorAll('.bet-spot');
         spots.forEach(spot => {
+            // 클릭 배팅
             spot.addEventListener('click', (e) => {
                 if (this.isLocked) return;
                 const betType = spot.getAttribute('data-bet');
                 const numbersStr = spot.getAttribute('data-numbers');
                 const spotId = spot.id;
                 this.placeBet(spotId, betType, numbersStr);
+            });
+
+            // 드래그 앤 드롭 타겟 지원
+            spot.addEventListener('dragover', (e) => {
+                if (this.isLocked) return;
+                e.preventDefault();
+                spot.classList.add('drag-target-hover');
+            });
+
+            spot.addEventListener('dragleave', () => {
+                spot.classList.remove('drag-target-hover');
+            });
+
+            spot.addEventListener('drop', (e) => {
+                if (this.isLocked) return;
+                e.preventDefault();
+                spot.classList.remove('drag-target-hover');
+                const draggedVal = e.dataTransfer.getData('text/plain');
+                if (draggedVal) {
+                    this.setSelectedChip(parseInt(draggedVal, 10));
+                }
+                const betType = spot.getAttribute('data-bet');
+                const numbersStr = spot.getAttribute('data-numbers');
+                const spotId = spot.id;
+                this.placeBet(spotId, betType, numbersStr);
+            });
+        });
+
+        this.setupChipDragDrop();
+    }
+
+    /**
+     * 하단 칩 셀렉터 버튼들에 draggable 속성 및 dragstart 이벤트 바인딩
+     */
+    setupChipDragDrop() {
+        const chipBtns = document.querySelectorAll('.chip-selector-btn');
+        chipBtns.forEach(btn => {
+            btn.setAttribute('draggable', 'true');
+
+            btn.addEventListener('dragstart', (e) => {
+                const val = btn.getAttribute('data-value');
+                e.dataTransfer.setData('text/plain', val);
+                btn.classList.add('dragging');
+                this.setSelectedChip(parseInt(val, 10));
+            });
+
+            btn.addEventListener('dragend', () => {
+                btn.classList.remove('dragging');
             });
         });
     }
@@ -675,6 +724,11 @@ class RouletteTable {
         let totalPayout = 0;
         const winningBets = [];
 
+        // 관리자가 설정한 공식 배당률 참조 (미설정 시 정통 표준 배당 기본 적용)
+        const p = (window.rouletteStats && window.rouletteStats.payouts) ? window.rouletteStats.payouts : {
+            straight: 35, split: 17, street: 11, corner: 8, sixline: 5, dozen: 2, column: 2, evenodd: 1, redblack: 1, highlow: 1
+        };
+
         for (const [spotId, bet] of Object.entries(this.bets)) {
             let won = false;
             let multiplier = 0;
@@ -682,65 +736,61 @@ class RouletteTable {
             if (bet.type === 'straight') {
                 if (parseInt(bet.numbers, 10) === winningNumber) {
                     won = true;
-                    multiplier = 35 + 1; // 35배 배당 + 본인 원금
+                    multiplier = (p.straight || 35) + 1; // 배당 + 본인 원금
                 }
             } else if (winningNumber !== 0) {
                 // 0이 아닌 경우에만 외부 배팅 인정
                 if (bet.type === 'red' && this.redNumbers.includes(winningNumber)) {
                     won = true;
-                    multiplier = 1 + 1; // 1:1 배당 + 원금
+                    multiplier = (p.redblack || 1) + 1;
                 } else if (bet.type === 'black' && this.blackNumbers.includes(winningNumber)) {
                     won = true;
-                    multiplier = 1 + 1;
+                    multiplier = (p.redblack || 1) + 1;
                 } else if (bet.type === 'even' && winningNumber % 2 === 0) {
                     won = true;
-                    multiplier = 1 + 1;
+                    multiplier = (p.evenodd || 1) + 1;
                 } else if (bet.type === 'odd' && winningNumber % 2 !== 0) {
                     won = true;
-                    multiplier = 1 + 1;
+                    multiplier = (p.evenodd || 1) + 1;
                 } else if (bet.type === 'low' && winningNumber >= 1 && winningNumber <= 18) {
                     won = true;
-                    multiplier = 1 + 1;
+                    multiplier = (p.highlow || 1) + 1;
                 } else if (bet.type === 'high' && winningNumber >= 19 && winningNumber <= 36) {
                     won = true;
-                    multiplier = 1 + 1;
+                    multiplier = (p.highlow || 1) + 1;
                 } else if (bet.type === 'dozen') {
                     if (bet.numbers === '1-12' && winningNumber >= 1 && winningNumber <= 12) won = true;
                     else if (bet.numbers === '13-24' && winningNumber >= 13 && winningNumber <= 24) won = true;
                     else if (bet.numbers === '25-36' && winningNumber >= 25 && winningNumber <= 36) won = true;
-                    if (won) multiplier = 2 + 1; // 2:1 배당 + 원금
+                    if (won) multiplier = (p.dozen || 2) + 1;
                 } else if (bet.type === 'column') {
                     if (bet.numbers === 'col1' && winningNumber % 3 === 1) won = true;
                     else if (bet.numbers === 'col2' && winningNumber % 3 === 2) won = true;
                     else if (bet.numbers === 'col3' && winningNumber % 3 === 0) won = true;
-                    if (won) multiplier = 2 + 1; // 2:1 배당 + 원금
+                    if (won) multiplier = (p.column || 2) + 1;
                 } else if (bet.type === 'split') {
-                    // 스플릿 (17:1): 2개 번호 적중 시 17배 배당 + 원금 (총 18배)
                     const nums = bet.numbers.split(',').map(n => parseInt(n.trim(), 10));
                     if (nums.includes(winningNumber)) {
                         won = true;
-                        multiplier = 17 + 1;
+                        multiplier = (p.split || 17) + 1;
                     }
                 } else if (bet.type === 'street') {
-                    // 스트리트 (11:1): 3개 번호 적중 시 11배 배당 + 원금 (총 12배)
                     const nums = bet.numbers.split(',').map(n => parseInt(n.trim(), 10));
                     if (nums.includes(winningNumber)) {
                         won = true;
-                        multiplier = 11 + 1;
+                        multiplier = (p.street || 11) + 1;
                     }
                 } else if (bet.type === 'corner') {
-                    // 코너 (8:1): 4개 번호 적중 시 8배 배당 + 원금 (총 9배)
                     const nums = bet.numbers.split(',').map(n => parseInt(n.trim(), 10));
                     if (nums.includes(winningNumber)) {
                         won = true;
-                        multiplier = 8 + 1;
+                        multiplier = (p.corner || 8) + 1;
                     }
                 } else if (bet.type === 'sixline') {
-                    // 식스라인 (5:1): 6개 번호 적중 시 5배 배당 + 원금 (총 6배)
                     const nums = bet.numbers.split(',').map(n => parseInt(n.trim(), 10));
                     if (nums.includes(winningNumber)) {
                         won = true;
-                        multiplier = 5 + 1;
+                        multiplier = (p.sixline || 5) + 1;
                     }
                 }
             }

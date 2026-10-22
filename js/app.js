@@ -46,6 +46,11 @@ class RouletteApp {
         this.updateBetDisplay();
         this.updateRoundDisplay();
         this.attachControlEvents();
+        this.initNoticeTicker();
+
+        if (window.rouletteAuth) {
+            window.rouletteAuth.renderHeaderProfile();
+        }
 
         // 2번 일반방 기본 입장
         if (window.rouletteLobby) {
@@ -54,6 +59,23 @@ class RouletteApp {
 
         // 첫 라운드 시작
         this.startBettingPhase();
+    }
+
+    /**
+     * 실시간 공지사항 티커 초기화
+     */
+    initNoticeTicker() {
+        const text = (window.rouletteStats && window.rouletteStats.notice)
+            ? window.rouletteStats.notice
+            : "👑 VIP European Roulette에 오신 것을 환영합니다! 공정한 라이브 난수 시스템 가동 중.";
+        this.updateNoticeTicker(text);
+    }
+
+    updateNoticeTicker(text) {
+        const tickerEl = document.getElementById('ticker-text');
+        if (tickerEl) {
+            tickerEl.textContent = text;
+        }
     }
 
     /**
@@ -236,6 +258,24 @@ class RouletteApp {
             closeLobbyBtn.addEventListener('click', () => {
                 const modal = document.getElementById('lobby-modal');
                 if (modal) modal.classList.add('hidden');
+            });
+        }
+
+        // 7-1. 회원가입 / 로그인 / 프로필 모달 열기/닫기
+        const authBtn = document.getElementById('btn-open-auth');
+        if (authBtn) {
+            authBtn.addEventListener('click', () => {
+                if (window.rouletteAuth) {
+                    window.rouletteAuth.openAuthModal('auto');
+                }
+            });
+        }
+        const closeAuthBtn = document.getElementById('btn-close-auth');
+        if (closeAuthBtn) {
+            closeAuthBtn.addEventListener('click', () => {
+                if (window.rouletteAuth) {
+                    window.rouletteAuth.closeAuthModal();
+                }
             });
         }
 
@@ -538,6 +578,17 @@ class RouletteApp {
         this.updatePhaseStatus("⛔ NO MORE BETS! - 배팅이 마감되었습니다 (구슬 투구 중)", "closed");
         this.updateTimerDisplay(0);
 
+        // 관리자 배팅 로그 기록
+        if (window.rouletteTable && window.rouletteStats) {
+            const userNick = (window.rouletteAuth && window.rouletteAuth.currentUser)
+                ? window.rouletteAuth.currentUser.nickname : '로열_플레이어';
+            for (const [spotId, bet] of Object.entries(window.rouletteTable.bets || {})) {
+                if (bet && bet.amount > 0) {
+                    window.rouletteStats.addBetLog(this.currentRound, userNick, bet.type, bet.numbers, bet.amount);
+                }
+            }
+        }
+
         // 정확히 1.5초(1500ms) 후 구슬 낙하 영상 팝업 표출
         setTimeout(() => {
             this.triggerSpin();
@@ -545,7 +596,7 @@ class RouletteApp {
     }
 
     /**
-     * 3단계: 구슬 낙하 실사 영상 및 3D 물리 팝업 (정확히 3.0초 고정 실행 후 자동 닫힘)
+     * 3단계: 구슬 낙하 실사 팝업 (정확히 4.0초 고정 실행 후 자동 닫힘)
      */
     triggerSpin() {
         this.currentPhase = 'SPINNING';
@@ -556,7 +607,6 @@ class RouletteApp {
 
         // 1. 영상 팝업 화면 최상단 전면 강제 표출 (z-index: 999999)
         const liveCamModal = document.getElementById('live-cam-modal');
-        const liveCamVideo = document.getElementById('live-cam-video');
         const winBadge = document.getElementById('live-cam-win-badge');
         const statusText = document.getElementById('live-cam-status-text');
 
@@ -566,15 +616,6 @@ class RouletteApp {
         if (liveCamModal) {
             liveCamModal.classList.remove('hidden');
             liveCamModal.style.cssText = 'display: flex !important; opacity: 1 !important; visibility: visible !important; z-index: 999999 !important; pointer-events: all !important;';
-        }
-
-        // 실사 비디오 자동 재생
-        if (liveCamVideo) {
-            liveCamVideo.muted = true;
-            liveCamVideo.playsInline = true;
-            try { liveCamVideo.currentTime = 0; } catch (e) { }
-            const p = liveCamVideo.play();
-            if (p) p.catch(() => { });
         }
 
         // 구슬 회전 사운드 재생
@@ -587,7 +628,7 @@ class RouletteApp {
             window.rouletteWheel.spin(targetNum, () => { });
         }
 
-        // 3.0초 절대 시간 완료 처리 함수
+        // 4.0초 절대 시간 완료 처리 함수
         let isSpinFinished = false;
         const handleSpinFinished = () => {
             if (isSpinFinished) return;
@@ -596,10 +637,6 @@ class RouletteApp {
             if (this.liveCamAnimId) {
                 cancelAnimationFrame(this.liveCamAnimId);
                 this.liveCamAnimId = null;
-            }
-
-            if (liveCamVideo) {
-                try { liveCamVideo.pause(); } catch (e) { }
             }
 
             // 영상 팝업 완전 강제 소멸
@@ -612,19 +649,19 @@ class RouletteApp {
             this.onSpinResult(targetNum, color);
         };
 
-        // 2. 정확히 3.0초(3000ms) 타임라인 시퀀서 가동
+        // 2. 정확히 4.0초(4000ms) 타임라인 시퀀서 가동
         this.runTimeBasedLiveCam(targetNum, handleSpinFinished);
 
-        // 3. [Fail-Safe 안전 타이머 3.2초] 브라우저 백그라운드 등 어떤 예외에서도 100% 진행 보장
+        // 3. [Fail-Safe 안전 타이머 4.2초] 브라우저 백그라운드 등 어떤 예외에서도 100% 진행 보장
         setTimeout(() => {
             if (!isSpinFinished) {
                 handleSpinFinished();
             }
-        }, 3200);
+        }, 4200);
     }
 
     /**
-     * 정확히 3.0초(3000ms) 동안 구동되는 타임라인 기반 3D 구슬 물리 렌더러
+     * 정확히 4.0초(4000ms) 동안 구동되는 대형 3D 구슬 물리 렌더러
      */
     runTimeBasedLiveCam(targetNum, onFinished) {
         const canvas = document.getElementById('live-cam-canvas');
@@ -637,8 +674,8 @@ class RouletteApp {
         const w = canvas.width;
         const h = canvas.height;
         const cx = w / 2;
-        const cy = h / 2 + 25;
-        const outerR = 180;
+        const cy = h / 2 + 10;
+        const outerR = Math.min(w, h) * 0.44; // 760x540 기준 약 237px의 대형 휠
 
         const numbers = [
             0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5,
@@ -647,7 +684,7 @@ class RouletteApp {
         const sliceAngle = (Math.PI * 2) / numbers.length;
         const targetIdx = numbers.indexOf(targetNum);
 
-        const TOTAL_DURATION = 3000; // 정확히 3초
+        const TOTAL_DURATION = 4000; // 요청하신 4초 연장 (4000ms)
         const startTime = performance.now();
 
         let bouncePlayed = false;
@@ -659,20 +696,20 @@ class RouletteApp {
             const elapsed = now - startTime;
             const progress = Math.min(1.0, elapsed / TOTAL_DURATION);
 
-            let wheelAngle = (elapsed / 1000) * 0.8;
+            let wheelAngle = (elapsed / 1000) * 0.75;
             let ballAngle = 0;
             let ballRadius = outerR * 0.92;
 
-            if (progress < 0.5) {
-                // 1구간 (0.0s ~ 1.5s): 림을 타고 초고속 회전
-                const t1 = progress / 0.5;
-                ballAngle = -((elapsed / 1000) * 12.0) * (1 - t1 * 0.3);
+            if (progress < 0.50) {
+                // 1구간 (0.0s ~ 2.0s): 외곽 림을 타고 도는 초고속 회전
+                const t1 = progress / 0.50;
+                ballAngle = -((elapsed / 1000) * 11.0) * (1 - t1 * 0.25);
                 ballRadius = outerR * 0.92;
-            } else if (progress < 0.75) {
-                // 2구간 (1.5s ~ 2.25s): 감속하며 번호 포켓으로 낙하 및 바운스
-                const t2 = (progress - 0.5) / 0.25;
-                ballAngle = -((elapsed / 1000) * 6.0) * (1 - t2 * 0.6);
-                ballRadius = (outerR * 0.92) - (outerR * 0.92 - outerR * 0.65) * t2 + Math.sin(t2 * Math.PI * 2) * 5;
+            } else if (progress < 0.80) {
+                // 2구간 (2.0s ~ 3.2s): 감속하며 번호 포켓 진입 및 바운스
+                const t2 = (progress - 0.50) / 0.30;
+                ballAngle = -((elapsed / 1000) * 5.5) * (1 - t2 * 0.65);
+                ballRadius = (outerR * 0.92) - (outerR * 0.92 - outerR * 0.65) * t2 + Math.sin(t2 * Math.PI * 2) * 6;
 
                 if (!bouncePlayed) {
                     bouncePlayed = true;
@@ -681,7 +718,7 @@ class RouletteApp {
                     if (window.rouletteAudio && window.rouletteAudio.playBounce) window.rouletteAudio.playBounce();
                 }
             } else {
-                // 3구간 (2.25s ~ 3.0s): 당첨 번호 포켓에 정확히 안착 및 락온 뱃지 표출
+                // 3구간 (3.2s ~ 4.0s): 당첨 번호 포켓 안착 및 락온 표출
                 ballAngle = wheelAngle + targetIdx * sliceAngle + sliceAngle / 2;
                 ballRadius = outerR * 0.65;
 
@@ -707,10 +744,10 @@ class RouletteApp {
             ctx.fillStyle = '#220b04';
             ctx.fill();
             ctx.strokeStyle = '#d4af37';
-            ctx.lineWidth = 4;
+            ctx.lineWidth = 5;
             ctx.stroke();
 
-            // 2. 휠 슬라이스
+            // 2. 휠 슬라이스 회전
             ctx.translate(cx, cy);
             ctx.rotate(wheelAngle);
 
@@ -718,7 +755,7 @@ class RouletteApp {
                 const sAngle = i * sliceAngle;
                 const eAngle = sAngle + sliceAngle;
                 const n = numbers[i];
-                const isWinner = (progress >= 0.75 && n === targetNum);
+                const isWinner = (progress >= 0.80 && n === targetNum);
 
                 ctx.beginPath();
                 ctx.arc(0, 0, outerR * 0.92, sAngle, eAngle);
@@ -738,7 +775,7 @@ class RouletteApp {
 
                 // 격벽
                 ctx.strokeStyle = isWinner ? '#ffffff' : '#f59e0b';
-                ctx.lineWidth = isWinner ? 3 : 1;
+                ctx.lineWidth = isWinner ? 3.5 : 1.2;
                 ctx.beginPath();
                 ctx.moveTo(Math.cos(sAngle) * outerR * 0.45, Math.sin(sAngle) * outerR * 0.45);
                 ctx.lineTo(Math.cos(sAngle) * outerR * 0.92, Math.sin(sAngle) * outerR * 0.92);
@@ -752,7 +789,7 @@ class RouletteApp {
                 ctx.translate(tx, ty);
                 ctx.rotate(mAngle + Math.PI / 2);
                 ctx.fillStyle = isWinner ? '#000000' : '#ffffff';
-                ctx.font = `bold ${isWinner ? '13px' : '10px'} 'Outfit', sans-serif`;
+                ctx.font = `bold ${isWinner ? '16px' : '12px'} 'Outfit', sans-serif`;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(n.toString(), 0, 0);
@@ -765,31 +802,30 @@ class RouletteApp {
             ctx.fillStyle = '#854d0e';
             ctx.fill();
             ctx.strokeStyle = '#ffd700';
-            ctx.lineWidth = 3;
+            ctx.lineWidth = 3.5;
             ctx.stroke();
             ctx.restore();
 
-            // 3. 은구슬 렌더링
+            // 3. 은구슬 렌더링 (대형화 9.5px)
             const bx = cx + Math.cos(ballAngle) * ballRadius;
             const by = cy + Math.sin(ballAngle) * ballRadius;
 
             ctx.save();
             ctx.beginPath();
-            ctx.arc(bx, by, 7.5, 0, Math.PI * 2);
-            const ballGrad = ctx.createRadialGradient(bx - 2, by - 2, 1, bx, by, 8);
+            ctx.arc(bx, by, 9.5, 0, Math.PI * 2);
+            const ballGrad = ctx.createRadialGradient(bx - 3, by - 3, 1, bx, by, 10);
             ballGrad.addColorStop(0, '#ffffff');
             ballGrad.addColorStop(0.5, '#e2e8f0');
             ballGrad.addColorStop(1, '#64748b');
             ctx.fillStyle = ballGrad;
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.8)';
-            ctx.shadowBlur = 6;
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+            ctx.shadowBlur = 8;
             ctx.fill();
             ctx.restore();
 
             if (progress < 1.0) {
                 this.liveCamAnimId = requestAnimationFrame(renderFrame);
             } else {
-                // 정확히 3초 도달 시 완료 콜백 실행
                 if (onFinished) onFinished();
             }
         };
@@ -846,9 +882,15 @@ class RouletteApp {
                 }
             }
 
-            // 유저 통계 기록
+            // 유저 통계 기록 및 관리자 당첨 로그 기록
             if (window.rouletteStats) {
                 window.rouletteStats.recordUserGame(totalBet, totalWin);
+                window.rouletteStats.addWinLog(this.currentRound, winningNumber, totalBet, totalWin, winningBets.length);
+            }
+
+            // 회원 프로필 뱃지 실시간 동기화
+            if (window.rouletteAuth) {
+                window.rouletteAuth.renderHeaderProfile();
             }
 
             // AI 플레이어 정산 연동
@@ -867,6 +909,9 @@ class RouletteApp {
 
                 this.showWinModal(winningNumber, color, totalWin, winningBets);
             }
+
+            // 오토플레이 조건 체크
+            this.checkAutoPlayConditions();
         } catch (err) {
             console.error("Error in onSpinResult:", err);
         } finally {
