@@ -556,74 +556,6 @@ body {
 }
 
 /* 다즌 (1st 12, 2nd 12, 3rd 12) */
-.table-combo-bets-bar {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    width: calc(100% - 69px);
-    background: rgba(4, 20, 12, 0.7);
-    padding: 4px 6px;
-    border-radius: 6px;
-    border: 1px solid rgba(255, 215, 0, 0.2);
-}
-
-.table-sixline-bar {
-    border-color: rgba(99, 102, 241, 0.4);
-    background: linear-gradient(90deg, rgba(30, 27, 75, 0.5), rgba(4, 20, 12, 0.6));
-}
-
-.table-corner-bar {
-    border-color: rgba(245, 158, 11, 0.4);
-    background: linear-gradient(90deg, rgba(69, 26, 3, 0.5), rgba(4, 20, 12, 0.6));
-}
-
-.combo-label {
-    font-size: 0.68rem;
-    font-weight: 800;
-    font-family: var(--font-heading);
-    color: var(--gold-primary);
-    white-space: nowrap;
-    min-width: 90px;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.8);
-}
-
-.combo-spots-grid {
-    display: flex;
-    gap: 4px;
-    flex: 1;
-}
-
-.spot-combo {
-    flex: 1;
-    height: 38px;
-    font-size: 0.72rem;
-    font-weight: 700;
-    border-radius: 4px;
-    transition: all 0.15s ease;
-}
-
-.spot-sixline {
-    background: linear-gradient(135deg, rgba(49, 46, 129, 0.75), rgba(17, 24, 39, 0.85));
-    border-color: rgba(165, 180, 252, 0.4);
-    color: #e0e7ff;
-}
-
-.spot-sixline:hover {
-    border-color: #818cf8;
-    box-shadow: 0 0 10px rgba(129, 140, 248, 0.6);
-}
-
-.spot-corner {
-    background: linear-gradient(135deg, rgba(120, 53, 15, 0.75), rgba(24, 24, 27, 0.85));
-    border-color: rgba(253, 186, 116, 0.4);
-    color: #ffedd5;
-}
-
-.spot-corner:hover {
-    border-color: #fb923c;
-    box-shadow: 0 0 10px rgba(251, 146, 60, 0.6);
-}
-
 .table-dozens-area {
     display: flex;
     gap: 5px;
@@ -663,6 +595,122 @@ body {
     height: 46px;
     background: linear-gradient(145deg, rgba(28, 28, 28, 0.9), rgba(10, 10, 10, 0.95));
     font-size: 0.85rem;
+}
+
+/* ==========================================================================
+   정통 카지노 룰렛 펠트 다이 그리드 핫스팟 레이어 (스플릿, 코너, 스트리트, 식스라인)
+   ========================================================================== */
+.table-numbers-grid {
+    position: relative;
+}
+
+.table-hotspots-layer {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    z-index: 15;
+}
+
+.hotspot-btn {
+    position: absolute;
+    transform: translate(-50%, -50%);
+    background: transparent;
+    border: none;
+    outline: none;
+    cursor: pointer;
+    pointer-events: auto;
+    z-index: 20;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.15s ease;
+}
+
+/* 마우스 오버 또는 터치 시 카지노 골드 타겟 원형/라인 하이라이트 */
+.hotspot-btn::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(255, 215, 0, 0.45) 0%, rgba(255, 215, 0, 0) 70%);
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+}
+
+.hotspot-btn:hover::after,
+.hotspot-btn:active::after {
+    opacity: 1;
+    transform: scale(1.15);
+}
+
+/* 1. 스플릿 세로 경계선 (Vertical Split) */
+.hotspot-split-v {
+    width: 34px;
+    height: 18px;
+}
+.hotspot-split-v::after {
+    width: 30px;
+    height: 14px;
+    border: 1px dashed rgba(255, 215, 0, 0.7);
+    border-radius: 8px;
+}
+
+/* 2. 스플릿 가로 경계선 (Horizontal Split) */
+.hotspot-split-h {
+    width: 18px;
+    height: 34px;
+}
+.hotspot-split-h::after {
+    width: 14px;
+    height: 30px;
+    border: 1px dashed rgba(255, 215, 0, 0.7);
+    border-radius: 8px;
+}
+
+/* 3. 코너 4개 번호 모서리 교차점 (Corner) */
+.hotspot-corner {
+    width: 26px;
+    height: 26px;
+}
+.hotspot-corner::after {
+    width: 22px;
+    height: 22px;
+    border: 1.5px solid #ffd700;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.8);
+}
+
+/* 4. 스트리트 3개 번호 행 하단 (Street) */
+.hotspot-street {
+    width: 30px;
+    height: 16px;
+}
+.hotspot-street::after {
+    width: 26px;
+    height: 12px;
+    border-bottom: 2px solid #ffd700;
+    border-radius: 4px;
+}
+
+/* 5. 식스 라인 6개 번호 T자 교차점 (Six Line) */
+.hotspot-sixline {
+    width: 26px;
+    height: 20px;
+}
+.hotspot-sixline::after {
+    width: 22px;
+    height: 16px;
+    border: 1.5px solid #60a5fa;
+    box-shadow: 0 0 8px rgba(96, 165, 250, 0.8);
+}
+
+/* 핫스팟에 얹혀진 칩 스택 스타일 */
+.hotspot-btn .chip-stack {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    z-index: 25;
 }
 
 /* 당첨 하이라이트 발광 효과 */
@@ -945,38 +993,26 @@ body {
 }
 
 .action-buttons-bar {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 12px;
-    max-width: 680px;
-    margin: 0 auto;
-    width: 100%;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .act-btn {
     font-family: var(--font-heading);
     font-weight: 700;
-    font-size: 0.88rem;
-    padding: 12px 14px;
+    font-size: 0.85rem;
+    padding: 10px 18px;
     border-radius: 8px;
     border: 1px solid #444;
     cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 8px;
+    gap: 6px;
     transition: all 0.2s ease;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
-    width: 100%;
 }
-
-@media (max-width: 600px) {
-    .action-buttons-bar {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 8px;
-    }
-}
-
 
 .act-btn:hover {
     transform: translateY(-2px);
@@ -1035,7 +1071,6 @@ body {
 }
 
 .modal-overlay.hidden {
-    display: none !important;
     opacity: 0;
     pointer-events: none;
 }
@@ -1721,6 +1756,7 @@ body {
     border-color: #cbd5e1;
     color: #ffffff;
 }
+
 .chip-selector-btn.chip-500 {
     background: radial-gradient(circle, #0284c7 30%, #0369a1 90%);
     border-color: #7dd3fc;
@@ -1731,6 +1767,7 @@ body {
     background: radial-gradient(circle, #64748b 30%, #334155 90%);
     border: 2px dashed #cbd5e1;
 }
+
 .placed-chip.chip-500 {
     background: radial-gradient(circle, #0284c7 30%, #0369a1 90%);
     border: 2px dashed #7dd3fc;
@@ -1742,11 +1779,13 @@ body {
     border: 2px solid #93c5fd;
     box-shadow: 0 2px 8px rgba(37, 99, 235, 0.7);
 }
+
 .placed-chip.chip-bot-purple {
     background: radial-gradient(circle, #a855f7 30%, #7e22ce 90%);
     border: 2px solid #d8b4fe;
     box-shadow: 0 2px 8px rgba(147, 51, 234, 0.7);
 }
+
 .placed-chip.chip-bot-emerald {
     background: radial-gradient(circle, #10b981 30%, #047857 90%);
     border: 2px solid #6ee7b7;
@@ -1756,7 +1795,8 @@ body {
 .placed-chip.bot-chip {
     width: 28px;
     height: 28px;
-    margin-left: -10px; /* 칩 겹침 연출 */
+    margin-left: -10px;
+    /* 칩 겹침 연출 */
     font-size: 0.6rem;
     z-index: 5;
 }
@@ -1806,8 +1846,16 @@ body {
 }
 
 @keyframes recBlink {
-    0% { opacity: 0.3; transform: scale(0.85); }
-    100% { opacity: 1; transform: scale(1.2); box-shadow: 0 0 8px #ef4444; }
+    0% {
+        opacity: 0.3;
+        transform: scale(0.85);
+    }
+
+    100% {
+        opacity: 1;
+        transform: scale(1.2);
+        box-shadow: 0 0 8px #ef4444;
+    }
 }
 
 .cam-title {
@@ -1828,12 +1876,15 @@ body {
     font-weight: 700;
 }
 
+#live-cam-modal {
+    z-index: 99999 !important;
+}
+
 .live-cam-viewport {
     position: relative;
     width: 100%;
     height: 380px;
-    background: radial-gradient(circle at center, #380d58 0%, #1c062e 60%, #0a0112 100%);
-    box-shadow: inset 0 0 60px rgba(0, 0, 0, 0.85), inset 0 0 25px rgba(255, 215, 0, 0.25);
+    background: radial-gradient(circle at center, #1a251e 0%, #070908 100%);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1841,15 +1892,22 @@ body {
 }
 
 #live-cam-video {
-    display: none !important;
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
 }
 
 #live-cam-canvas {
-    position: relative;
+    position: absolute;
+    inset: 0;
     width: 100%;
     height: 100%;
     object-fit: contain;
-    z-index: 5;
+    z-index: 2;
+    pointer-events: none;
 }
 
 .cam-crosshair {
@@ -1870,12 +1928,14 @@ body {
     position: absolute;
     background: rgba(255, 215, 0, 0.4);
 }
+
 .cam-crosshair::before {
     top: 50%;
     left: -15px;
     right: -15px;
     height: 1px;
 }
+
 .cam-crosshair::after {
     left: 50%;
     top: -15px;
@@ -2021,10 +2081,23 @@ body {
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9);
 }
 
-/* ==========================================================================
-   11차 개편: 대형 배팅 카운트다운 게이지 바 (Betting Countdown Progress Bar)
-   ========================================================================== */
-.betting-timer-display-bar {
+/* 라이브 캠 비디오 플레이어 스타일 */
+#live-cam-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+
+.live-cam-viewport canvas {
+    position: relative;
+    z-index: 2;
+}
+
+11차 개편: 대형 배팅 카운트다운 게이지 바 (Betting Countdown Progress Bar)==========================================================================*/ .betting-timer-display-bar {
     background: linear-gradient(135deg, rgba(16, 26, 20, 0.95), rgba(8, 14, 10, 0.95));
     border: 1px solid rgba(255, 215, 0, 0.35);
     border-radius: 12px;
@@ -2056,8 +2129,16 @@ body {
 }
 
 @keyframes pulseDot {
-    0% { transform: scale(0.85); opacity: 0.6; }
-    100% { transform: scale(1.25); opacity: 1; box-shadow: 0 0 14px currentColor; }
+    0% {
+        transform: scale(0.85);
+        opacity: 0.6;
+    }
+
+    100% {
+        transform: scale(1.25);
+        opacity: 1;
+        box-shadow: 0 0 14px currentColor;
+    }
 }
 
 .timer-title {
@@ -2102,8 +2183,13 @@ body {
 }
 
 @keyframes numPulse {
-    0% { transform: scale(1); }
-    100% { transform: scale(1.15); }
+    0% {
+        transform: scale(1);
+    }
+
+    100% {
+        transform: scale(1.15);
+    }
 }
 
 .betting-timer-track {
@@ -2137,30 +2223,23 @@ body {
 /* ==========================================================================
    11차 개편: 배팅 마감(Lockout) 오버레이 (클릭 100% 완전 차단)
    ========================================================================== */
-.table-lockout-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(6, 11, 8, 0.82);
-    backdrop-filter: blur(4px);
-    z-index: 50;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    pointer-events: all;
-    cursor: not-allowed;
-    animation: fadeInLock 0.25s ease forwards;
-}
-
-.table-lockout-overlay.hidden {
+.table-lockout-overlay,
+#table-lockout-overlay {
     display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+    z-index: -9999 !important;
 }
 
 @keyframes fadeInLock {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 .lockout-badge {
@@ -2178,8 +2257,15 @@ body {
 }
 
 @keyframes lockBadgePop {
-    0% { transform: scale(0.85); opacity: 0; }
-    100% { transform: scale(1); opacity: 1; }
+    0% {
+        transform: scale(0.85);
+        opacity: 0;
+    }
+
+    100% {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .lockout-icon-box {
@@ -2190,8 +2276,14 @@ body {
 }
 
 @keyframes pulseLock {
-    0% { transform: scale(0.9); }
-    100% { transform: scale(1.15); filter: drop-shadow(0 0 10px #ef4444); }
+    0% {
+        transform: scale(0.9);
+    }
+
+    100% {
+        transform: scale(1.15);
+        filter: drop-shadow(0 0 10px #ef4444);
+    }
 }
 
 .lockout-main-text {
@@ -2257,4 +2349,4 @@ body {
     align-items: center;
     justify-content: center;
     overflow: hidden;
-}
+}
