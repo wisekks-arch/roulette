@@ -85,6 +85,68 @@ class RouletteTable {
                     </div>
                 </div>
 
+                <!-- 🌟 정통 룰렛 6배 배팅 (SIX LINE / 6개 번호 묶음, 배당 5:1) -->
+                <div class="table-combo-bets-bar table-sixline-bar">
+                    <div class="combo-label">6배 배팅 (LINE 5:1)</div>
+                    <div class="combo-spots-grid">
+                        <button class="bet-spot spot-outside spot-combo spot-sixline" data-bet="sixline" data-numbers="1,2,3,4,5,6" id="spot-line-1-6">
+                            <span>1-6</span>
+                            <div class="chip-stack" id="chips-line-1-6"></div>
+                        </button>
+                        <button class="bet-spot spot-outside spot-combo spot-sixline" data-bet="sixline" data-numbers="7,8,9,10,11,12" id="spot-line-7-12">
+                            <span>7-12</span>
+                            <div class="chip-stack" id="chips-line-7-12"></div>
+                        </button>
+                        <button class="bet-spot spot-outside spot-combo spot-sixline" data-bet="sixline" data-numbers="13,14,15,16,17,18" id="spot-line-13-18">
+                            <span>13-18</span>
+                            <div class="chip-stack" id="chips-line-13-18"></div>
+                        </button>
+                        <button class="bet-spot spot-outside spot-combo spot-sixline" data-bet="sixline" data-numbers="19,20,21,22,23,24" id="spot-line-19-24">
+                            <span>19-24</span>
+                            <div class="chip-stack" id="chips-line-19-24"></div>
+                        </button>
+                        <button class="bet-spot spot-outside spot-combo spot-sixline" data-bet="sixline" data-numbers="25,26,27,28,29,30" id="spot-line-25-30">
+                            <span>25-30</span>
+                            <div class="chip-stack" id="chips-line-25-30"></div>
+                        </button>
+                        <button class="bet-spot spot-outside spot-combo spot-sixline" data-bet="sixline" data-numbers="31,32,33,34,35,36" id="spot-line-31-36">
+                            <span>31-36</span>
+                            <div class="chip-stack" id="chips-line-31-36"></div>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 🌟 정통 룰렛 4배 배팅 (CORNER / 4개 번호 모서리 묶음, 배당 8:1) -->
+                <div class="table-combo-bets-bar table-corner-bar">
+                    <div class="combo-label">4배 배팅 (CORNER 8:1)</div>
+                    <div class="combo-spots-grid">
+                        <button class="bet-spot spot-outside spot-combo spot-corner" data-bet="corner" data-numbers="1,2,4,5" id="spot-corner-1-5">
+                            <span>1,2,4,5</span>
+                            <div class="chip-stack" id="chips-corner-1-5"></div>
+                        </button>
+                        <button class="bet-spot spot-outside spot-combo spot-corner" data-bet="corner" data-numbers="7,8,10,11" id="spot-corner-7-11">
+                            <span>7,8,10,11</span>
+                            <div class="chip-stack" id="chips-corner-7-11"></div>
+                        </button>
+                        <button class="bet-spot spot-outside spot-combo spot-corner" data-bet="corner" data-numbers="13,14,16,17" id="spot-corner-13-17">
+                            <span>13,14,16,17</span>
+                            <div class="chip-stack" id="chips-corner-13-17"></div>
+                        </button>
+                        <button class="bet-spot spot-outside spot-combo spot-corner" data-bet="corner" data-numbers="19,20,22,23" id="spot-corner-19-23">
+                            <span>19,20,22,23</span>
+                            <div class="chip-stack" id="chips-corner-19-23"></div>
+                        </button>
+                        <button class="bet-spot spot-outside spot-combo spot-corner" data-bet="corner" data-numbers="25,26,28,29" id="spot-corner-25-29">
+                            <span>25,26,28,29</span>
+                            <div class="chip-stack" id="chips-corner-25-29"></div>
+                        </button>
+                        <button class="bet-spot spot-outside spot-combo spot-corner" data-bet="corner" data-numbers="31,32,34,35" id="spot-corner-31-35">
+                            <span>31,32,34,35</span>
+                            <div class="chip-stack" id="chips-corner-31-35"></div>
+                        </button>
+                    </div>
+                </div>
+
                 <!-- 다즌 배팅 (1st 12, 2nd 12, 3rd 12) -->
                 <div class="table-dozens-area">
                     <button class="bet-spot spot-outside spot-dozen" data-bet="dozen" data-numbers="1-12" id="spot-dozen1">
@@ -558,7 +620,17 @@ class RouletteTable {
             const chipStack = spot.querySelector('.chip-stack');
             if (!chipStack || !chipStack.children.length) return;
 
-            if (winningSpotIds.has(spotId)) {
+            let isSpotWinner = winningSpotIds.has(spotId);
+            const betType = spot.getAttribute('data-bet');
+            const numbersStr = spot.getAttribute('data-numbers');
+            if (!isSpotWinner && (betType === 'sixline' || betType === 'corner') && numbersStr) {
+                const nums = numbersStr.split(',').map(n => parseInt(n.trim(), 10));
+                if (nums.includes(winningNumber)) {
+                    isSpotWinner = true;
+                }
+            }
+
+            if (isSpotWinner) {
                 // [당첨 칩]: 테이블 위에 영광스럽게 그대로 보존 및 황금 오라 연출!
                 chipStack.classList.add('winning-chip-glowing');
             } else {
@@ -704,6 +776,20 @@ class RouletteTable {
                     else if (bet.numbers === 'col2' && winningNumber % 3 === 2) won = true;
                     else if (bet.numbers === 'col3' && winningNumber % 3 === 0) won = true;
                     if (won) multiplier = 2 + 1; // 2:1 배당 + 원금
+                } else if (bet.type === 'sixline') {
+                    // 🌟 6배 배팅 (SIX LINE): 6개 번호 적중 시 5:1 배당 + 원금 (총 6배 지급)
+                    const nums = bet.numbers.split(',').map(n => parseInt(n.trim(), 10));
+                    if (nums.includes(winningNumber)) {
+                        won = true;
+                        multiplier = 5 + 1;
+                    }
+                } else if (bet.type === 'corner') {
+                    // 🌟 4배 배팅 (CORNER): 4개 번호 모서리 적중 시 8:1 배당 + 원금 (총 9배 지급)
+                    const nums = bet.numbers.split(',').map(n => parseInt(n.trim(), 10));
+                    if (nums.includes(winningNumber)) {
+                        won = true;
+                        multiplier = 8 + 1;
+                    }
                 }
             }
 

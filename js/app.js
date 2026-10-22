@@ -603,7 +603,7 @@ class RouletteApp {
                 statusText.textContent = `🎯 BALL DROP LOCK-ON! 당첨 번호 #${targetNum}`;
             }
 
-            // 1.5초간 당첨 클로즈업을 충분히 보여준 후 영상 팝업 닫고 결과 화면으로 전환
+            // 당첨 락온을 확인한 후 0.5초 뒤 영상 팝업을 닫고 즉시 결과 화면으로 전환
             setTimeout(() => {
                 if (liveCamModal) {
                     liveCamModal.classList.add('hidden');
@@ -611,7 +611,7 @@ class RouletteApp {
                 }
                 const color = window.rouletteWheel ? window.rouletteWheel.getNumberColor(targetNum) : 'red';
                 this.onSpinResult(targetNum, color);
-            }, 1500);
+            }, 500);
         };
 
         // 2. 실사 라이브 캠 캔버스 클로즈업 물리 휠 & 은구슬 시네마틱 애니메이션 가동
@@ -646,8 +646,8 @@ class RouletteApp {
         const w = canvas.width;
         const h = canvas.height;
         const cx = w / 2;
-        const cy = h / 2 + 15;
-        const outerR = 175;
+        const cy = h / 2 + 10;
+        const outerR = 200; // 룰렛 동그라미 대폭 확대 (지름 400px 웅장한 연출)
 
         const numbers = [
             0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5,
@@ -658,8 +658,8 @@ class RouletteApp {
 
         let wheelAngle = 0;
         let ballAngle = Math.random() * Math.PI * 2;
-        let ballRadius = outerR * 0.95;
-        let ballSpeed = 0.26;
+        let ballRadius = outerR * 0.94;
+        let ballSpeed = 0.28;
         let state = 'rolling'; // rolling -> dropping -> bouncing -> pocketed
         let bounces = 3;
         let startTime = Date.now();
@@ -672,14 +672,14 @@ class RouletteApp {
 
             // 휠 회전
             if (state !== 'pocketed') {
-                wheelAngle += 0.014;
+                wheelAngle += 0.015;
             }
 
-            // 구슬 물리 시뮬레이션
+            // 구슬 물리 시뮬레이션 (정확히 3.0초 전체 타임라인)
             if (state === 'rolling') {
                 ballAngle -= ballSpeed;
-                ballSpeed *= 0.991;
-                if (elapsed >= 2.2 || ballSpeed < 0.09) {
+                ballSpeed *= 0.99;
+                if (elapsed >= 1.2 || ballSpeed < 0.12) {
                     state = 'dropping';
                     const statusText = document.getElementById('live-cam-status-text');
                     if (statusText) statusText.textContent = "🟡 DECELERATING: 구슬이 감속하며 번호 포켓으로 진입 중입니다...";
@@ -687,9 +687,9 @@ class RouletteApp {
                 }
             } else if (state === 'dropping') {
                 ballAngle -= ballSpeed;
-                ballRadius -= (ballRadius - outerR * 0.65) * 0.08;
-                ballSpeed *= 0.98;
-                if (ballRadius <= outerR * 0.66) {
+                ballRadius -= (ballRadius - outerR * 0.65) * 0.1;
+                ballSpeed *= 0.96;
+                if (ballRadius <= outerR * 0.66 || elapsed >= 1.7) {
                     state = 'bouncing';
                     if (window.rouletteAudio) window.rouletteAudio.playBounce();
                 }
@@ -697,20 +697,23 @@ class RouletteApp {
                 ballAngle -= ballSpeed;
                 const targetAngle = wheelAngle + targetIdx * sliceAngle + sliceAngle / 2;
                 let diff = Math.atan2(Math.sin(targetAngle - ballAngle), Math.cos(targetAngle - ballAngle));
-                ballAngle += diff * 0.16;
+                ballAngle += diff * 0.18;
                 ballRadius = outerR * 0.65 + Math.sin(bounces * Math.PI) * 4;
-                ballSpeed *= 0.93;
+                ballSpeed *= 0.92;
 
-                if (ballSpeed < 0.012) {
+                if (ballSpeed < 0.015 || elapsed >= 2.2) {
                     bounces--;
-                    if (bounces <= 0) {
+                    if (bounces <= 0 || elapsed >= 2.3) {
                         state = 'pocketed';
                         ballAngle = wheelAngle + targetIdx * sliceAngle + sliceAngle / 2;
                         ballRadius = outerR * 0.65;
                         if (window.rouletteAudio) window.rouletteAudio.playDrop();
                         if (!isDroppedCalled) {
                             isDroppedCalled = true;
-                            if (onDropped) onDropped();
+                            // 3.0초가 되는 시점(안착 후 약 0.7~0.8초 락온 감상)에 결과 전환
+                            setTimeout(() => {
+                                if (onDropped) onDropped();
+                            }, 750);
                         }
                     } else {
                         ballSpeed = 0.025 + bounces * 0.006;
