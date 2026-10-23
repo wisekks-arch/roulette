@@ -236,12 +236,22 @@ class RouletteApp {
             });
         }
 
-        // 7-1. 회원가입 / 로그인 / 프로필 모달 열기/닫기
+        // 7-1. 회원가입 / 로그인 / 프로필 모달 열기/닫기 및 로그아웃 토글
         const authBtn = document.getElementById('btn-open-auth');
         if (authBtn) {
             authBtn.addEventListener('click', () => {
                 if (window.rouletteAuth) {
-                    window.rouletteAuth.openAuthModal('auto');
+                    if (window.rouletteAuth.currentUser) {
+                        // 로그인 상태: 즉시 로그아웃 수행
+                        window.rouletteAuth.logout();
+                        if (window.rouletteApp) {
+                            window.rouletteApp.showToast("성공적으로 로그아웃되었습니다.");
+                        }
+                        window.rouletteAuth.renderHeaderProfile();
+                    } else {
+                        // 미로그인 상태: 로그인 / 회원가입 모달 열기
+                        window.rouletteAuth.openAuthModal('login');
+                    }
                 }
             });
         }

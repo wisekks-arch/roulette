@@ -49,7 +49,7 @@ class RouletteAuth {
     saveUsers() {
         try {
             localStorage.setItem(this.STORAGE_KEY_USERS, JSON.stringify(this.users));
-        } catch (e) {}
+        } catch (e) { }
     }
 
     loadCurrentUser() {
@@ -68,7 +68,7 @@ class RouletteAuth {
             } else {
                 localStorage.removeItem(this.STORAGE_KEY_CURRENT);
             }
-        } catch (e) {}
+        } catch (e) { }
     }
 
     loadLoginLogs() {
@@ -83,7 +83,7 @@ class RouletteAuth {
     saveLoginLogs() {
         try {
             localStorage.setItem(this.STORAGE_KEY_LOGS, JSON.stringify(this.loginLogs.slice(0, 100)));
-        } catch (e) {}
+        } catch (e) { }
     }
 
     /**
