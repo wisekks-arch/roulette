@@ -15,7 +15,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Outfit:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=20261023_0910">
+    <link rel="stylesheet" href="css/style.css?v=20261023_0950">
 </head>
 
 <body>
@@ -217,27 +217,56 @@
                 <div class="autoplay-modal-header">
                     <div class="autoplay-modal-title">
                         <h2>🤖 자동 배팅 설정 (AUTO PLAY)</h2>
-                        <p>테이블에 배팅 후 횟수와 목표 수익/손절가를 지정하여 자동으로 반복 플레이합니다.</p>
+                        <p>원하는 배팅을 테이블에 올린 후 횟수와 목표 수익/손절가를 지정하여 자동으로 반복 플레이합니다.</p>
                     </div>
                     <button id="btn-close-autoplay" class="btn-close-modal">✕ 닫기</button>
                 </div>
                 <div class="autoplay-modal-body">
-                    <div class="auto-input-group">
-                        <label>현재 보유 칩</label>
+                    <div class="auto-balance-card">
+                        <span class="auto-bal-label">현재 보유 칩</span>
                         <span id="auto-current-balance" class="auto-val-text">1,250,000 Chip</span>
                     </div>
+
                     <div class="auto-input-group">
-                        <label for="auto-rounds-input">자동 진행 횟수 (회)</label>
+                        <label for="auto-rounds-input">
+                            <span>자동 진행 횟수 (회)</span>
+                            <small>설정한 횟수만큼 동일 배팅 반복</small>
+                        </label>
+                        <div class="auto-preset-row">
+                            <button type="button" class="auto-preset-btn active" data-rounds="10">10회</button>
+                            <button type="button" class="auto-preset-btn" data-rounds="25">25회</button>
+                            <button type="button" class="auto-preset-btn" data-rounds="50">50회</button>
+                            <button type="button" class="auto-preset-btn" data-rounds="100">100회</button>
+                        </div>
                         <input type="number" id="auto-rounds-input" value="10" min="1" max="100">
                     </div>
+
                     <div class="auto-input-group">
-                        <label for="auto-profit-input">목표 수익 달성 시 자동 정지 (Chip, 0=미사용)</label>
+                        <label for="auto-profit-input">
+                            <span>🎯 목표 수익 달성 시 자동 정지</span>
+                            <small>(Chip 단위, 0 = 미사용)</small>
+                        </label>
+                        <div class="auto-step-row">
+                            <button type="button" class="auto-step-btn" data-target="auto-profit-input" data-add="100000">+10만</button>
+                            <button type="button" class="auto-step-btn" data-target="auto-profit-input" data-add="500000">+50만</button>
+                            <button type="button" class="auto-step-btn" data-target="auto-profit-input" data-set="0">초기화</button>
+                        </div>
                         <input type="number" id="auto-profit-input" value="500000" step="10000">
                     </div>
+
                     <div class="auto-input-group">
-                        <label for="auto-stoploss-input">손절 한도 도달 시 자동 정지 (Chip, 0=미사용)</label>
+                        <label for="auto-stoploss-input">
+                            <span>🛡️ 손절 한도 도달 시 자동 정지</span>
+                            <small>(Chip 단위, 0 = 미사용)</small>
+                        </label>
+                        <div class="auto-step-row">
+                            <button type="button" class="auto-step-btn" data-target="auto-stoploss-input" data-add="100000">+10만</button>
+                            <button type="button" class="auto-step-btn" data-target="auto-stoploss-input" data-add="300000">+30만</button>
+                            <button type="button" class="auto-step-btn" data-target="auto-stoploss-input" data-set="0">초기화</button>
+                        </div>
                         <input type="number" id="auto-stoploss-input" value="300000" step="10000">
                     </div>
+
                     <div class="autoplay-actions">
                         <button id="btn-start-autoplay" class="btn-auto-start">▶ 자동 배팅 시작</button>
                         <button id="btn-stop-autoplay" class="btn-auto-stop">⏹ 자동 배팅 중지</button>
@@ -389,13 +418,13 @@
     </div>
 
     <!-- 스크립트 모듈 로드 (강력한 캐시 방지 쿼리스트링 적용) -->
-    <script src="js/audio.js?v=20261023_0910"></script>
-    <script src="js/wheel.js?v=20261023_0910"></script>
-    <script src="js/table.js?v=20261023_0910"></script>
-    <script src="js/auth.js?v=20261023_0910"></script>
-    <script src="js/stats.js?v=20261023_0910"></script>
-    <script src="js/lobby.js?v=20261023_0910"></script>
-    <script src="js/app.js?v=20261023_0910"></script>
+    <script src="js/audio.js?v=20261023_0950"></script>
+    <script src="js/wheel.js?v=20261023_0950"></script>
+    <script src="js/table.js?v=20261023_0950"></script>
+    <script src="js/auth.js?v=20261023_0950"></script>
+    <script src="js/stats.js?v=20261023_0950"></script>
+    <script src="js/lobby.js?v=20261023_0950"></script>
+    <script src="js/app.js?v=20261023_0950"></script>
 </body>
 
 </html>

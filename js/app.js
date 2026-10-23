@@ -57,6 +57,9 @@ class RouletteApp {
             window.rouletteLobby.enterRoom(2);
         }
 
+        // 최근 10회 히스토리 바 초기화 (가로 스크롤 없이 10개 볼 정렬)
+        this.initHistoryBadges();
+
         // 첫 라운드 시작
         this.startBettingPhase();
     }
@@ -236,22 +239,12 @@ class RouletteApp {
             });
         }
 
-        // 7-1. 회원가입 / 로그인 / 프로필 모달 열기/닫기 및 로그아웃 토글
+        // 7-1. 회원가입 / 로그인 / 프로필 모달 열기/닫기
         const authBtn = document.getElementById('btn-open-auth');
         if (authBtn) {
             authBtn.addEventListener('click', () => {
                 if (window.rouletteAuth) {
-                    if (window.rouletteAuth.currentUser) {
-                        // 로그인 상태: 즉시 로그아웃 수행
-                        window.rouletteAuth.logout();
-                        if (window.rouletteApp) {
-                            window.rouletteApp.showToast("성공적으로 로그아웃되었습니다.");
-                        }
-                        window.rouletteAuth.renderHeaderProfile();
-                    } else {
-                        // 미로그인 상태: 로그인 / 회원가입 모달 열기
-                        window.rouletteAuth.openAuthModal('login');
-                    }
+                    window.rouletteAuth.openAuthModal('auto');
                 }
             });
         }
@@ -289,6 +282,7 @@ class RouletteApp {
             autoBtn.addEventListener('click', () => {
                 const modal = document.getElementById('autoplay-modal');
                 if (modal) modal.classList.remove('hidden');
+                this.updateBalanceDisplay();
             });
         }
         const closeAutoBtn = document.getElementById('btn-close-autoplay');
@@ -298,6 +292,38 @@ class RouletteApp {
                 if (modal) modal.classList.add('hidden');
             });
         }
+
+        // 오토플레이 빠른 횟수 프리셋 버튼 (10, 25, 50, 100회)
+        const presetBtns = document.querySelectorAll('.auto-preset-btn');
+        presetBtns.forEach(pBtn => {
+            pBtn.addEventListener('click', () => {
+                presetBtns.forEach(b => b.classList.remove('active'));
+                pBtn.classList.add('active');
+                const rounds = parseInt(pBtn.getAttribute('data-rounds'), 10);
+                const input = document.getElementById('auto-rounds-input');
+                if (input && rounds) {
+                    input.value = rounds;
+                }
+            });
+        });
+
+        // 오토플레이 빠른 목표수익/손절가 스텝 조절 버튼 (+10만, +30만/50만, 초기화)
+        const stepBtns = document.querySelectorAll('.auto-step-btn');
+        stepBtns.forEach(sBtn => {
+            sBtn.addEventListener('click', () => {
+                const targetId = sBtn.getAttribute('data-target');
+                const targetInput = document.getElementById(targetId);
+                if (!targetInput) return;
+
+                if (sBtn.hasAttribute('data-set')) {
+                    targetInput.value = parseInt(sBtn.getAttribute('data-set'), 10);
+                } else if (sBtn.hasAttribute('data-add')) {
+                    const addVal = parseInt(sBtn.getAttribute('data-add'), 10);
+                    const currentVal = parseInt(targetInput.value, 10) || 0;
+                    targetInput.value = Math.max(0, currentVal + addVal);
+                }
+            });
+        });
 
         const startAutoBtn = document.getElementById('btn-start-autoplay');
         if (startAutoBtn) {
@@ -467,11 +493,11 @@ class RouletteApp {
     }
 
     /**
-     * 1단계: 배팅 페이즈 시작 (20초 카운트다운 및 다중 봇 배팅 시뮬레이션)
+     * 1단계: 배팅 페이즈 시작 (15초 카운트다운 및 다중 봇 배팅 시뮬레이션)
      */
     startBettingPhase() {
         this.currentPhase = 'BETTING';
-        this.timerSeconds = 20;
+        this.timerSeconds = 15; // 15.0초 배팅 시간 배정
 
         // 이번 회차의 당첨 번호를 사전에 단일 확정 (0~36, 100% 동기화 보장)
         this.currentWinningNumber = Math.floor(Math.random() * 37);
@@ -522,7 +548,7 @@ class RouletteApp {
             this.updateBetDisplay();
         }
 
-        // 20초 카운트다운 타이머
+        // 15초 카운트다운 타이머
         if (this.timerInterval) clearInterval(this.timerInterval);
         this.timerInterval = setInterval(() => {
             this.timerSeconds--;
@@ -542,7 +568,7 @@ class RouletteApp {
     }
 
     /**
-     * 2단계: 배팅 마감 (배팅 시간 종료 즉시 지체 없이 바로 룰렛 휠 회전 및 구슬 질주 시작!)
+     * 2단계: 배팅 마감 (1.0초 마감 안내 후 즉시 딜러 룰렛 휠 회전 및 구슬 투구 라이브 캠 오픈)
      */
     closeBettingPhase() {
         if (this.currentPhase !== 'BETTING') return;
@@ -565,7 +591,7 @@ class RouletteApp {
             window.rouletteLobby.onBettingClosed();
         }
 
-        // 땡!! 벨 소리 및 딜러 마감 음성 (방어 코드 완비)
+        // 땡!! 벨 소리 및 딜러 마감 음성
         if (window.rouletteAudio) {
             try {
                 if (typeof window.rouletteAudio.playBetClosedBell === 'function') {
@@ -582,7 +608,7 @@ class RouletteApp {
         this.updatePhaseStatus("⛔ NO MORE BETS! - 딜러 배팅 마감 (구슬 투구)", "closed");
         this.updateTimerDisplay(0);
 
-        // 상단 마감 알림 배너 표출 (구슬 도는 화면을 방해하지 않고 1.5초 후 자동 소멸)
+        // 상단 마감 알림 배너 표출 (1.0초 후 자연스럽게 스핀으로 전환)
         const nmbModal = document.getElementById('no-more-bets-modal');
         if (nmbModal) {
             nmbModal.classList.remove('hidden');
@@ -590,7 +616,7 @@ class RouletteApp {
             setTimeout(() => {
                 nmbModal.classList.add('hidden');
                 nmbModal.style.display = 'none';
-            }, 1500);
+            }, 1000);
         }
 
         // 관리자 배팅 로그 기록
@@ -604,12 +630,12 @@ class RouletteApp {
             }
         }
 
-        // [핵심] 배팅 시간이 종료되면 기다리지 않고 0초 딜레이로 즉시 휠을 돌리고 구슬을 투구!
+        // 딜러 주도 구슬 투구 및 휠 회전 라이브 캠 오픈
         this.triggerSpin();
     }
 
     /**
-     * 3단계: 딜러 주도 구슬 투구 및 휠 회전 실사 라이브 연동 (정확히 4.0초 고정 실행 후 자동 닫힘)
+     * 3단계: 딜러 주도 구슬 투구 및 휠 회전 실사 라이브 캠 (총 6.5초: 고속질주 3.0s -> 감속 2.0s -> 완전정지/확정 1.5s)
      */
     triggerSpin() {
         this.currentPhase = 'SPINNING';
@@ -641,7 +667,7 @@ class RouletteApp {
             window.rouletteWheel.spin(targetNum, () => { });
         }
 
-        // 4.0초 절대 시간 완료 처리 함수
+        // 6.5초 절대 시간 완료 처리 함수
         let isSpinFinished = false;
         const handleSpinFinished = () => {
             if (isSpinFinished) return;
@@ -662,19 +688,20 @@ class RouletteApp {
             this.onSpinResult(targetNum, color);
         };
 
-        // 2. 정확히 4.0초(4000ms) 타임라인 시퀀서 가동
+        // 2. 정확히 6.5초(6500ms) 자연스러운 타임라인 시퀀서 가동
         this.runTimeBasedLiveCam(targetNum, handleSpinFinished);
 
-        // 3. [Fail-Safe 안전 타이머 4.2초] 브라우저 백그라운드 등 어떤 예외에서도 100% 진행 보장
+        // 3. [Fail-Safe 안전 타이머 6.8초] 브라우저 백그라운드 등 어떤 예외에서도 100% 진행 보장
         setTimeout(() => {
             if (!isSpinFinished) {
                 handleSpinFinished();
             }
-        }, 4200);
+        }, 6800);
     }
 
     /**
-     * 정확히 4.0초(4000ms) 동안 구동되는 대형 3D 구슬 물리 렌더러
+     * 정확히 6.5초(6500ms) 동안 구동되는 대형 3D 구슬 물리 렌더러
+     * [시간 배정: 0~3.0s 고속 질주 -> 3.0~5.0s 감속 포켓 진입 -> 5.0~6.5s 휠 완전 정지 & 당첨 번호 확정 유지]
      */
     runTimeBasedLiveCam(targetNum, onFinished) {
         const canvas = document.getElementById('live-cam-canvas');
@@ -697,11 +724,12 @@ class RouletteApp {
         const sliceAngle = (Math.PI * 2) / numbers.length;
         const targetIdx = numbers.indexOf(targetNum);
 
-        const TOTAL_DURATION = 4000; // 요청하신 4초 연장 (4000ms)
+        const TOTAL_DURATION = 6500; // 요청하신 자연스러운 6.5초 배정
         const startTime = performance.now();
 
         let bouncePlayed = false;
         let lockOnShown = false;
+        let finalStoppedWheelAngle = null; // 5.0초에 정지될 휠의 최종 고정 각도
 
         if (this.liveCamAnimId) cancelAnimationFrame(this.liveCamAnimId);
 
@@ -709,20 +737,23 @@ class RouletteApp {
             const elapsed = now - startTime;
             const progress = Math.min(1.0, elapsed / TOTAL_DURATION);
 
-            let wheelAngle = (elapsed / 1000) * 0.75;
+            let wheelAngle = 0;
             let ballAngle = 0;
             let ballRadius = outerR * 0.92;
 
-            if (progress < 0.50) {
-                // 1구간 (0.0s ~ 2.0s): 외곽 림을 타고 도는 초고속 회전
-                const t1 = progress / 0.50;
-                ballAngle = -((elapsed / 1000) * 11.0) * (1 - t1 * 0.25);
+            if (progress < 0.46) {
+                // 1구간 (0.0s ~ 3.0s, 3.0초간): 외곽 림을 타고 도는 초고속 회전
+                const t1 = progress / 0.46;
+                wheelAngle = (elapsed / 1000) * 0.85;
+                ballAngle = -((elapsed / 1000) * 11.5) * (1 - t1 * 0.20);
                 ballRadius = outerR * 0.92;
-            } else if (progress < 0.80) {
-                // 2구간 (2.0s ~ 3.2s): 감속하며 번호 포켓 진입 및 바운스
-                const t2 = (progress - 0.50) / 0.30;
-                ballAngle = -((elapsed / 1000) * 5.5) * (1 - t2 * 0.65);
-                ballRadius = (outerR * 0.92) - (outerR * 0.92 - outerR * 0.65) * t2 + Math.sin(t2 * Math.PI * 2) * 6;
+            } else if (progress < 0.77) {
+                // 2구간 (3.0s ~ 5.0s, 2.0초간): 감속하며 번호 포켓 진입 및 바운스
+                const t2 = (progress - 0.46) / 0.31;
+                // 휠도 서서히 감속
+                wheelAngle = (3.0 * 0.85) + (t2 * (2.0 * 0.85) * (1 - t2 * 0.65));
+                ballAngle = -((elapsed / 1000) * 4.8) * (1 - t2 * 0.75);
+                ballRadius = (outerR * 0.92) - (outerR * 0.92 - outerR * 0.65) * t2 + Math.sin(t2 * Math.PI * 2) * 5;
 
                 if (!bouncePlayed) {
                     bouncePlayed = true;
@@ -731,9 +762,13 @@ class RouletteApp {
                     if (window.rouletteAudio && window.rouletteAudio.playBounce) window.rouletteAudio.playBounce();
                 }
             } else {
-                // 3구간 (3.2s ~ 4.0s): 당첨 번호 포켓 안착 및 락온 표출
+                // 3구간 (5.0s ~ 6.5s, 1.5초간): [핵심 요구사항] 룰렛판 움직임 완전 정지 & 당첨 번호 확정 노출
+                if (finalStoppedWheelAngle === null) {
+                    finalStoppedWheelAngle = (3.0 * 0.85) + (1.0 * (2.0 * 0.85) * 0.35);
+                }
+                wheelAngle = finalStoppedWheelAngle; // 휠 속도 0: 완전 정지 상태 고정!
                 ballAngle = wheelAngle + targetIdx * sliceAngle + sliceAngle / 2;
-                ballRadius = outerR * 0.65;
+                ballRadius = outerR * 0.65; // 포켓 안착 고정
 
                 if (!lockOnShown) {
                     lockOnShown = true;
@@ -742,7 +777,7 @@ class RouletteApp {
                     const statusText = document.getElementById('live-cam-status-text');
                     if (winNumEl) winNumEl.textContent = targetNum;
                     if (winBadge) winBadge.classList.remove('hidden');
-                    if (statusText) statusText.textContent = `🎯 BALL DROP LOCK-ON! 당첨 번호 #${targetNum}`;
+                    if (statusText) statusText.textContent = `🎯 휠 정지 확정! 당첨 번호 #${targetNum} 안착 완료`;
                     if (window.rouletteAudio && window.rouletteAudio.playDrop) window.rouletteAudio.playDrop();
                 }
             }
@@ -760,7 +795,7 @@ class RouletteApp {
             ctx.lineWidth = 5;
             ctx.stroke();
 
-            // 2. 휠 슬라이스 회전
+            // 2. 휠 슬라이스 회전 (정지 구간에서는 정지된 각도 유지)
             ctx.translate(cx, cy);
             ctx.rotate(wheelAngle);
 
@@ -768,7 +803,7 @@ class RouletteApp {
                 const sAngle = i * sliceAngle;
                 const eAngle = sAngle + sliceAngle;
                 const n = numbers[i];
-                const isWinner = (progress >= 0.80 && n === targetNum);
+                const isWinner = (progress >= 0.77 && n === targetNum);
 
                 ctx.beginPath();
                 ctx.arc(0, 0, outerR * 0.92, sAngle, eAngle);
@@ -847,7 +882,7 @@ class RouletteApp {
     }
 
     /**
-     * 4단계: 당첨 결과 발표 및 배당 정산 (3.0초 후 다음 게임으로 자동 연결)
+     * 4단계: 당첨 결과 발표 및 배당 정산 (3.5초 정산 대기 후 다음 게임으로 자동 연결)
      */
     onSpinResult(winningNumber, color) {
         this.currentPhase = 'RESULT';
@@ -865,7 +900,7 @@ class RouletteApp {
             window.rouletteTable.placeDolly(winningNumber);
         }
 
-        // 3. 최근 20회 히스토리 바 업데이트
+        // 3. 최근 10회 히스토리 바 업데이트 (10개 엄격 유지)
         this.addHistoryBadge(winningNumber, color);
 
         // 4. 통계 시스템 기록
@@ -938,11 +973,11 @@ class RouletteApp {
         } catch (err) {
             console.error("Error in onSpinResult:", err);
         } finally {
-            // 5단계: 정확히 3.0초 후 무조건 다음 회차로 자동 순환
+            // 5단계: 여유 있는 3.5초 정산 및 승리 확인 후 다음 회차로 자동 순환
             if (this.nextRoundTimeout) clearTimeout(this.nextRoundTimeout);
             this.nextRoundTimeout = setTimeout(() => {
                 this.nextRound();
-            }, 3000);
+            }, 3500);
         }
     }
 
@@ -1035,7 +1070,46 @@ class RouletteApp {
     }
 
     /**
-     * 최근 20회 히스토리 바에 배지 추가
+     * 최근 10회 히스토리 바 초기 렌더링 (가로 스크롤 없이 10개 볼 정렬)
+     */
+    initHistoryBadges() {
+        const historyList = document.getElementById('table-history-list');
+        if (!historyList) return;
+
+        historyList.innerHTML = '';
+
+        // stats.js에 이미 저장된 히스토리에서 최근 10개를 가져오거나, 없으면 기본 배열 사용
+        let initialHistory = [];
+        if (window.rouletteStats && Array.isArray(window.rouletteStats.history) && window.rouletteStats.history.length > 0) {
+            initialHistory = window.rouletteStats.history.slice(0, 10);
+        } else {
+            // 기본 10회 최근 당첨 데이터
+            initialHistory = [
+                { number: 17, color: 'black' },
+                { number: 32, color: 'red' },
+                { number: 0, color: 'green' },
+                { number: 7, color: 'red' },
+                { number: 11, color: 'black' },
+                { number: 26, color: 'black' },
+                { number: 9, color: 'red' },
+                { number: 28, color: 'black' },
+                { number: 15, color: 'black' },
+                { number: 19, color: 'red' }
+            ];
+        }
+
+        // 최신순으로 10개 뱃지 생성 (왼쪽이 가장 최신)
+        initialHistory.forEach(item => {
+            const badge = document.createElement('span');
+            const col = item.color || (item.number === 0 ? 'green' : ([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36].includes(item.number) ? 'red' : 'black'));
+            badge.className = `history-badge badge-${col}`;
+            badge.textContent = item.number;
+            historyList.appendChild(badge);
+        });
+    }
+
+    /**
+     * 최근 10회 히스토리 바에 배지 추가 (최대 10개 엄격 유지)
      */
     addHistoryBadge(number, color) {
         const historyList = document.getElementById('table-history-list');
@@ -1047,7 +1121,7 @@ class RouletteApp {
 
         historyList.insertBefore(badge, historyList.firstChild);
 
-        while (historyList.children.length > 20) {
+        while (historyList.children.length > 10) {
             historyList.removeChild(historyList.lastChild);
         }
     }
