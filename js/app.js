@@ -174,7 +174,7 @@ class RouletteApp {
         if (undoBtn) {
             undoBtn.addEventListener('click', () => {
                 if (this.currentPhase !== 'BETTING') {
-                    this.showToast("배팅 진행 중에만 취소할 수 있습니다.");
+                    this.showToast("⛔ 구슬 회전 및 정산 중에는 조작할 수 없습니다.");
                     return;
                 }
                 if (window.rouletteTable) {
@@ -193,7 +193,11 @@ class RouletteApp {
         const clearBtn = document.getElementById('btn-clear');
         if (clearBtn) {
             clearBtn.addEventListener('click', () => {
-                if (this.currentPhase === 'BETTING' && window.rouletteTable) {
+                if (this.currentPhase !== 'BETTING') {
+                    this.showToast("⛔ 구슬 회전 및 정산 중에는 조작할 수 없습니다.");
+                    return;
+                }
+                if (window.rouletteTable) {
                     window.rouletteTable.clearBets();
                     this.updateBetDisplay();
                     this.showToast("모든 배팅이 취소되었습니다.");
@@ -205,7 +209,11 @@ class RouletteApp {
         const rebetBtn = document.getElementById('btn-rebet');
         if (rebetBtn) {
             rebetBtn.addEventListener('click', () => {
-                if (this.currentPhase === 'BETTING' && window.rouletteTable) {
+                if (this.currentPhase !== 'BETTING') {
+                    this.showToast("⛔ 구슬 회전 및 정산 중에는 배팅할 수 없습니다.");
+                    return;
+                }
+                if (window.rouletteTable) {
                     window.rouletteTable.rebet();
                     this.updateBetDisplay();
                 }
@@ -216,7 +224,11 @@ class RouletteApp {
         const doubleBtn = document.getElementById('btn-double');
         if (doubleBtn) {
             doubleBtn.addEventListener('click', () => {
-                if (this.currentPhase === 'BETTING' && window.rouletteTable) {
+                if (this.currentPhase !== 'BETTING') {
+                    this.showToast("⛔ 구슬 회전 및 정산 중에는 배팅할 수 없습니다.");
+                    return;
+                }
+                if (window.rouletteTable) {
                     window.rouletteTable.doubleBets();
                     this.updateBetDisplay();
                 }
@@ -640,6 +652,12 @@ class RouletteApp {
     triggerSpin() {
         this.currentPhase = 'SPINNING';
         this.purgeLockoutOverlay();
+
+        // [핵심] 구슬 회전 중 테이블 및 하단 패널 완전 잠금
+        if (window.rouletteTable) {
+            window.rouletteTable.setLocked(true);
+        }
+
         this.updatePhaseStatus("🔴 딜러가 구슬을 투구하여 휠을 회전시키고 있습니다!", "spinning");
 
         const targetNum = this.currentWinningNumber;
@@ -886,6 +904,11 @@ class RouletteApp {
      */
     onSpinResult(winningNumber, color) {
         this.currentPhase = 'RESULT';
+
+        // [핵심] 정산 및 배당금 지급 완료될 때까지 테이블 잠금 철저 유지
+        if (window.rouletteTable) {
+            window.rouletteTable.setLocked(true);
+        }
 
         const colorName = color === 'red' ? '레드' : (color === 'black' ? '블랙' : '싱글 제로');
         this.updatePhaseStatus(`🎯 당첨 번호: ${winningNumber} (${colorName}) - 딜러 배당금 정산`, "result");

@@ -238,7 +238,13 @@ class RouletteTable {
         spots.forEach(spot => {
             // 클릭 배팅
             spot.addEventListener('click', (e) => {
-                if (this.isLocked) return;
+                const isBettingTime = (window.rouletteApp && window.rouletteApp.currentPhase === 'BETTING');
+                if (this.isLocked || !isBettingTime) {
+                    if (window.rouletteApp && window.rouletteApp.showToast) {
+                        window.rouletteApp.showToast("⛔ 구슬 회전 및 정산 중에는 배팅할 수 없습니다. 배팅 시간에 참여해 주세요!");
+                    }
+                    return;
+                }
                 const betType = spot.getAttribute('data-bet');
                 const numbersStr = spot.getAttribute('data-numbers');
                 const spotId = spot.id;
@@ -247,7 +253,8 @@ class RouletteTable {
 
             // 드래그 앤 드롭 타겟 지원
             spot.addEventListener('dragover', (e) => {
-                if (this.isLocked) return;
+                const isBettingTime = (window.rouletteApp && window.rouletteApp.currentPhase === 'BETTING');
+                if (this.isLocked || !isBettingTime) return;
                 e.preventDefault();
                 spot.classList.add('drag-target-hover');
             });
@@ -257,7 +264,11 @@ class RouletteTable {
             });
 
             spot.addEventListener('drop', (e) => {
-                if (this.isLocked) return;
+                const isBettingTime = (window.rouletteApp && window.rouletteApp.currentPhase === 'BETTING');
+                if (this.isLocked || !isBettingTime) {
+                    e.preventDefault();
+                    return;
+                }
                 e.preventDefault();
                 spot.classList.remove('drag-target-hover');
                 const draggedVal = e.dataTransfer.getData('text/plain');
@@ -325,9 +336,10 @@ class RouletteTable {
      * 칩 배팅 수행
      */
     placeBet(spotId, betType, numbersStr) {
-        if (this.isLocked) {
+        const isBettingTime = (window.rouletteApp && window.rouletteApp.currentPhase === 'BETTING');
+        if (this.isLocked || !isBettingTime) {
             if (window.rouletteApp && window.rouletteApp.showToast) {
-                window.rouletteApp.showToast("⛔ 배팅이 마감되었습니다. 다음 라운드에 참여해 주세요!");
+                window.rouletteApp.showToast("⛔ 구슬 회전 및 정산 중에는 배팅할 수 없습니다. 배팅 시간에 참여해 주세요!");
             }
             return;
         }
@@ -517,7 +529,8 @@ class RouletteTable {
      * 베팅 취소 (Clear) - 유저 배팅만 취소하고 봇 배팅은 보존
      */
     clearBets() {
-        if (this.isLocked || this.totalBetAmount === 0) return;
+        const isBettingTime = (window.rouletteApp && window.rouletteApp.currentPhase === 'BETTING');
+        if (this.isLocked || !isBettingTime || this.totalBetAmount === 0) return;
 
         // 배팅한 금액 전액 환불
         if (window.rouletteApp) {
@@ -542,7 +555,8 @@ class RouletteTable {
      * 직전 베팅 재베팅 (Rebet)
      */
     rebet() {
-        if (this.isLocked || !this.lastBets || Object.keys(this.lastBets).length === 0) return;
+        const isBettingTime = (window.rouletteApp && window.rouletteApp.currentPhase === 'BETTING');
+        if (this.isLocked || !isBettingTime || !this.lastBets || Object.keys(this.lastBets).length === 0) return;
 
         // 필요한 총액 계산
         let neededTotal = 0;
@@ -569,7 +583,8 @@ class RouletteTable {
      * 베팅액 2배 (Double)
      */
     doubleBets() {
-        if (this.isLocked || this.totalBetAmount === 0) return;
+        const isBettingTime = (window.rouletteApp && window.rouletteApp.currentPhase === 'BETTING');
+        if (this.isLocked || !isBettingTime || this.totalBetAmount === 0) return;
 
         if (window.rouletteApp && window.rouletteApp.balance < this.totalBetAmount) {
             if (window.rouletteApp.showToast) {
@@ -588,7 +603,7 @@ class RouletteTable {
     }
 
     /**
-     * 노 모어 벳: 베팅 잠금 설정
+     * 노 모어 벳: 베팅 잠금 설정 (구슬 회전 및 정산 중 원천 차단)
      */
     setLocked(locked) {
         this.isLocked = locked;
@@ -601,6 +616,12 @@ class RouletteTable {
             if (locked) s.classList.add('locked');
             else s.classList.remove('locked');
         });
+
+        // 하단 칩 컨트롤 패널도 동시 잠금/해제
+        const controlsPanel = document.querySelector('.table-controls-panel');
+        if (controlsPanel) {
+            controlsPanel.classList.toggle('controls-locked', locked);
+        }
     }
 
     /**

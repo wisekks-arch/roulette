@@ -4750,4 +4750,41 @@ body {
     padding: 10px 18px;
     font-weight: 800;
     cursor: pointer;
-}
+}
+
+/* ==========================================================================
+   구슬 회전 및 정산 중 배팅 원천 차단 (배팅 페이즈에만 칩 배치 허용)
+   ========================================================================== */
+.table-locked,
+.roulette-felt-table.table-locked {
+    pointer-events: none !important;
+    user-select: none !important;
+    filter: brightness(0.88) contrast(0.95);
+    transition: filter 0.3s ease;
+}
+
+.table-locked .bet-spot,
+.table-locked .bet-hotspot,
+.table-locked .grid-hotspot,
+.table-locked .grid-corner-hotspot,
+.table-locked .grid-line-hotspot {
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+}
+
+/* 하단 칩 선택 바 및 액션 버튼 잠금 (구슬 회전 및 정산 중 조작 불가) */
+.controls-locked,
+.table-controls-panel.controls-locked {
+    opacity: 0.45 !important;
+    pointer-events: none !important;
+    filter: grayscale(0.5) !important;
+    transition: all 0.3s ease;
+    cursor: not-allowed !important;
+}
+
+.controls-locked button,
+.controls-locked .chip-selector-btn {
+    pointer-events: none !important;
+    cursor: not-allowed !important;
+}
+
