@@ -2386,40 +2386,48 @@ body {
 }
 
 /* ==========================================================================
-   37차: 카지노 룰렛 실사 영상 (Live Casino Real Video) 및 HUD 오버레이
+   38차: 워터마크 없는 초고화질 카지노 룰렛 실사 비주얼 및 3초 결과 화면 노출
    ========================================================================== */
 #live-cam-video {
-    display: block !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover !important;
-    z-index: 5 !important;
-    border-radius: 8px !important;
-    background: #000000 !important;
+    display: none !important;
 }
 
 .live-cam-modal-content {
     max-width: 840px !important;
     width: 95% !important;
-    background: radial-gradient(circle at 50% 20%, #1a0826 0%, #0d0214 80%, #050008 100%) !important;
-    border: 2px solid #a855f7 !important;
-    box-shadow: 0 0 50px rgba(168, 85, 247, 0.45), 0 20px 60px rgba(0, 0, 0, 0.95) !important;
+    background: radial-gradient(circle at 50% 20%, #1e0b2e 0%, #0d0214 80%, #050008 100%) !important;
+    border: 2px solid var(--gold-primary) !important;
+    box-shadow: 0 0 60px rgba(212, 175, 55, 0.4), 0 20px 60px rgba(0, 0, 0, 0.95) !important;
+    border-radius: 16px;
+    overflow: hidden;
 }
 
 .live-cam-viewport {
     position: relative;
     width: 100%;
-    height: 500px !important;
-    background: #000000 !important;
+    height: 520px !important;
+    background: radial-gradient(circle, #1a0f05 0%, #080402 100%) !important;
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
     border-radius: 8px;
-    box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.8), 0 0 20px rgba(0, 0, 0, 0.7);
+    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.9);
+}
+
+/* 초고화질 실사 룰렛 휠 텍스처 (글자/워터마크 완전 무결) */
+.live-cam-real-wheel {
+    position: absolute !important;
+    width: 480px !important;
+    height: 480px !important;
+    max-width: 90% !important;
+    max-height: 90% !important;
+    object-fit: contain !important;
+    z-index: 4 !important;
+    border-radius: 50% !important;
+    box-shadow: 0 0 45px rgba(0, 0, 0, 0.95), 0 0 20px rgba(212, 175, 55, 0.3) !important;
+    transform-origin: center center;
+    pointer-events: none !important;
 }
 
 #live-cam-canvas {
@@ -2433,9 +2441,64 @@ body {
     background: transparent !important;
 }
 
+/* [사용자 핵심 요구] 3초간 눈부시게 노출되는 대형 당첨 번호 결과 화면 뱃지 */
+.live-cam-win-badge {
+    position: absolute;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(5, 5, 5, 0.98) 100%);
+    border: 2px solid var(--gold-primary);
+    border-radius: 16px;
+    padding: 12px 28px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 30;
+    box-shadow: 0 0 30px rgba(255, 215, 0, 0.7), 0 10px 30px rgba(0, 0, 0, 0.9);
+    animation: winBadgePulse 0.8s infinite alternate;
+}
+
+@keyframes winBadgePulse {
+    0% {
+        transform: translateX(-50%) scale(1);
+        box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
+    }
+    100% {
+        transform: translateX(-50%) scale(1.05);
+        box-shadow: 0 0 40px rgba(255, 215, 0, 0.95);
+    }
+}
+
+.cam-win-label {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--gold-primary);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    text-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
+}
+
+.cam-win-num {
+    font-family: var(--font-heading);
+    font-size: 3rem;
+    font-weight: 900;
+    line-height: 1.1;
+    color: #ffffff;
+    text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 2px 5px #000;
+}
+
 @media (max-width: 768px) {
     .live-cam-viewport {
-        height: 320px !important;
+        height: 350px !important;
+    }
+    .live-cam-real-wheel {
+        width: 310px !important;
+        height: 310px !important;
+    }
+    .cam-win-num {
+        font-size: 2.2rem;
     }
 }
 
