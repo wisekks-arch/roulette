@@ -42,6 +42,9 @@ class RouletteApp {
             window.rouletteWheel = new RouletteWheel('roulette-wheel-canvas');
         }
 
+        // 모바일/PC 테이블 방향 모드 초기화 (768px 이하 모바일 화면일 때 자동 세로 모드 적용)
+        this.initOrientationMode();
+
         this.updateBalanceDisplay();
         this.updateBetDisplay();
         this.updateRoundDisplay();
@@ -62,6 +65,50 @@ class RouletteApp {
 
         // 첫 라운드 시작
         this.startBettingPhase();
+    }
+
+    /**
+     * 모바일/PC 테이블 방향 모드 초기화 및 디바이스 감지
+     */
+    initOrientationMode() {
+        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+        if (isMobileDevice) {
+            document.body.classList.add('mobile-table-mode');
+        } else {
+            document.body.classList.remove('mobile-table-mode');
+        }
+        this.updateOrientationBtnText();
+
+        // 윈도우 창 크기 변경 시 자동 대응 (사용자가 수동으로 바꾸지 않은 경우)
+        window.addEventListener('resize', () => {
+            if (this._userOrientationToggled) return;
+            const mobileNow = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+            if (mobileNow) {
+                document.body.classList.add('mobile-table-mode');
+            } else {
+                document.body.classList.remove('mobile-table-mode');
+            }
+            this.updateOrientationBtnText();
+        });
+    }
+
+    /**
+     * 가로/세로 방향 토글 버튼 텍스트 및 안내 툴팁 갱신
+     */
+    updateOrientationBtnText() {
+        const btn = document.getElementById('btn-toggle-table-orientation');
+        if (!btn) return;
+        const isVertical = document.body.classList.contains('mobile-table-mode');
+        const iconEl = document.getElementById('orient-icon');
+        const textEl = document.getElementById('orient-text');
+
+        if (iconEl) iconEl.textContent = isVertical ? '🖥️' : '📱';
+        if (textEl) textEl.textContent = isVertical ? '가로 보기' : '세로 보기';
+        if (!iconEl && !textEl) {
+            btn.textContent = isVertical ? '🖥️ 가로 보기' : '📱 세로 보기';
+        }
+        btn.title = isVertical ? 'PC 스타일 가로 테이블로 보기' : '모바일 한손 터치 세로 테이블로 보기';
+        btn.classList.toggle('active', isVertical);
     }
 
     /**
@@ -407,7 +454,18 @@ class RouletteApp {
             });
         }
 
-        // 14. 모달 배경 클릭 시 닫기 (라이브 캠 및 승리 모달 제외)
+        // 14. 테이블 방향 전환 (모바일 세로형 ↔ PC 가로형) 토글 버튼
+        const orientBtn = document.getElementById('btn-toggle-table-orientation');
+        if (orientBtn) {
+            orientBtn.addEventListener('click', () => {
+                this._userOrientationToggled = true; // 사용자의 수동 변경 선택 기억
+                const isVertical = document.body.classList.toggle('mobile-table-mode');
+                this.updateOrientationBtnText();
+                this.showToast(isVertical ? "📱 모바일 세로 테이블 모드로 전환되었습니다." : "🖥️ PC 가로 테이블 모드로 전환되었습니다.");
+            });
+        }
+
+        // 15. 모달 배경 클릭 시 닫기 (라이브 캠 및 승리 모달 제외)
         window.addEventListener('click', (e) => {
             if (e.target.classList.contains('modal-overlay') &&
                 e.target.id !== 'live-cam-modal' &&

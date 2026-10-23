@@ -15,7 +15,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Outfit:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=20261023_1025">
+    <link rel="stylesheet" href="css/style.css?v=20261023_1115">
 </head>
 
 <body>
@@ -134,8 +134,15 @@
 
             <!-- 우측/하단: 전통 펠트 룰렛 다이 테이블 -->
             <section class="table-section">
-                <!-- 테이블 상단 다중 참석자 바 (나 + 봇 3명, 최대 8명) -->
-                <div id="table-players-bar" class="table-players-bar"></div>
+                <div class="table-top-bar">
+                    <!-- 테이블 상단 다중 참석자 바 (나 + 봇 3명, 최대 8명) -->
+                    <div id="table-players-bar" class="table-players-bar"></div>
+                    <!-- 모바일/PC 테이블 방향 전환 토글 버튼 -->
+                    <button id="btn-toggle-table-orientation" class="btn-table-orient" title="테이블 세로/가로 보기 전환">
+                        <span id="orient-icon">📱</span>
+                        <span id="orient-text">세로 보기</span>
+                    </button>
+                </div>
 
                 <div class="table-scroll-wrapper">
                     <div id="roulette-table-mount"></div>
@@ -426,13 +433,13 @@
     </div>
 
     <!-- 스크립트 모듈 로드 (강력한 캐시 방지 쿼리스트링 적용) -->
-    <script src="js/audio.js?v=20261023_1025"></script>
-    <script src="js/wheel.js?v=20261023_1025"></script>
-    <script src="js/table.js?v=20261023_1025"></script>
-    <script src="js/auth.js?v=20261023_1025"></script>
-    <script src="js/stats.js?v=20261023_1025"></script>
-    <script src="js/lobby.js?v=20261023_1025"></script>
-    <script src="js/app.js?v=20261023_1025"></script>
+    <script src="js/audio.js?v=20261023_1115"></script>
+    <script src="js/wheel.js?v=20261023_1115"></script>
+    <script src="js/table.js?v=20261023_1115"></script>
+    <script src="js/auth.js?v=20261023_1115"></script>
+    <script src="js/stats.js?v=20261023_1115"></script>
+    <script src="js/lobby.js?v=20261023_1115"></script>
+    <script src="js/app.js?v=20261023_1115"></script>
 </body>
 
 </html>

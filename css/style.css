@@ -4787,4 +4787,190 @@ body {
     pointer-events: none !important;
     cursor: not-allowed !important;
 }
+
+/* ==========================================================================
+   📱 모바일 접속 전용 세로 룰렛 테이블 (VERTICAL TABLE LAYOUT)
+   핸드폰 접속 시 가로 스크롤 없이 위->아래 세로 큼직한 터치 배팅 제공
+   (PC 접속 시에는 기존 가로형 펠트 테이블 100% 유지)
+   ========================================================================== */
+.table-top-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 8px;
+    gap: 8px;
+}
+
+/* 테이블 방향 전환 토글 버튼 */
+.btn-table-orient {
+    background: linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(184, 134, 11, 0.35) 100%);
+    border: 1px solid var(--gold-primary);
+    border-radius: 8px;
+    color: var(--gold-light);
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 6px 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
+    transition: all 0.2s ease;
+}
+
+.btn-table-orient:hover {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.4) 0%, rgba(212, 175, 55, 0.5) 100%);
+    color: #ffffff;
+    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+    transform: translateY(-1px);
+}
+
+/* 모바일 화면 반응형 기본 배치 */
+@media (max-width: 768px) {
+    .game-container {
+        flex-direction: column !important;
+        padding: 8px !important;
+        gap: 12px !important;
+    }
+
+    .wheel-section {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .wheel-canvas-box {
+        max-width: 290px !important;
+        height: 290px !important;
+        margin: 0 auto !important;
+    }
+
+    #roulette-wheel-canvas {
+        width: 290px !important;
+        height: 290px !important;
+    }
+
+    .table-section {
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+}
+
+/* ==========================================================================
+   세로 모드 (mobile-table-mode) 활성화 시:
+   핸드폰에서 가로 스크롤 없이 위에서 아래로 1~36이 시원하게 흐르는 레이아웃
+   ========================================================================== */
+.mobile-table-mode .table-scroll-wrapper {
+    overflow-x: hidden !important;
+    width: 100% !important;
+    padding: 0 !important;
+}
+
+.mobile-table-mode .roulette-felt-table {
+    min-width: unset !important;
+    width: 100% !important;
+    padding: 10px 8px !important;
+    border-width: 8px !important;
+    border-radius: 14px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    box-sizing: border-box !important;
+}
+
+/* 1. 상단 0 (그린 싱글 제로 전폭 헤더) */
+.mobile-table-mode .table-zero-area {
+    width: 100% !important;
+}
+
+.mobile-table-mode .spot-zero {
+    width: 100% !important;
+    height: 48px !important;
+    font-size: 1.4rem !important;
+    border-radius: 8px !important;
+}
+
+/* 2. 메인 36개 숫자 그리드 (위에서 아래로 12행 세로 진행) */
+.mobile-table-mode .table-grid-area {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 5px !important;
+}
+
+.mobile-table-mode .table-numbers-grid {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    gap: 5px !important;
+}
+
+/* 각 열(col 1~12) 그룹이 가로 3개 셀([ 1 ] [ 2 ] [ 3 ])로 재배치 */
+.mobile-table-mode .table-column-group {
+    display: flex !important;
+    flex-direction: row-reverse !important;
+    width: 100% !important;
+    gap: 5px !important;
+    position: relative !important;
+}
+
+.mobile-table-mode .spot-number {
+    flex: 1 !important;
+    height: 46px !important;
+    font-size: 1.2rem !important;
+    border-radius: 6px !important;
+}
+
+/* 3. 컬럼 배팅 (2 to 1 세로 3구역) -> 12열 하단에 가로 3분할 배치 */
+.mobile-table-mode .table-columns-bet {
+    display: flex !important;
+    flex-direction: row-reverse !important;
+    width: 100% !important;
+    gap: 5px !important;
+    margin-top: 2px !important;
+}
+
+.mobile-table-mode .spot-col {
+    flex: 1 !important;
+    height: 38px !important;
+    font-size: 0.85rem !important;
+}
+
+/* 4. 다즌 배팅 (1st 12, 2nd 12, 3rd 12) -> 가로 3분할 */
+.mobile-table-mode .table-dozens-area {
+    display: flex !important;
+    flex-direction: row !important;
+    width: 100% !important;
+    gap: 5px !important;
+    margin-top: 4px !important;
+}
+
+.mobile-table-mode .spot-dozen {
+    flex: 1 !important;
+    height: 42px !important;
+    font-size: 0.88rem !important;
+    font-weight: 800 !important;
+}
+
+/* 5. 외부 1:1 배팅 (1-18, EVEN, RED, BLACK, ODD, 19-36) -> 모바일 2행 3열 그리드 */
+.mobile-table-mode .table-outside-area {
+    display: grid !important;
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 5px !important;
+    width: 100% !important;
+    margin-top: 4px !important;
+}
+
+.mobile-table-mode .spot-outside {
+    height: 42px !important;
+    font-size: 0.85rem !important;
+    font-weight: 800 !important;
+}
+
+/* 모바일 세로 핫스팟 터치 감도 및 보정 */
+.mobile-table-mode .bet-hotspot {
+    z-index: 20 !important;
+}
+
 
