@@ -102,7 +102,7 @@ class RouletteTable {
                     <button class="bet-spot bet-hotspot hotspot-corner pos-corner-top" data-bet="corner" data-numbers="${n2},${n1},${n2 + 3},${n1 + 3}" id="spot-corner-${n2}-${n1}-${n2 + 3}-${n1 + 3}" title="코너 (8배): ${n2}, ${n1}, ${n2 + 3}, ${n1 + 3}">
                         <div class="chip-stack" id="chips-corner-${n2}-${n1}-${n2 + 3}-${n1 + 3}"></div>
                     </button>
-                    <button class="bet-spot bet-hotspot hotspot-corner pos-corner-bot" data-bet="corner" data-numbers="${n3},${n2},${n3 + 3},${n2 + 3}" id="spot-corner-${n3}-${n2}-${n3 + 3}-${n2 + 3}" title="코너 (8배): ${n3}, ${n2}, ${n3+3}, ${n2+3}">
+                    <button class="bet-spot bet-hotspot hotspot-corner pos-corner-bot" data-bet="corner" data-numbers="${n3},${n2},${n3 + 3},${n2 + 3}" id="spot-corner-${n3}-${n2}-${n3 + 3}-${n2 + 3}" title="코너 (8배): ${n3}, ${n2}, ${n3 + 3}, ${n2 + 3}">
                         <div class="chip-stack" id="chips-corner-${n3}-${n2}-${n3 + 3}-${n2 + 3}"></div>
                     </button>
 

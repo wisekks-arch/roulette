@@ -652,290 +652,183 @@ class RouletteApp {
             this.onSpinResult(targetNum, color);
         };
 
-        // 2. Three.js 3D 정밀 물리 룰렛 팝업 엔진 가동 (스핀 + 낙하 + 바운스 + 3초 결과 노출 = 총 8.3초)
+        // 2. 정확히 4.0초(4000ms) 타임라인 시퀀서 가동
         this.runTimeBasedLiveCam(targetNum, handleSpinFinished);
 
-        // 3. [Fail-Safe 안전 타이머 8.8초] 브라우저 백그라운드 등 어떤 예외에서도 100% 진행 보장
+        // 3. [Fail-Safe 안전 타이머 4.2초] 브라우저 백그라운드 등 어떤 예외에서도 100% 진행 보장
         setTimeout(() => {
             if (!isSpinFinished) {
                 handleSpinFinished();
             }
-        }, 8800);
+        }, 4200);
     }
 
     /**
-     * Three.js 기반 3D 정밀 물리 룰렛 엔진 (지정 당첨 번호 100% 안착 & 실시간 3D 렌더링)
+     * 정확히 4.0초(4000ms) 동안 구동되는 대형 3D 구슬 물리 렌더러
      */
     runTimeBasedLiveCam(targetNum, onFinished) {
-        const stage = document.getElementById('live-cam-3d-stage');
-        const legacyCanvas = document.getElementById('live-cam-canvas');
-        if (!window.THREE || !stage) {
-            // Three.js 미지원 환경 시 2D 폴백
-            if (legacyCanvas) {
-                legacyCanvas.style.display = 'block';
-            }
-            if (onFinished) setTimeout(onFinished, 3000);
+        const canvas = document.getElementById('live-cam-canvas');
+        if (!canvas) {
+            if (onFinished) onFinished();
             return;
         }
 
-        if (legacyCanvas) {
-            legacyCanvas.style.display = 'none';
-        }
+        const ctx = canvas.getContext('2d');
+        const w = canvas.width;
+        const h = canvas.height;
+        const cx = w / 2;
+        const cy = h / 2 + 10;
+        const outerR = Math.min(w, h) * 0.44; // 760x540 기준 약 237px의 대형 휠
 
-        stage.innerHTML = ''; // 이전 3D 캔버스 정리
+        const numbers = [
+            0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5,
+            24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
+        ];
+        const sliceAngle = (Math.PI * 2) / numbers.length;
+        const targetIdx = numbers.indexOf(targetNum);
 
-        // ---------- 1. 휠 데이터 & 물리 역학 계산식 ----------
-        const ORDER = ['0','28','9','26','30','11','7','20','32','17','5','22','34','15','3','24','36','13','1',
-                       '00','27','10','25','29','12','8','19','31','18','6','21','33','16','4','23','35','14','2'];
-        const N = ORDER.length, STEP = (Math.PI * 2) / N;
-        const REDS = new Set(['1','3','5','7','9','12','14','16','18','19','21','23','25','27','30','32','34','36']);
-        const colorOf = n => (n === '0' || n === '00') ? 'green' : REDS.has(n) ? 'red' : 'black';
-        const HEX = { red: '#b8262e', black: '#1b1716', green: '#1f6b45' };
-        const FONT = '"Bodoni Moda","Didot","Cinzel",Georgia,serif';
-
-        const R_ROTOR = 1.01, R_NUM_IN = 0.86, R_POCKET_IN = 0.66, R_POCKET = 0.765, R_ENTRY = 0.95;
-        const R_TRACK = 1.385, BR = 0.032;
-
-        const surf = r => {
-            if (r >= 1.15) return 0.15 + (r - 1.15) * 0.16;
-            if (r >= 1.02) return 0.045 + (r - 1.02) / 0.13 * 0.105;
-            if (r >= 0.87) return 0.045;
-            if (r >= 0.85) return 0.045 * (r - 0.85) / 0.02;
-            return 0;
-        };
-
-        const T1 = 4.2, T2 = 5.2, T3 = 6.0, D3 = T3 - T2, TOTAL_SHOW = 8.3;
-        const ROT_A = 0.55, ROT_B = 1.85, ROT_K = 0.22;
-        const WB0 = 12, WB1 = 3.4, M = Math.log(WB0 / WB1) / T1;
-        const clamp01 = x => Math.max(0, Math.min(1, x));
-
-        const rotorW = t => ROT_A * t + (ROT_B / ROT_K) * (1 - Math.exp(-ROT_K * t));
-        const rotorOmega = t => ROT_A + ROT_B * Math.exp(-ROT_K * t);
-        const ballFree = (t, b0) => b0 - (WB0 / M) * (1 - Math.exp(-M * t));
-        const ballOmega = t => -WB0 * Math.exp(-M * t);
-
-        const settleRel = b0 => {
-            const rel2 = ballFree(T2, b0) - rotorW(T2);
-            const delta = (ballOmega(T2) - rotorOmega(T2)) * D3 / 2;
-            return { rel2, delta, final: rel2 + delta };
-        };
-
-        const targetStr = String(targetNum);
-        const targetIdx = ORDER.indexOf(targetStr) !== -1 ? ORDER.indexOf(targetStr) : 0;
-        // [핵심 역계산 알고리즘]: 이번 회차의 당첨 번호 칸으로 100% 골인하도록 발사각 B0 역산출!
-        const B0 = targetIdx * STEP - settleRel(0).final;
-
-        const ballState = t => {
-            if (t <= T1) {
-                const r = R_TRACK + 0.003 * Math.sin(t * 37);
-                return { a: ballFree(t, B0), r, y: surf(r) + BR };
-            }
-            if (t <= T2) {
-                const s = (t - T1) / (T2 - T1);
-                const r = R_TRACK + (R_ENTRY - R_TRACK) * s * s;
-                const h = clamp01((s - 0.62) / 0.22);
-                return { a: ballFree(t, B0) + 0.05 * Math.sin(Math.PI * h), r, y: surf(r) + BR + 0.06 * Math.sin(Math.PI * h) };
-            }
-            const { rel2, delta, final } = settleRel(B0);
-            if (t <= T3) {
-                const s = (t - T2) / D3, e = (1 - s) * (1 - s);
-                const rel = rel2 + delta * (1 - e) + 0.10 * Math.sin(4 * Math.PI * s) * e;
-                const r = R_POCKET + (R_ENTRY - R_POCKET) * e + 0.05 * Math.sin(5 * Math.PI * s) * e;
-                const hop = 0.09 * Math.abs(Math.sin(3.5 * Math.PI * s)) * Math.pow(1 - s, 1.5);
-                return { a: rotorW(t) + rel, r, y: surf(r) + BR + hop };
-            }
-            return { a: rotorW(t) + final, r: R_POCKET, y: BR };
-        };
-
-        // ---------- 2. Three.js 씬 구축 ----------
-        const width = stage.clientWidth || 760;
-        const height = stage.clientHeight || 540;
-
-        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-        renderer.setSize(width, height);
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-        renderer.outputEncoding = THREE.sRGBEncoding;
-        renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.05;
-        renderer.shadowMap.enabled = true;
-        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-        stage.appendChild(renderer.domElement);
-
-        const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(36, width / height, 0.05, 50);
-        camera.position.set(0.65, 2.05, 2.95);
-        camera.lookAt(0, 0.05, 0.25);
-
-        scene.add(new THREE.HemisphereLight(0xfff1dc, 0x1a0e08, 0.55));
-        const spot = new THREE.SpotLight(0xfff0d8, 1.85, 0, 0.55, 0.6, 1);
-        spot.position.set(1.4, 5.2, 2.2);
-        spot.castShadow = true;
-        spot.shadow.mapSize.set(1024, 1024);
-        scene.add(spot, spot.target);
-        const warmLight = new THREE.PointLight(0xffb066, 0.4);
-        warmLight.position.set(-3, 2, -2.5);
-        scene.add(warmLight);
-
-        const woodTexture = (base, grain) => {
-            const c = document.createElement('canvas'); c.width = c.height = 256;
-            const g = c.getContext('2d'); g.fillStyle = base; g.fillRect(0, 0, 256, 256);
-            for (let i = 0; i < 140; i++) {
-                const x = Math.random() * 256; g.strokeStyle = grain; g.globalAlpha = 0.08 + Math.random() * 0.2;
-                g.lineWidth = 0.5 + Math.random() * 2; g.beginPath(); g.moveTo(x, 0);
-                for (let y = 0; y <= 256; y += 32) g.lineTo(x + Math.sin(y * 0.02 + i) * 3, y);
-                g.stroke();
-            }
-            const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
-        };
-
-        const brass = new THREE.MeshStandardMaterial({ color: 0xc9a24a, metalness: 0.9, roughness: 0.28 });
-        const chrome = new THREE.MeshStandardMaterial({ color: 0xdedede, metalness: 1, roughness: 0.16 });
-        const darkWood = new THREE.MeshStandardMaterial({ map: woodTexture('#2e160c', '#0e0502'), roughness: 0.3, side: THREE.DoubleSide });
-        const lightWood = new THREE.MeshStandardMaterial({ map: woodTexture('#5a2a12', '#1e0a03'), roughness: 0.38, side: THREE.DoubleSide });
-        const coneWood = new THREE.MeshStandardMaterial({ map: woodTexture('#55290f', '#1c0902'), roughness: 0.34, side: THREE.DoubleSide });
-
-        const lathe = (pts, mat) => {
-            const m = new THREE.Mesh(new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), 128), mat);
-            m.receiveShadow = true; m.castShadow = true; scene.add(m); return m;
-        };
-        lathe([[1.02, 0.035], [1.15, 0.15], [1.40, 0.19], [1.42, 0.19]], darkWood);
-        lathe([[1.42, 0.19], [1.425, 0.30], [1.47, 0.345], [1.58, 0.35], [1.64, 0.31], [1.66, 0.2], [1.66, -0.26]], lightWood);
-
-        for (let i = 0; i < 8; i++) {
-            const a = i * Math.PI / 4 + Math.PI / 8, r = 1.09;
-            const d = new THREE.Mesh(new THREE.OctahedronGeometry(0.03), brass);
-            d.scale.set(i % 2 ? 0.8 : 2.2, 0.55, i % 2 ? 2.2 : 0.8);
-            d.position.set(r * Math.cos(a), surf(r) + 0.01, -r * Math.sin(a));
-            d.rotation.y = a; d.castShadow = true; scene.add(d);
-        }
-
-        const rotor = new THREE.Group(); scene.add(rotor);
-
-        const wheelCanvas = document.createElement('canvas'); wheelCanvas.width = wheelCanvas.height = 1024;
-        const wg = wheelCanvas.getContext('2d'), wk = 1024 / 2 / R_ROTOR; wg.translate(512, 512);
-        wg.fillStyle = '#120d0b'; wg.beginPath(); wg.arc(0, 0, 512, 0, Math.PI * 2); wg.fill();
-        ORDER.forEach((n, i) => {
-            const th = i * STEP, a0 = -th - STEP / 2, a1 = -th + STEP / 2, col = HEX[colorOf(n)];
-            wg.beginPath(); wg.arc(0, 0, R_ROTOR * wk, a0, a1); wg.arc(0, 0, R_NUM_IN * wk, a1, a0, true); wg.closePath();
-            wg.fillStyle = col; wg.fill();
-            wg.beginPath(); wg.arc(0, 0, R_NUM_IN * wk, a0, a1); wg.arc(0, 0, R_POCKET_IN * wk, a1, a0, true); wg.closePath();
-            wg.fillStyle = col === '#1f6b45' ? '#14462d' : (col === '#b8262e' ? '#78151b' : '#0a0808'); wg.fill();
-            wg.save(); wg.rotate(a0); wg.strokeStyle = '#d2a84f'; wg.lineWidth = 3;
-            wg.beginPath(); wg.moveTo(R_NUM_IN * wk, 0); wg.lineTo(R_ROTOR * wk, 0); wg.stroke(); wg.restore();
-            wg.save(); wg.rotate(-th); wg.translate(0.935 * wk, 0); wg.rotate(Math.PI / 2);
-            wg.fillStyle = '#f6ecd8'; wg.font = `bold ${n.length > 1 ? 40 : 46}px ${FONT}`;
-            wg.textAlign = 'center'; wg.textBaseline = 'middle'; wg.fillText(n, 0, 4); wg.restore();
-        });
-        wg.strokeStyle = '#d2a84f'; wg.lineWidth = 5;
-        [R_NUM_IN, R_ROTOR - 0.004].forEach(r => { wg.beginPath(); wg.arc(0, 0, r * wk, 0, Math.PI * 2); wg.stroke(); });
-        const wheelTex = new THREE.CanvasTexture(wheelCanvas); wheelTex.encoding = THREE.sRGBEncoding;
-
-        const ringGeo = (rin, rout) => {
-            const geo = new THREE.RingGeometry(rin, rout, 120, 1);
-            const p = geo.attributes.position, uv = geo.attributes.uv;
-            for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) / R_ROTOR + 1) / 2, (p.getY(i) / R_ROTOR + 1) / 2);
-            geo.rotateX(-Math.PI / 2); return geo;
-        };
-
-        const wheelMat = new THREE.MeshStandardMaterial({ map: wheelTex, roughness: 0.42, metalness: 0.05 });
-        const numRing = new THREE.Mesh(ringGeo(R_NUM_IN, R_ROTOR), wheelMat); numRing.position.y = 0.04;
-        const floorRing = new THREE.Mesh(ringGeo(R_POCKET_IN, R_NUM_IN), wheelMat);
-        rotor.add(numRing, floorRing);
-
-        const fretGeo = new THREE.BoxGeometry(R_NUM_IN + 0.012 - R_POCKET_IN, 0.05, 0.009);
-        for (let i = 0; i < N; i++) {
-            const a = i * STEP + STEP / 2, r = (R_NUM_IN + 0.012 + R_POCKET_IN) / 2;
-            const f = new THREE.Mesh(fretGeo, chrome);
-            f.position.set(r * Math.cos(a), 0.025, -r * Math.sin(a)); f.rotation.y = a; rotor.add(f);
-        }
-
-        const cone = new THREE.Mesh(new THREE.LatheGeometry(
-            [[0.66, 0.07], [0.52, 0.1], [0.34, 0.15], [0.16, 0.19], [0.001, 0.2]].map(([r, y]) => new THREE.Vector2(r, y)), 64), coneWood);
-        rotor.add(cone);
-
-        const turret = new THREE.Group(); rotor.add(turret);
-        const post = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.09, 0.16, 32), brass); post.position.y = 0.27;
-        const cap = new THREE.Mesh(new THREE.SphereGeometry(0.045, 24, 16), brass); cap.position.y = 0.39;
-        turret.add(post, cap);
-        for (let i = 0; i < 2; i++) {
-            const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.36, 16), brass);
-            arm.rotation.z = Math.PI / 2; arm.rotation.y = i * Math.PI / 2; arm.position.y = 0.335; turret.add(arm);
-        }
-
-        // 3D 은구슬
-        const ball = new THREE.Mesh(new THREE.SphereGeometry(BR, 32, 24),
-            new THREE.MeshStandardMaterial({ color: 0xf7f5f0, roughness: 0.16, metalness: 0.1, envMapIntensity: 1.2 }));
-        ball.castShadow = true; scene.add(ball);
-
-        // 당첨 포켓 골드 펄스 마커
-        const markerMat = new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0, blending: THREE.AdditiveBlending });
-        const markerTh = targetIdx * STEP;
-        const markerGeo = new THREE.RingGeometry(R_POCKET_IN + 0.01, R_ROTOR - 0.01, 12, 1, markerTh - STEP / 2, STEP);
-        markerGeo.rotateX(-Math.PI / 2);
-        const marker = new THREE.Mesh(markerGeo, markerMat);
-        marker.position.y = 0.047; rotor.add(marker);
-
-        // ---------- 3. 물리 애니메이션 루프 ----------
+        const TOTAL_DURATION = 4000; // 요청하신 4초 연장 (4000ms)
         const startTime = performance.now();
+
         let bouncePlayed = false;
         let lockOnShown = false;
-        let finalStoppedW = null;
 
-        const statusText = document.getElementById('live-cam-status-text');
-        const winBadge = document.getElementById('live-cam-win-badge');
-        const winNumEl = document.getElementById('live-cam-win-num');
-        if (winBadge) winBadge.classList.add('hidden');
-        if (statusText) statusText.textContent = "🔴 LIVE CASINO: 3D 룰렛 휠과 구슬이 고속 회전하고 있습니다...";
+        if (this.liveCamAnimId) cancelAnimationFrame(this.liveCamAnimId);
 
         const renderFrame = (now) => {
-            const elapsed = (now - startTime) / 1000;
+            const elapsed = now - startTime;
+            const progress = Math.min(1.0, elapsed / TOTAL_DURATION);
 
-            let W = 0;
-            let bs = null;
+            let wheelAngle = (elapsed / 1000) * 0.75;
+            let ballAngle = 0;
+            let ballRadius = outerR * 0.92;
 
-            if (elapsed < T1) {
-                // 1구간 (0.0s ~ 4.2s): 볼 고속 스핀
-                W = rotorW(elapsed);
-                bs = ballState(elapsed);
-            } else if (elapsed < T2) {
-                // 2구간 (4.2s ~ 5.2s): 감속 및 디플렉터 충돌 낙하
-                W = rotorW(elapsed);
-                bs = ballState(elapsed);
+            if (progress < 0.50) {
+                // 1구간 (0.0s ~ 2.0s): 외곽 림을 타고 도는 초고속 회전
+                const t1 = progress / 0.50;
+                ballAngle = -((elapsed / 1000) * 11.0) * (1 - t1 * 0.25);
+                ballRadius = outerR * 0.92;
+            } else if (progress < 0.80) {
+                // 2구간 (2.0s ~ 3.2s): 감속하며 번호 포켓 진입 및 바운스
+                const t2 = (progress - 0.50) / 0.30;
+                ballAngle = -((elapsed / 1000) * 5.5) * (1 - t2 * 0.65);
+                ballRadius = (outerR * 0.92) - (outerR * 0.92 - outerR * 0.65) * t2 + Math.sin(t2 * Math.PI * 2) * 6;
+
                 if (!bouncePlayed) {
                     bouncePlayed = true;
-                    if (statusText) statusText.textContent = "🟡 BALL DROPPING: 구슬이 디플렉터에 부딪히며 포켓으로 낙하 중...";
+                    const statusText = document.getElementById('live-cam-status-text');
+                    if (statusText) statusText.textContent = "🟡 DECELERATING: 구슬이 감속하며 번호 포켓으로 진입 중...";
                     if (window.rouletteAudio && window.rouletteAudio.playBounce) window.rouletteAudio.playBounce();
                 }
-            } else if (elapsed < T3) {
-                // 3구간 (5.2s ~ 6.0s): 포켓 프렛 바운스
-                W = rotorW(elapsed);
-                bs = ballState(elapsed);
             } else {
-                // 4구간 (6.0s ~ 8.3s, 3.0초간): 당첨 번호 포켓에 100% 쏙 안착 & 결과 노출!
-                if (finalStoppedW === null) finalStoppedW = rotorW(T3);
-                W = finalStoppedW;
-                bs = ballState(T3 + 0.1);
+                // 3구간 (3.2s ~ 4.0s): 당첨 번호 포켓 안착 및 락온 표출
+                ballAngle = wheelAngle + targetIdx * sliceAngle + sliceAngle / 2;
+                ballRadius = outerR * 0.65;
 
                 if (!lockOnShown) {
                     lockOnShown = true;
+                    const winBadge = document.getElementById('live-cam-win-badge');
+                    const winNumEl = document.getElementById('live-cam-win-num');
+                    const statusText = document.getElementById('live-cam-status-text');
                     if (winNumEl) winNumEl.textContent = targetNum;
                     if (winBadge) winBadge.classList.remove('hidden');
-                    if (statusText) statusText.textContent = `🎯 당첨 번호 #${targetNum} 안착 확정! (3초간 결과 노출)`;
+                    if (statusText) statusText.textContent = `🎯 BALL DROP LOCK-ON! 당첨 번호 #${targetNum}`;
                     if (window.rouletteAudio && window.rouletteAudio.playDrop) window.rouletteAudio.playDrop();
                 }
-
-                markerMat.opacity = 0.5 + 0.3 * Math.sin((elapsed - T3) * 6);
             }
 
-            rotor.rotation.y = W;
-            ball.position.set(bs.r * Math.cos(bs.a), bs.y, -bs.r * Math.sin(bs.a));
+            // 캔버스 그리기
+            ctx.clearRect(0, 0, w, h);
 
-            renderer.render(scene, camera);
+            // 1. 마호가니 원목 림
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
+            ctx.fillStyle = '#220b04';
+            ctx.fill();
+            ctx.strokeStyle = '#d4af37';
+            ctx.lineWidth = 5;
+            ctx.stroke();
 
-            if (elapsed < TOTAL_SHOW) {
+            // 2. 휠 슬라이스 회전
+            ctx.translate(cx, cy);
+            ctx.rotate(wheelAngle);
+
+            for (let i = 0; i < numbers.length; i++) {
+                const sAngle = i * sliceAngle;
+                const eAngle = sAngle + sliceAngle;
+                const n = numbers[i];
+                const isWinner = (progress >= 0.80 && n === targetNum);
+
+                ctx.beginPath();
+                ctx.arc(0, 0, outerR * 0.92, sAngle, eAngle);
+                ctx.arc(0, 0, outerR * 0.45, eAngle, sAngle, true);
+                ctx.closePath();
+
+                if (isWinner) {
+                    ctx.fillStyle = '#ffd700';
+                } else if (n === 0) {
+                    ctx.fillStyle = '#10b981';
+                } else if ([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36].includes(n)) {
+                    ctx.fillStyle = '#dc2626';
+                } else {
+                    ctx.fillStyle = '#171717';
+                }
+                ctx.fill();
+
+                // 격벽
+                ctx.strokeStyle = isWinner ? '#ffffff' : '#f59e0b';
+                ctx.lineWidth = isWinner ? 3.5 : 1.2;
+                ctx.beginPath();
+                ctx.moveTo(Math.cos(sAngle) * outerR * 0.45, Math.sin(sAngle) * outerR * 0.45);
+                ctx.lineTo(Math.cos(sAngle) * outerR * 0.92, Math.sin(sAngle) * outerR * 0.92);
+                ctx.stroke();
+
+                // 번호 표기
+                ctx.save();
+                const mAngle = sAngle + sliceAngle / 2;
+                const tx = Math.cos(mAngle) * (outerR * 0.72);
+                const ty = Math.sin(mAngle) * (outerR * 0.72);
+                ctx.translate(tx, ty);
+                ctx.rotate(mAngle + Math.PI / 2);
+                ctx.fillStyle = isWinner ? '#000000' : '#ffffff';
+                ctx.font = `bold ${isWinner ? '16px' : '12px'} 'Outfit', sans-serif`;
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(n.toString(), 0, 0);
+                ctx.restore();
+            }
+
+            // 중심 황동 콘
+            ctx.beginPath();
+            ctx.arc(0, 0, outerR * 0.42, 0, Math.PI * 2);
+            ctx.fillStyle = '#854d0e';
+            ctx.fill();
+            ctx.strokeStyle = '#ffd700';
+            ctx.lineWidth = 3.5;
+            ctx.stroke();
+            ctx.restore();
+
+            // 3. 은구슬 렌더링 (대형화 9.5px)
+            const bx = cx + Math.cos(ballAngle) * ballRadius;
+            const by = cy + Math.sin(ballAngle) * ballRadius;
+
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(bx, by, 9.5, 0, Math.PI * 2);
+            const ballGrad = ctx.createRadialGradient(bx - 3, by - 3, 1, bx, by, 10);
+            ballGrad.addColorStop(0, '#ffffff');
+            ballGrad.addColorStop(0.5, '#e2e8f0');
+            ballGrad.addColorStop(1, '#64748b');
+            ctx.fillStyle = ballGrad;
+            ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+            ctx.shadowBlur = 8;
+            ctx.fill();
+            ctx.restore();
+
+            if (progress < 1.0) {
                 this.liveCamAnimId = requestAnimationFrame(renderFrame);
             } else {
-                // 8.3초 완료 후 팝업 닫고 정산 화면 연결
                 if (onFinished) onFinished();
             }
         };

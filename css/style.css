@@ -949,98 +949,80 @@ body {
 }
 
 /* ==========================================================================
-   컨트롤 패널 (칩 선택 바 & 액션 버튼들 - 가로 1줄 컴팩트 배치)
+   컨트롤 패널 (칩 선택 바 & 액션 버튼들)
    ========================================================================== */
 .table-controls-panel {
     display: flex;
     flex-direction: column;
     width: 100%;
-    gap: 8px;
-    align-items: center;
+    gap: 12px;
 }
 
 .chip-selector-bar {
     display: flex;
     justify-content: center;
-    align-items: center;
-    gap: 10px;
-    background: linear-gradient(180deg, rgba(25, 20, 15, 0.85) 0%, rgba(10, 8, 6, 0.95) 100%);
-    padding: 6px 16px;
+    gap: 14px;
+    background: linear-gradient(180deg, rgba(25, 20, 15, 0.8) 0%, rgba(10, 8, 6, 0.95) 100%);
+    padding: 12px 18px;
     border-radius: 40px;
     border: 1px solid #5a3d1c;
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8), 0 6px 16px rgba(0, 0, 0, 0.6);
-    flex-wrap: nowrap;
-    max-width: 540px;
-    width: 100%;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8), 0 8px 20px rgba(0, 0, 0, 0.6);
 }
 
 .chip-selector-btn {
-    width: 38px;
-    height: 38px;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.72rem;
+    font-size: 0.78rem;
     font-weight: 900;
     font-family: var(--font-body);
     cursor: pointer;
     box-shadow:
-        0 4px 8px rgba(0, 0, 0, 0.7),
+        0 6px 12px rgba(0, 0, 0, 0.7),
         inset 0 0 0 2px rgba(255, 255, 255, 0.4),
-        inset 0 0 5px rgba(0, 0, 0, 0.5);
+        inset 0 0 6px rgba(0, 0, 0, 0.5);
     transition: all 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    flex-shrink: 0;
 }
 
 .chip-selector-btn:hover {
-    transform: translateY(-3px) scale(1.08);
-    box-shadow: 0 8px 14px rgba(0, 0, 0, 0.85);
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.85);
 }
 
 .chip-selector-btn.active {
-    transform: translateY(-5px) scale(1.18);
-    box-shadow: 0 8px 18px rgba(255, 215, 0, 0.75), 0 0 12px rgba(255, 215, 0, 0.5);
-    outline: 2.5px solid var(--gold-primary);
+    transform: translateY(-8px) scale(1.22);
+    box-shadow: 0 10px 22px rgba(255, 215, 0, 0.75), 0 0 15px rgba(255, 215, 0, 0.5);
+    outline: 3px solid var(--gold-primary);
 }
 
 .action-buttons-bar {
-    display: grid !important;
-    grid-template-columns: repeat(4, 1fr) !important;
-    gap: 8px !important;
-    max-width: 540px !important;
-    width: 100% !important;
-    margin: 0 auto !important;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .act-btn {
     font-family: var(--font-heading);
     font-weight: 700;
-    font-size: 0.78rem !important;
-    padding: 7px 8px !important;
-    height: 36px !important;
+    font-size: 0.85rem;
+    padding: 10px 18px;
     border-radius: 8px;
     border: 1px solid #444;
     cursor: pointer;
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 5px;
+    gap: 6px;
     transition: all 0.2s ease;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
-    white-space: nowrap;
-    letter-spacing: -0.02em;
 }
 
 .act-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
-}
-
-.btn-undo {
-    background: #2b2b2b;
-    color: #e2e8f0;
-    border-color: #555;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.7);
 }
 
 .btn-clear {
@@ -1056,9 +1038,9 @@ body {
 }
 
 .btn-double {
-    background: #2f2a18;
-    color: #f7d774;
-    border-color: #5c4e1f;
+    background: #3c2f16;
+    color: #ffdf9e;
+    border-color: #70551e;
 }
 
 .btn-spin-gold {
@@ -1924,28 +1906,13 @@ body {
     z-index: 1;
 }
 
-#live-cam-3d-stage {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 2;
-    overflow: hidden;
-}
-
-#live-cam-3d-stage canvas {
-    width: 100% !important;
-    height: 100% !important;
-    display: block;
-}
-
 #live-cam-canvas {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: contain;
-    z-index: 3;
+    z-index: 2;
     pointer-events: none;
 }
 
@@ -3739,43 +3706,25 @@ body {
     transform: scale(1.02);
 }
 
-/* 4대 편의 버튼 바 레이아웃: 언제나 가로 1줄 컴팩트 유지 */
+/* 스핀 버튼 제거 후 4대 편의 버튼 바 레이아웃 정돈 */
 .action-buttons-bar {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
-    gap: 8px !important;
-    max-width: 540px !important;
-    margin: 0 auto !important;
-    width: 100% !important;
+    gap: 12px !important;
+    max-width: 640px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 .action-buttons-bar .act-btn {
-    justify-content: center !important;
-    padding: 7px 6px !important;
-    font-size: 0.78rem !important;
-    height: 36px !important;
-    white-space: nowrap !important;
-    letter-spacing: -0.02em !important;
+    justify-content: center;
+    padding: 12px 16px;
+    font-size: 0.9rem;
 }
 
 @media (max-width: 600px) {
-    .chip-selector-bar {
-        gap: 6px !important;
-        padding: 5px 8px !important;
-    }
-    .chip-selector-btn {
-        width: 34px !important;
-        height: 34px !important;
-        font-size: 0.65rem !important;
-    }
     .action-buttons-bar {
-        grid-template-columns: repeat(4, 1fr) !important;
-        gap: 4px !important;
-    }
-    .action-buttons-bar .act-btn {
-        padding: 6px 3px !important;
-        font-size: 0.70rem !important;
-        height: 34px !important;
+        grid-template-columns: repeat(2, 1fr) !important;
     }
 }
 
