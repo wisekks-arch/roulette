@@ -555,10 +555,18 @@ class RouletteApp {
             window.rouletteLobby.onBettingClosed();
         }
 
-        // 땡!! 벨 소리 및 딜러 마감 음성
+        // 땡!! 벨 소리 및 딜러 마감 음성 (방어 코드 완비)
         if (window.rouletteAudio) {
-            window.rouletteAudio.playBetClosedBell();
-            window.rouletteAudio.announceNoMoreBets();
+            try {
+                if (typeof window.rouletteAudio.playBetClosedBell === 'function') {
+                    window.rouletteAudio.playBetClosedBell();
+                }
+                if (typeof window.rouletteAudio.announceNoMoreBets === 'function') {
+                    window.rouletteAudio.announceNoMoreBets();
+                }
+            } catch (audioErr) {
+                console.warn("Audio announce error in closeBettingPhase:", audioErr);
+            }
         }
 
         this.updatePhaseStatus("⛔ NO MORE BETS! - 딜러 배팅 마감 (구슬 투구)", "closed");
@@ -898,8 +906,18 @@ class RouletteApp {
                 this.addBalance(totalWin);
 
                 if (window.rouletteAudio) {
-                    window.rouletteAudio.playWinCoinSound();
-                    window.rouletteAudio.announceWin();
+                    try {
+                        if (typeof window.rouletteAudio.playWinCoinSound === 'function') {
+                            window.rouletteAudio.playWinCoinSound();
+                        } else if (typeof window.rouletteAudio.playWinSound === 'function') {
+                            window.rouletteAudio.playWinSound();
+                        }
+                        if (typeof window.rouletteAudio.announceWin === 'function') {
+                            window.rouletteAudio.announceWin();
+                        }
+                    } catch (e) {
+                        console.warn("Win audio error:", e);
+                    }
                 }
 
                 this.showWinModal(winningNumber, color, totalWin, winningBets);

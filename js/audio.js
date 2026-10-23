@@ -360,6 +360,61 @@ class RouletteAudio {
     }
 
     /**
+     * 배팅 마감 시 카지노 데스크 벨(Desk Bell) 청아한 타종 사운드 (띵~ 징~)
+     */
+    playBetClosedBell() {
+        if (this.isMuted) return;
+        this.initContext();
+        if (!this.ctx) return;
+
+        const now = this.ctx.currentTime;
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+
+        // 맑고 높은 종소리 (1760Hz -> 880Hz 감쇄)
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(1760, now);
+        osc.frequency.exponentialRampToValueAtTime(880, now + 0.7);
+
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.7);
+
+        osc.connect(gain);
+        gain.connect(this.ctx.destination);
+
+        osc.start(now);
+        osc.stop(now + 0.7);
+    }
+
+    /**
+     * 상금 획득 시 쏟아지는 경쾌한 골드 코인 사운드
+     */
+    playWinCoinSound() {
+        if (this.isMuted) return;
+        this.initContext();
+        if (!this.ctx) return;
+
+        const baseFrequencies = [1900, 2400, 2100, 2600, 2300, 2800];
+        baseFrequencies.forEach((freq, idx) => {
+            setTimeout(() => {
+                if (!this.ctx) return;
+                const t = this.ctx.currentTime;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(freq, t);
+                osc.frequency.exponentialRampToValueAtTime(freq * 0.6, t + 0.08);
+                gain.gain.setValueAtTime(0.2, t);
+                gain.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start(t);
+                osc.stop(t + 0.08);
+            }, idx * 45);
+        });
+    }
+
+    /**
      * 세련된 정통 카지노 여성 딜러 영어 음성 멘트 재생 (Web Speech API)
      * @param {string} text - 음성 안내 문구
      */
