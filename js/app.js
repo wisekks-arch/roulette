@@ -915,18 +915,11 @@ class RouletteApp {
         const winNumEl = document.getElementById('live-cam-win-num');
         const winLabelEl = document.querySelector('.cam-win-label');
 
-        // 스핀 시작 시 ? 물음표 펄스 뱃지 표출
+        // [개선]: ROULETTE SPINNING... 상단 가림 박스 제거하여 3D 룰렛 뷰 시야를 완전히 개방
         if (winBadge) {
-            winBadge.classList.remove('hidden');
-            winBadge.classList.remove('badge-revealed');
-            winBadge.classList.add('pending-question');
+            winBadge.classList.add('hidden');
         }
-        if (winNumEl) {
-            winNumEl.textContent = '?';
-            winNumEl.className = 'cam-win-num pending-num';
-        }
-        if (winLabelEl) winLabelEl.textContent = 'ROULETTE SPINNING...';
-        if (statusText) statusText.textContent = "🔴 LIVE CASINO: Three.js 3D 룰렛 휠과 대형 은구슬이 고속 회전하고 있습니다...";
+        if (statusText) statusText.textContent = "🔴 LIVE CASINO: Three.js 3D 룰렛 휠과 순백색 볼이 고속 회전하고 있습니다...";
 
         const renderFrame = (now) => {
             const elapsed = (now - startTime) / 1000;

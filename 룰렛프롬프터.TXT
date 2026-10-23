@@ -520,3 +520,31 @@ Undo
 5. 브라우저 스크립트 에러 0건(ZERO) 검증 및 GitHub Pages 실서버 배포:
    - index.html 캐시 버스팅 파라미터 ?v=20261023_1610 전면 갱신.
    - GitHub Pages 실서버(https://wisekks-arch.github.io/roulette/index.html) 배포 완료.
+
+[49차 사용자 요청 원문 - 2026-10-23]
+"1. 배팅마감까지 남은시간: 19S    표현방식 변경
+    고급진보라색 그패픽으로  그래픽이 줄어가면서 시간을 카운드하는형식으로 UI 변경
+2. 첨부파일 중에 ROULETTE SPINNING....   글자박스 삭제할것
+3.  칩 선택하는  한줄과    하단에  취소 전체취소 재배팅 2배  버튼을 한줄로 배치해 주고  버튼사이즈을 적당하게 작게 적용해줘 
+     화면에 보이는 폰트 글씨게  영어 한글 모두 더 세센된 폰트체로 변경해줘"
+- 사용자 최종 확인: 승인 (컨펌 완료)
+
+[49차 핵심 구현 및 개선 사항]
+1. 배팅 마감시간 고급 로열 네온 퍼플(Royal Neon Purple) 그래픽 게이지 바로 전면 개편 (js/table.js, css/style.css, js/app.js):
+   - 테이블 0번 번호 바로 위의 배팅 타이머를 딥 퍼플 앰비언트 배경과 바이올렛 골드 보더, 네온 퍼플 글로우로 전면 업그레이드.
+   - 인디케이터: 🟢 ➔ 🟣 보라색 펄스 보석 아이콘(purple-pulse-dot) 및 사이버펑크 네온 카운트다운 숫자(#table-timer-gauge-num) 적용.
+   - 게이지 트랙 및 진행 바: linear-gradient(90deg, #6b21a8 0%, #9333ea 40%, #c084fc 75%, #f472b6 100%)와 14px 네온 퍼플 발광 효과를 부여하여, 20초부터 0초까지 시간에 따라 게이지 바 길이가 매끄럽게 줄어들도록 구현.
+   - 5초 이하 마감 임박 시 마젠타/레드 네온 경고 펄스(gauge-warning)로 긴박감 넘치게 반응.
+2. ROULETTE SPINNING... 글자 카드 가림 박스 완전 삭제 (index.html, js/app.js, css/style.css):
+   - 3D 라이브 캠 휠 상단 시야를 가리던 어두운 직사각형 카드 박스(#live-cam-win-badge 및 내부의 ROULETTE SPINNING... 텍스트)를 완전히 삭제.
+   - 구슬 투구 및 휠 고속 회전 시 어떠한 시야 방해 요소 없이 선명하고 광활한 3D 룰렛 뷰를 온전히 감상할 수 있도록 개선.
+3. 칩 선택 바 + 액션 버튼(취소, 전체취소, 재배팅, 2배) 단일 행 가로 통합 및 컴팩트 슬림화 (index.html, css/style.css):
+   - 기존 2단(상단 칩 8종, 하단 버튼 4종) 구조를 단일 행(table-controls-panel)으로 깔끔하게 통합 배치.
+   - 칩 버튼 사이즈를 46px ➔ 38px로 슬림화하고, 액션 버튼(취소, 전체취소, 재배팅, 2배)의 패딩과 높이(34px)를 적당하고 컴팩트한 캡슐형으로 최적화하여 한눈에 여유롭게 들어오도록 완성.
+4. 화면 전체 영문/한글 폰트 Pretendard 및 Montserrat 최고급 서체로 전면 업그레이드 (index.html, css/style.css):
+   - 국내 최상위 프리미엄 폰트인 Pretendard CDN 및 럭셔리 모던 Montserrat 웹폰트를 탑재.
+   - 본문 및 버튼 서체에 Pretendard를 최우선 적용하여 한글 자형이 매우 깔끔하고 세련되게 개선되었으며, 헤딩 및 숫자는 Montserrat과 Cinzel의 고급스러운 기하학적 카지노 감성으로 동기화.
+5. 브라우저 스크립트 에러 0건(ZERO) 검증 및 GitHub Pages 실서버 배포:
+   - index.html 캐시 버스팅 파라미터 ?v=20261023_1805 전면 갱신.
+   - GitHub Pages 실서버(https://wisekks-arch.github.io/roulette/index.html) 배포 완료.
+

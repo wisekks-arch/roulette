@@ -9,13 +9,14 @@
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
-    <!-- Google Fonts -->
+    <!-- Google Fonts & Pretendard CDN -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link
-        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Outfit:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap"
+        href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=20261023_1610">
+    <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+    <link rel="stylesheet" href="css/style.css?v=20261023_1805">
 </head>
 
 <body>
@@ -163,19 +164,19 @@
                         </button>
                     </div>
 
-                    <!-- 액션 버튼들 (취소, 전체취소, 재베팅, 2배 - 스핀은 카지노 딜러가 주도) -->
+                    <!-- 액션 버튼들 (취소, 전체취소, 재베팅, 2배 - 칩 바와 동일 행에 컴팩트하게 배치) -->
                     <div class="action-buttons-bar">
-                        <button id="btn-undo-bet" class="act-btn btn-undo" title="마지막 배팅 1단계 취소">
-                            <span class="btn-icon">↩</span> 취소 (UNDO)
+                        <button id="btn-undo-bet" class="act-btn btn-undo" title="마지막 배팅 취소">
+                            <span class="btn-icon">↩</span> 취소
                         </button>
-                        <button id="btn-clear" class="act-btn btn-clear">
-                            <span class="btn-icon">↺</span> 전체취소 (CLEAR)
+                        <button id="btn-clear" class="act-btn btn-clear" title="전체 배팅 취소">
+                            <span class="btn-icon">↺</span> 전체취소
                         </button>
-                        <button id="btn-rebet" class="act-btn btn-rebet">
-                            <span class="btn-icon">🔁</span> 재베팅 (REBET)
+                        <button id="btn-rebet" class="act-btn btn-rebet" title="이전 배팅 동일 재배팅">
+                            <span class="btn-icon">🔁</span> 재배팅
                         </button>
-                        <button id="btn-double" class="act-btn btn-double">
-                            <span class="btn-icon">2X</span> 2배 (DOUBLE)
+                        <button id="btn-double" class="act-btn btn-double" title="현재 배팅 2배 증가">
+                            <span class="btn-icon">2X</span> 2배
                         </button>
                     </div>
                 </div>
@@ -327,11 +328,7 @@
                     <div id="live-cam-3d-stage" class="live-cam-3d-stage"></div>
                     <canvas id="live-cam-canvas" width="760" height="540" style="display:none;"></canvas>
                     <div class="cam-crosshair"></div>
-                    <!-- 구슬 안착 시 팝업 상단 대형 당첨 번호 뱃지 (최상위 레이어) -->
-                    <div id="live-cam-win-badge" class="live-cam-win-badge hidden">
-                        <span class="cam-win-label">BALL DROP NUMBER</span>
-                        <div id="live-cam-win-num" class="cam-win-num">17</div>
-                    </div>
+
                 </div>
                 <div class="live-cam-footer">
                     <span id="live-cam-status-text" class="cam-status-text">🎡 구슬이 트랙을 고속 질주하고 있습니다...</span>
