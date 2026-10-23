@@ -572,7 +572,7 @@ class RouletteApp {
         this.updatePhaseStatus("⛔ NO MORE BETS! - 딜러 배팅 마감 (구슬 투구)", "closed");
         this.updateTimerDisplay(0);
 
-        // 상단 마감 알림 배너 표출 (구슬 도는 화면을 방해하지 않고 1.5초 후 자동 소멸)
+        // 상단 마감 알림 배너 표출 (3.5초 동안 명확하게 노출 후 자동 소멸)
         const nmbModal = document.getElementById('no-more-bets-modal');
         if (nmbModal) {
             nmbModal.classList.remove('hidden');
@@ -580,7 +580,7 @@ class RouletteApp {
             setTimeout(() => {
                 nmbModal.classList.add('hidden');
                 nmbModal.style.display = 'none';
-            }, 1500);
+            }, 3500);
         }
 
         // 관리자 배팅 로그 기록
@@ -652,15 +652,15 @@ class RouletteApp {
             this.onSpinResult(targetNum, color);
         };
 
-        // 2. 3D 정밀 물리 룰렛 시퀀서 가동 (안착 후 4.5초간 결과 감상, 총 10.7초)
+        // 2. 3D 정밀 물리 룰렛 시퀀서 가동 (안착 후 6.5초간 결과 감상, 총 12.7초)
         this.runTimeBasedLiveCam(targetNum, handleSpinFinished);
 
-        // 3. [Fail-Safe 안전 타이머 12.5초] 영상 시퀀스 종료 후 100% 다음 단계 보장
+        // 3. [Fail-Safe 안전 타이머 15.0초] 영상 시퀀스 종료 후 100% 다음 단계 보장
         setTimeout(() => {
             if (!isSpinFinished) {
                 handleSpinFinished();
             }
-        }, 12500);
+        }, 15000);
     }
 
     /**
@@ -704,8 +704,8 @@ class RouletteApp {
             return 0;
         };
 
-        // ---------- 2. 물리 궤적 타임라인 상수 (6.2초 쏙 안착 후 4.5초간 충분한 결과 확인, 총 10.7초) ----------
-        const T1 = 3.8, T2 = 5.0, T3 = 6.2, D3 = T3 - T2, TOTAL_SHOW = T3 + 4.5;
+        // ---------- 2. 물리 궤적 타임라인 상수 (6.2초 쏙 안착 후 6.5초간 충분한 결과 확인, 총 12.7초) ----------
+        const T1 = 3.8, T2 = 5.0, T3 = 6.2, D3 = T3 - T2, TOTAL_SHOW = T3 + 6.5;
         const ROT_A = 0.55, ROT_B = 1.85, ROT_K = 0.22;
         const WB0 = 12, WB1 = 3.4, M = Math.log(WB0 / WB1) / T1;
         let W0 = 0, B0 = 0;
@@ -1092,11 +1092,11 @@ class RouletteApp {
         } catch (err) {
             console.error("Error in onSpinResult:", err);
         } finally {
-            // 5단계: 정확히 3.0초 후 무조건 다음 회차로 자동 순환
+            // 5단계: 7.5초 동안 당첨 결과 및 상금 모달을 충분히 확인한 후 다음 회차로 자동 순환
             if (this.nextRoundTimeout) clearTimeout(this.nextRoundTimeout);
             this.nextRoundTimeout = setTimeout(() => {
                 this.nextRound();
-            }, 3000);
+            }, 7500);
         }
     }
 
