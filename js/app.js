@@ -47,6 +47,7 @@ class RouletteApp {
         this.updateRoundDisplay();
         this.attachControlEvents();
         this.initNoticeTicker();
+        this.initHistoryBoard();
 
         if (window.rouletteAuth) {
             window.rouletteAuth.renderHeaderProfile();
@@ -892,9 +893,15 @@ class RouletteApp {
         const marker = new THREE.Mesh(ringGeo(R_POCKET_IN + 0.01, R_ROTOR - 0.01, markerTh - STEP / 2, STEP), markerMat);
         marker.position.y = 0.047; rotor.add(marker);
 
-        // [대형화된 초고광택 3D 물리 은구슬 (Chrome Sphere, BR = 0.052)]
+        // [대형화된 순백색 세라믹 3D 물리 룰렛 볼 (Pure Ceramic White, BR = 0.052)]
         const ball = new THREE.Mesh(new THREE.SphereGeometry(BR, 36, 28),
-            new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.06, metalness: 0.98, envMapIntensity: 1.5 }));
+            new THREE.MeshStandardMaterial({
+                color: 0xffffff,
+                roughness: 0.15,
+                metalness: 0.0,
+                emissive: 0x181818,
+                envMapIntensity: 0.5
+            }));
         ball.castShadow = true; scene.add(ball);
 
         // ---------- 4. 애니메이션 루프 및 서스펜스 뱃지 연동 ----------
@@ -945,10 +952,23 @@ class RouletteApp {
                 W = rotorW(elapsed);
                 bs = ballState(elapsed);
             } else {
-                // 4구간 (6.2s ~ 10.7s, 약 4.5초간): 당첨 번호 포켓에 100% 쏙 안착 & 정밀 클로즈업 노출!
+                // 4구간 (6.2s ~ 12.7s, 약 6.5초간): 당첨 번호 포켓 홈 골(Cup) 정중앙에 100% 쏙 안착 & 정밀 클로즈업 노출!
                 if (finalStoppedW === null) finalStoppedW = rotorW(T3);
                 W = finalStoppedW;
-                bs = ballState(T3 + 0.1);
+
+                // [핵심]: 확정된 당첨 번호 칸 홈의 정중앙 각도(W + targetIdx * STEP)로 100% 자석 스냅 안착!
+                // 번호와 번호 사이 경계선(프렛)에 걸치는 현상을 원천 차단하고 홈 바닥에 쏙 들어감
+                const exactPocketAngle = W + targetIdx * STEP;
+                const snapProgress = Math.min(1, (elapsed - T3) / 0.35);
+                const smoothSnap = snapProgress * snapProgress * (3 - 2 * snapProgress);
+                const rawBs = ballState(Math.min(T3, elapsed));
+                const snappedAngle = rawBs.a + (exactPocketAngle - rawBs.a) * smoothSnap;
+
+                bs = {
+                    a: (elapsed >= T3 + 0.35) ? exactPocketAngle : snappedAngle,
+                    r: R_POCKET,
+                    y: surf(R_POCKET) + BR
+                };
 
                 // 안착 후 카메라가 당첨 번호 포켓으로 부드럽게 시네마틱 줌인 (fov 36 -> 28)
                 const zoomProgress = Math.min(1, (elapsed - T3) / 1.0);
@@ -1211,7 +1231,26 @@ updateTimerDisplay(seconds) {
 }
 
 /**
- * 최근 20회 히스토리 바에 배지 추가
+ * 최근 10회 당첨 번호 히스토리 초기화 (앱 실행 시 10개 번호 즉시 표출)
+ */
+initHistoryBoard() {
+    const historyList = document.getElementById('table-history-list');
+    if (!historyList) return;
+
+    historyList.innerHTML = '';
+    // 초기 10회 당첨 기록 (가장 최신 순으로 배열)
+    const initialNumbers = [17, 4, 21, 0, 32, 15, 8, 29, 11, 26];
+    initialNumbers.forEach(num => {
+        const color = window.rouletteWheel ? window.rouletteWheel.getNumberColor(num) : (num === 0 ? 'green' : 'red');
+        const badge = document.createElement('span');
+        badge.className = `history-badge badge-${color}`;
+        badge.textContent = num;
+        historyList.appendChild(badge);
+    });
+}
+
+/**
+ * 최근 10회 히스토리 바에 배지 추가 (최신 10개만 유지, 11번째 발생 시 가장 오래된 1번 번호 삭제)
  */
 addHistoryBadge(number, color) {
     const historyList = document.getElementById('table-history-list');
@@ -1221,9 +1260,11 @@ addHistoryBadge(number, color) {
     badge.className = `history-badge badge-${color}`;
     badge.textContent = number;
 
+    // 최신 당첨 번호를 맨 앞(좌측)에 추가
     historyList.insertBefore(badge, historyList.firstChild);
 
-    while (historyList.children.length > 20) {
+    // 10개를 초과(11번째)하면 맨 뒤의 가장 오래된 1번 번호를 삭제
+    while (historyList.children.length > 10) {
         historyList.removeChild(historyList.lastChild);
     }
 }
