@@ -652,33 +652,31 @@ class RouletteApp {
             this.onSpinResult(targetNum, color);
         };
 
-        // 2. Three.js 3D 물리 룰렛 타임라인 시퀀서 가동 (10.2초 물리 시뮬레이션 및 3초 결과 노출)
+        // 2. 정확히 4.0초(4000ms) 타임라인 시퀀서 가동
         this.runTimeBasedLiveCam(targetNum, handleSpinFinished);
 
-        // 3. [Fail-Safe 안전 타이머 10.8초] 브라우저 백그라운드 등 어떤 예외에서도 100% 진행 보장
+        // 3. [Fail-Safe 안전 타이머 4.2초] 브라우저 백그라운드 등 어떤 예외에서도 100% 진행 보장
         setTimeout(() => {
             if (!isSpinFinished) {
                 handleSpinFinished();
             }
-        }, 10800);
+        }, 4200);
     }
 
     /**
-     * Three.js 3D 정밀 물리 룰렛 시뮬레이터 (마호가니 보울, 원목 림, 고해상도 번호판, 8개 디플렉터, 크롬 프렛, 3D 은구슬)
+     * Three.js 3D 실사 룰렛 시뮬레이터 (마호가니 보울, 원목 림, 고해상도 번호판, 8개 디플렉터, 대형 은구슬)
      * 확정된 당첨 번호(targetNum) 포켓에 100% 쏙 안착하는 수학적 역계산 물리 연동
      */
     runTimeBasedLiveCam(targetNum, onFinished) {
         const stage = document.getElementById('live-cam-3d-stage');
         const viewport = document.getElementById('live-cam-viewport');
 
-        // Three.js 라이브러리 가용성 체크 (누락 시 안전 방어)
         if (!window.THREE || !stage || !viewport) {
             console.warn("Three.js not available, falling back.");
             if (onFinished) onFinished();
             return;
         }
 
-        // 기존 3D 렌더러 엘리먼트 초기화
         stage.innerHTML = '';
         if (this.liveCamAnimId) cancelAnimationFrame(this.liveCamAnimId);
 
@@ -694,9 +692,9 @@ class RouletteApp {
         const HEX = { red: '#b8262e', black: '#1b1716', green: '#1f6b45' };
         const FONT = '"Bodoni Moda","Outfit","Didot",sans-serif';
 
-        // 룰렛 기하학적 반경
+        // 룰렛 기하학적 반경 & [구슬 사이즈 대폭 확대: 0.032 -> 0.052 (약 1.63배 대형화)]
         const R_ROTOR = 1.01, R_NUM_IN = 0.86, R_POCKET_IN = 0.66, R_POCKET = 0.765, R_ENTRY = 0.95;
-        const R_TRACK = 1.385, BR = 0.032;
+        const R_TRACK = 1.385, BR = 0.052;
 
         const surf = (r) => {
             if (r >= 1.15) return 0.15 + (r - 1.15) * 0.16;
@@ -707,7 +705,7 @@ class RouletteApp {
         };
 
         // ---------- 2. 물리 궤적 타임라인 상수 ----------
-        const T1 = 4.2, T2 = 5.4, T3 = 7.2, D3 = T3 - T2, TOTAL_SHOW = T3 + 3.0; // 7.2초 안착 후 3.0초간 결과 감상
+        const T1 = 4.2, T2 = 5.4, T3 = 7.2, D3 = T3 - T2, TOTAL_SHOW = T3 + 3.0; // 7.2초 안착 후 3.0초간 결과 감상 (총 10.2초)
         const ROT_A = 0.55, ROT_B = 1.85, ROT_K = 0.22;
         const WB0 = 12, WB1 = 3.4, M = Math.log(WB0 / WB1) / T1;
         let W0 = 0, B0 = 0;
@@ -718,7 +716,6 @@ class RouletteApp {
         const ballOmega = t => -WB0 * Math.exp(-M * t);
         const clamp01 = x => Math.max(0, Math.min(1, x));
 
-        // 구슬 발사각 b0에 대해 구슬이 최종 안착할 상대 각도 역계산
         const settleRel = (b0) => {
             const rel2 = ballFree(T2, b0) - rotorW(T2);
             const delta = (ballOmega(T2) - rotorOmega(T2)) * D3 / 2;
@@ -727,12 +724,10 @@ class RouletteApp {
 
         const ballState = (t) => {
             if (t <= T1) {
-                // 1구간 (0.0s ~ 4.2s): 외곽 림 트랙 고속 회전
                 const r = R_TRACK + 0.003 * Math.sin(t * 37);
                 return { a: ballFree(t, B0), r, y: surf(r) + BR };
             }
             if (t <= T2) {
-                // 2구간 (4.2s ~ 5.4s): 감속 및 디플렉터 충돌
                 const s = (t - T1) / (T2 - T1);
                 const r = R_TRACK + (R_ENTRY - R_TRACK) * s * s;
                 const h = clamp01((s - 0.62) / 0.22);
@@ -740,14 +735,12 @@ class RouletteApp {
             }
             const { rel2, delta, final } = settleRel(B0);
             if (t <= T3) {
-                // 3구간 (5.4s ~ 7.2s): 포켓 프렛 바운스
                 const s = (t - T2) / D3, e = (1 - s) * (1 - s);
                 const rel = rel2 + delta * (1 - e) + 0.10 * Math.sin(4 * Math.PI * s) * e;
                 const r = R_POCKET + (R_ENTRY - R_POCKET) * e + 0.05 * Math.sin(5 * Math.PI * s) * e;
                 const hop = 0.09 * Math.abs(Math.sin(3.5 * Math.PI * s)) * Math.pow(1 - s, 1.5);
                 return { a: rotorW(t) + rel, r, y: surf(r) + BR + hop };
             }
-            // 4구간 (7.2s ~ 10.2s): 포켓 완전 안착
             return { a: rotorW(t) + final, r: R_POCKET, y: BR };
         };
 
@@ -758,32 +751,32 @@ class RouletteApp {
         W0 = 0;
         B0 = targetIdx * STEP - settleRel(0).final;
 
-        // ---------- 3. Three.js 씬 구축 ----------
+        // ---------- 3. Three.js 씬 구축 (실사 라이브 룸 렌더링) ----------
         const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
         renderer.setSize(width, height);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
         renderer.outputEncoding = THREE.sRGBEncoding;
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
-        renderer.toneMappingExposure = 1.05;
+        renderer.toneMappingExposure = 1.15;
         renderer.shadowMap.enabled = true;
         renderer.shadowMap.type = THREE.PCFSoftShadowMap;
         stage.appendChild(renderer.domElement);
 
         const scene = new THREE.Scene();
-        const camera = new THREE.PerspectiveCamera(38, width / height, 0.05, 50);
-        // 영화 같은 프리미엄 카지노 쿼터뷰 각도
-        camera.position.set(0, 3.4, 3.8);
-        camera.lookAt(0, 0.08, 0.15);
+        // 시네마틱 줌인 클로즈업 뷰 (더 가깝고 역동적인 실사 카메라)
+        const camera = new THREE.PerspectiveCamera(36, width / height, 0.05, 50);
+        camera.position.set(0, 3.1, 3.4);
+        camera.lookAt(0, 0.08, 0.18);
 
-        // 환경 조명
-        scene.add(new THREE.HemisphereLight(0xfff1dc, 0x1a0e08, 0.55));
-        const spot = new THREE.SpotLight(0xfff0d8, 1.8, 0, 0.55, 0.6, 1);
+        // 스튜디오 시네마틱 라이팅
+        scene.add(new THREE.HemisphereLight(0xfff5ea, 0x1a0e08, 0.6));
+        const spot = new THREE.SpotLight(0xfff0d8, 2.2, 0, 0.55, 0.6, 1);
         spot.position.set(1.4, 5.2, 2.2);
         spot.castShadow = true;
         spot.shadow.mapSize.set(1024, 1024);
         scene.add(spot, spot.target);
 
-        const warm = new THREE.PointLight(0xffb066, 0.4);
+        const warm = new THREE.PointLight(0xffb066, 0.55);
         warm.position.set(-3, 2, -2.5);
         scene.add(warm);
 
@@ -832,11 +825,11 @@ class RouletteApp {
             geo.rotateX(-Math.PI / 2); return geo;
         };
 
-        const brass = new THREE.MeshStandardMaterial({ color: 0xc9a24a, metalness: 0.9, roughness: 0.28 });
-        const chrome = new THREE.MeshStandardMaterial({ color: 0xdedede, metalness: 1, roughness: 0.16 });
-        const darkWood = new THREE.MeshStandardMaterial({ map: woodTexture('#2e160c', '#0e0502', 10), roughness: 0.3, envMapIntensity: 0.6, side: THREE.DoubleSide });
-        const lightWood = new THREE.MeshStandardMaterial({ map: woodTexture('#5a2a12', '#1e0a03', 14), roughness: 0.38, envMapIntensity: 0.5, side: THREE.DoubleSide });
-        const coneWood = new THREE.MeshStandardMaterial({ map: woodTexture('#55290f', '#1c0902', 8), roughness: 0.34, envMapIntensity: 0.6, side: THREE.DoubleSide });
+        const brass = new THREE.MeshStandardMaterial({ color: 0xc9a24a, metalness: 0.92, roughness: 0.24 });
+        const chrome = new THREE.MeshStandardMaterial({ color: 0xe5e7eb, metalness: 0.98, roughness: 0.12 });
+        const darkWood = new THREE.MeshStandardMaterial({ map: woodTexture('#2e160c', '#0e0502', 10), roughness: 0.28, envMapIntensity: 0.7, side: THREE.DoubleSide });
+        const lightWood = new THREE.MeshStandardMaterial({ map: woodTexture('#5a2a12', '#1e0a03', 14), roughness: 0.35, envMapIntensity: 0.6, side: THREE.DoubleSide });
+        const coneWood = new THREE.MeshStandardMaterial({ map: woodTexture('#55290f', '#1c0902', 8), roughness: 0.32, envMapIntensity: 0.7, side: THREE.DoubleSide });
 
         // 고정 보울 (Bowl)
         const lathe = (pts, mat) => {
@@ -849,14 +842,14 @@ class RouletteApp {
         // 8개 황동 다이아몬드 디플렉터
         for (let i = 0; i < 8; i++) {
             const a = i * Math.PI / 4 + Math.PI / 8, r = 1.09;
-            const d = new THREE.Mesh(new THREE.OctahedronGeometry(0.03), brass);
+            const d = new THREE.Mesh(new THREE.OctahedronGeometry(0.032), brass);
             d.scale.set(i % 2 ? 0.8 : 2.2, 0.55, i % 2 ? 2.2 : 0.8);
             d.position.set(r * Math.cos(a), surf(r) + 0.01, -r * Math.sin(a)); d.rotation.y = a; d.castShadow = true; scene.add(d);
         }
 
         // 회전 로터 (Rotor)
         const rotor = new THREE.Group(); scene.add(rotor);
-        const wheelMat = new THREE.MeshStandardMaterial({ map: wheelTexture(), roughness: 0.42, metalness: 0.05, envMapIntensity: 0.5 });
+        const wheelMat = new THREE.MeshStandardMaterial({ map: wheelTexture(), roughness: 0.38, metalness: 0.05, envMapIntensity: 0.6 });
         const numRing = new THREE.Mesh(ringGeo(R_NUM_IN, R_ROTOR), wheelMat); numRing.position.y = 0.04;
         const floorRing = new THREE.Mesh(ringGeo(R_POCKET_IN, R_NUM_IN), wheelMat);
         numRing.receiveShadow = floorRing.receiveShadow = true; rotor.add(numRing, floorRing);
@@ -899,9 +892,9 @@ class RouletteApp {
         const marker = new THREE.Mesh(ringGeo(R_POCKET_IN + 0.01, R_ROTOR - 0.01, markerTh - STEP / 2, STEP), markerMat);
         marker.position.y = 0.047; rotor.add(marker);
 
-        // 3D 은구슬
-        const ball = new THREE.Mesh(new THREE.SphereGeometry(BR, 32, 24),
-            new THREE.MeshStandardMaterial({ color: 0xf7f5f0, roughness: 0.12, metalness: 0.95 }));
+        // [대형화된 초고광택 3D 물리 은구슬 (Chrome Sphere, BR = 0.052)]
+        const ball = new THREE.Mesh(new THREE.SphereGeometry(BR, 36, 28),
+            new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.06, metalness: 0.98, envMapIntensity: 1.5 }));
         ball.castShadow = true; scene.add(ball);
 
         // ---------- 4. 애니메이션 루프 및 서스펜스 뱃지 연동 ----------
@@ -926,7 +919,7 @@ class RouletteApp {
             winNumEl.className = 'cam-win-num pending-num';
         }
         if (winLabelEl) winLabelEl.textContent = 'ROULETTE SPINNING...';
-        if (statusText) statusText.textContent = "🔴 LIVE CASINO: Three.js 3D 룰렛 휠과 구슬이 고속 회전하고 있습니다...";
+        if (statusText) statusText.textContent = "🔴 LIVE CASINO: Three.js 3D 룰렛 휠과 대형 은구슬이 고속 회전하고 있습니다...";
 
         const renderFrame = (now) => {
             const elapsed = (now - startTime) / 1000;
@@ -944,7 +937,7 @@ class RouletteApp {
                 bs = ballState(elapsed);
                 if (!bouncePlayed) {
                     bouncePlayed = true;
-                    if (statusText) statusText.textContent = "🟡 BALL DROPPING: 구슬이 디플렉터에 부딪히며 포켓으로 낙하 중...";
+                    if (statusText) statusText.textContent = "🟡 BALL DROPPING: 대형 구슬이 디플렉터에 부딪히며 포켓으로 낙하 중...";
                     if (window.rouletteAudio && window.rouletteAudio.playBounce) window.rouletteAudio.playBounce();
                 }
             } else if (elapsed < T3) {
@@ -1099,144 +1092,144 @@ class RouletteApp {
      * 5단계: 다음 회차 자동 생성 및 무한 순환 시작
      */
     nextRound() {
-        this.purgeLockoutOverlay();
+    this.purgeLockoutOverlay();
 
-        // 승리 팝업 닫기
-        const winModal = document.getElementById('win-celebration-modal');
-        if (winModal) {
-            winModal.classList.add('hidden');
-            winModal.style.display = 'none';
-        }
-
-        // 영상 팝업 닫기
-        const liveCamModal = document.getElementById('live-cam-modal');
-        if (liveCamModal) {
-            liveCamModal.classList.add('hidden');
-            liveCamModal.style.display = 'none';
-        }
-
-        // 오토플레이 조건 검사
-        this.checkAutoPlayConditions();
-
-        // 회차 증가
-        this.currentRound++;
-        this.updateRoundDisplay();
-
-        // 1단계 새 배팅 페이즈 시작 (20초 리셋)
-        this.startBettingPhase();
+    // 승리 팝업 닫기
+    const winModal = document.getElementById('win-celebration-modal');
+    if (winModal) {
+        winModal.classList.add('hidden');
+        winModal.style.display = 'none';
     }
 
-    /**
-     * 대형 승리 축하 모달 표시
-     */
-    showWinModal(winningNumber, color, winAmount, winningBets) {
-        const modal = document.getElementById('win-celebration-modal');
-        const numBadge = document.getElementById('win-number-badge');
-        const amountText = document.getElementById('win-amount-text');
-        const detailBox = document.getElementById('win-bets-detail');
+    // 영상 팝업 닫기
+    const liveCamModal = document.getElementById('live-cam-modal');
+    if (liveCamModal) {
+        liveCamModal.classList.add('hidden');
+        liveCamModal.style.display = 'none';
+    }
 
-        if (!modal) return;
+    // 오토플레이 조건 검사
+    this.checkAutoPlayConditions();
 
-        if (numBadge) {
-            numBadge.textContent = winningNumber;
-            numBadge.className = `win-badge ${color === 'red' ? 'badge-red' : (color === 'black' ? 'badge-black' : 'badge-green')}`;
-        }
+    // 회차 증가
+    this.currentRound++;
+    this.updateRoundDisplay();
 
-        if (amountText) {
-            amountText.textContent = `+${winAmount.toLocaleString()} Chip`;
-        }
+    // 1단계 새 배팅 페이즈 시작 (20초 리셋)
+    this.startBettingPhase();
+}
 
-        if (detailBox && winningBets) {
-            detailBox.innerHTML = winningBets.map(b => `
+/**
+ * 대형 승리 축하 모달 표시
+ */
+showWinModal(winningNumber, color, winAmount, winningBets) {
+    const modal = document.getElementById('win-celebration-modal');
+    const numBadge = document.getElementById('win-number-badge');
+    const amountText = document.getElementById('win-amount-text');
+    const detailBox = document.getElementById('win-bets-detail');
+
+    if (!modal) return;
+
+    if (numBadge) {
+        numBadge.textContent = winningNumber;
+        numBadge.className = `win-badge ${color === 'red' ? 'badge-red' : (color === 'black' ? 'badge-black' : 'badge-green')}`;
+    }
+
+    if (amountText) {
+        amountText.textContent = `+${winAmount.toLocaleString()} Chip`;
+    }
+
+    if (detailBox && winningBets) {
+        detailBox.innerHTML = winningBets.map(b => `
                 <div class="win-bet-item">
                     <span>${b.type.toUpperCase()} 적중 (${b.payoutRatio}:1)</span>
                     <span class="bet-win-amount">+${b.win.toLocaleString()} Chip</span>
                 </div>
             `).join('');
-        }
-
-        modal.classList.remove('hidden');
     }
 
-    /**
-     * 상단 상태바 메시지 및 클래스 변경
-     */
-    updatePhaseStatus(message, phaseClass) {
-        const banner = document.getElementById('announcement-banner');
-        const text = document.getElementById('status-message-text');
+    modal.classList.remove('hidden');
+}
 
-        if (banner) {
-            banner.className = `announcement-banner banner-${phaseClass}`;
-        }
-        if (text) {
-            text.textContent = message;
-        }
+/**
+ * 상단 상태바 메시지 및 클래스 변경
+ */
+updatePhaseStatus(message, phaseClass) {
+    const banner = document.getElementById('announcement-banner');
+    const text = document.getElementById('status-message-text');
+
+    if (banner) {
+        banner.className = `announcement-banner banner-${phaseClass}`;
+    }
+    if (text) {
+        text.textContent = message;
+    }
+}
+
+/**
+ * 타이머 UI 업데이트 (상단 배너 및 테이블 0번 위 실시간 초록색 게이지 바 동기화)
+ */
+updateTimerDisplay(seconds) {
+    const timerEl = document.getElementById('phase-timer');
+    if (timerEl) {
+        timerEl.textContent = `${seconds}s`;
     }
 
-    /**
-     * 타이머 UI 업데이트 (상단 배너 및 테이블 0번 위 실시간 초록색 게이지 바 동기화)
-     */
-    updateTimerDisplay(seconds) {
-        const timerEl = document.getElementById('phase-timer');
-        if (timerEl) {
-            timerEl.textContent = `${seconds}s`;
-        }
+    // 테이블 0번 바로 위 초록색 배팅 시간 게이지 바 실시간 연동 (20s -> 6s, 4s 줄어듦)
+    const gaugeContainer = document.getElementById('table-bet-timer-gauge-container');
+    const gaugeProgress = document.getElementById('table-bet-timer-progress');
+    const gaugeNum = document.getElementById('table-timer-gauge-num');
 
-        // 테이블 0번 바로 위 초록색 배팅 시간 게이지 바 실시간 연동 (20s -> 6s, 4s 줄어듦)
-        const gaugeContainer = document.getElementById('table-bet-timer-gauge-container');
-        const gaugeProgress = document.getElementById('table-bet-timer-progress');
-        const gaugeNum = document.getElementById('table-timer-gauge-num');
-
-        if (gaugeNum) {
-            gaugeNum.textContent = `${seconds}s`;
-        }
-
-        if (gaugeProgress) {
-            const pct = Math.max(0, Math.min(100, (seconds / 20) * 100));
-            gaugeProgress.style.width = `${pct}%`;
-        }
-
-        if (gaugeContainer) {
-            if (seconds <= 5 && seconds > 0) {
-                gaugeContainer.classList.add('gauge-warning');
-            } else {
-                gaugeContainer.classList.remove('gauge-warning');
-            }
-        }
+    if (gaugeNum) {
+        gaugeNum.textContent = `${seconds}s`;
     }
 
-    /**
-     * 최근 20회 히스토리 바에 배지 추가
-     */
-    addHistoryBadge(number, color) {
-        const historyList = document.getElementById('table-history-list');
-        if (!historyList) return;
+    if (gaugeProgress) {
+        const pct = Math.max(0, Math.min(100, (seconds / 20) * 100));
+        gaugeProgress.style.width = `${pct}%`;
+    }
 
-        const badge = document.createElement('span');
-        badge.className = `history-badge badge-${color}`;
-        badge.textContent = number;
-
-        historyList.insertBefore(badge, historyList.firstChild);
-
-        while (historyList.children.length > 20) {
-            historyList.removeChild(historyList.lastChild);
+    if (gaugeContainer) {
+        if (seconds <= 5 && seconds > 0) {
+            gaugeContainer.classList.add('gauge-warning');
+        } else {
+            gaugeContainer.classList.remove('gauge-warning');
         }
     }
+}
 
-    /**
-     * 토스트 알림
-     */
-    showToast(msg) {
-        const toast = document.getElementById('toast-notification');
-        if (!toast) return;
+/**
+ * 최근 20회 히스토리 바에 배지 추가
+ */
+addHistoryBadge(number, color) {
+    const historyList = document.getElementById('table-history-list');
+    if (!historyList) return;
 
-        toast.textContent = msg;
-        toast.classList.add('show');
+    const badge = document.createElement('span');
+    badge.className = `history-badge badge-${color}`;
+    badge.textContent = number;
 
-        setTimeout(() => {
-            toast.classList.remove('show');
-        }, 2800);
+    historyList.insertBefore(badge, historyList.firstChild);
+
+    while (historyList.children.length > 20) {
+        historyList.removeChild(historyList.lastChild);
     }
+}
+
+/**
+ * 토스트 알림
+ */
+showToast(msg) {
+    const toast = document.getElementById('toast-notification');
+    if (!toast) return;
+
+    toast.textContent = msg;
+    toast.classList.add('show');
+
+    setTimeout(() => {
+        toast.classList.remove('show');
+    }, 2800);
+}
 }
 
 // 브라우저 로드 시 앱 기동

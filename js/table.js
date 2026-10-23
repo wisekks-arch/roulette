@@ -29,18 +29,6 @@ class RouletteTable {
 
         let html = `
             <div class="roulette-felt-table">
-                <!-- 테이블 0번 바로 위: 실시간 초록색 배팅 시간 게이지 바 (20s, 6s, 4s 실시간 축소) -->
-                <div class="table-bet-timer-gauge-container" id="table-bet-timer-gauge-container">
-                    <div class="table-bet-timer-header">
-                        <span class="timer-dot" id="table-timer-dot">🟢</span>
-                        <span class="timer-title">배팅 마감까지 남은 시간:</span>
-                        <strong id="table-timer-gauge-num" class="table-timer-gauge-num">20s</strong>
-                    </div>
-                    <div class="table-bet-timer-track">
-                        <div id="table-bet-timer-progress" class="table-bet-timer-progress" style="width: 100%;"></div>
-                    </div>
-                </div>
-
                 <!-- 상단 0 (그린 싱글 제로) -->
                 <div class="table-zero-area">
                     <button class="bet-spot spot-zero" data-bet="straight" data-numbers="0" id="spot-0">
