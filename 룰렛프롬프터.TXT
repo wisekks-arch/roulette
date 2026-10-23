@@ -595,5 +595,34 @@ PC 접근시는 현재 UI 그래도 적용
    - Headless Edge DOM 덤프 및 콘솔 오류 검사 결과 문법 에러 0건(NO_SCRIPT_ERRORS_DETECTED) 확인 완료.
    - GitHub Pages 실서버 배포 완료.
 
+[37차 사용자 요청 원문 - 2026-10-23]
+"C:\Users\wisek\OneDrive\문서\Amaranth10\룰렛
+영상을 참고하여서  팝업창에돌아가는 룰렛을 실사영상으로 적용해줘
+첨부한 영상을 고려해서 반영해"
+- 사용자 최종 확인: 승인 (컨펌 완료)
+
+[37차 핵심 구현 사항]
+1. 사용자 제공 고화질 카지노 룰렛 실사 영상 탑재 및 디렉터리 구축 (video/):
+   - C:\Users\wisek\OneDrive\문서\Amaranth10\룰렛 경로의 영상들을 프로젝트 video/ 폴더로 복사 탑재.
+   - 메인 실사 영상: video/roulette_spin_live.webm (898x506, 942KB - 카지노 크루피어가 룰렛 휠을 작동시키는 럭셔리 실사 비디오).
+   - 서브 영상: video/roulette_ball_close.webm (600x316, 3.79MB - 구슬 및 휠 클로즈업 실사 비디오).
+
+2. 팝업창 실사 비디오 플레이어 및 라이브 카지노 HUD 오버레이 연동 (index.html, css/style.css, js/app.js):
+   - index.html: #live-cam-viewport 내에 <video id="live-cam-video" playsinline muted preload="auto"> 태그 신설.
+   - css/style.css:
+     * #live-cam-video에 display: block !important, object-fit: cover, border-radius: 8px 적용.
+     * #live-cam-canvas는 z-index: 10 투명 레이어로 비디오 위에 위치하여 HUD 오버레이 및 Fallback 지원.
+     * 모바일 화면(@media max-width: 768px)에서 뷰포트 높이(320px) 최적화 반응형 구축.
+   - js/app.js:
+     * 배팅 마감 후 스핀 페이즈(triggerSpin) 오픈 즉시 liveVideo.currentTime = 0 및 자동 재생(play) 가동.
+     * 5.0초 동안 실사 영상 속 휠과 구슬이 생생하게 회전.
+     * 5.0초 구슬 낙하 시점에 실사 비디오 위로 회전하는 골드 펄스 타겟 링 및 중심 당첨 번호 락온 스코프(#live-cam-win-badge) 합성 표출.
+     * 5.8초~6.0초에 영상 일시정지 및 팝업창이 닫히며 메인 테이블 정산 화면으로 즉시 전환.
+     * 비디오 미지원 또는 네트워크 지연 시 기존 3D 마호가니 룰렛 휠이 자동 작동하는 하이브리드 Fallback 안전장치 구축.
+
+3. 배포 전 무결성 검증 및 GitHub Pages 실서버 배포:
+   - Headless Edge DOM 덤프 및 콘솔 오류 검사 결과 문법 에러 0건(NO_SCRIPT_ERRORS_DETECTED) 확인 완료.
+   - index.html 캐시 버스팅 파라미터 ?v=20261023_1250 전면 갱신 및 GitHub Pages 실서버 배포 완료.
+
 
 

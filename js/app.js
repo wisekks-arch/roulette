@@ -720,17 +720,33 @@ class RouletteApp {
 
         const targetNum = this.currentWinningNumber;
 
-        // 1. 영상 팝업 화면 최상단 전면 강제 표출 (z-index: 999999)
+        // 1. 실사 룰렛 영상 팝업 화면 최상단 전면 강제 표출 (z-index: 999999)
         const liveCamModal = document.getElementById('live-cam-modal');
         const winBadge = document.getElementById('live-cam-win-badge');
         const statusText = document.getElementById('live-cam-status-text');
+        const liveVideo = document.getElementById('live-cam-video');
 
         if (winBadge) winBadge.classList.add('hidden');
-        if (statusText) statusText.textContent = "🔴 LIVE: 구슬이 외곽 림을 타고 고속 질주하고 있습니다...";
+        if (statusText) statusText.textContent = "🔴 LIVE CASINO: 딜러가 룰렛 휠을 작동시키고 있습니다...";
 
         if (liveCamModal) {
             liveCamModal.classList.remove('hidden');
             liveCamModal.style.cssText = 'display: flex !important; opacity: 1 !important; visibility: visible !important; z-index: 999999 !important; pointer-events: all !important;';
+        }
+
+        // 실사 룰렛 비디오 자동 재생 (0초부터 시작)
+        if (liveVideo) {
+            try {
+                liveVideo.currentTime = 0;
+                const playPromise = liveVideo.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(err => {
+                        console.warn("Live cam video play fallback to canvas:", err);
+                    });
+                }
+            } catch (e) {
+                console.warn("Video playback error:", e);
+            }
         }
 
         // 구슬 회전 사운드 재생
@@ -754,6 +770,13 @@ class RouletteApp {
                 this.liveCamAnimId = null;
             }
 
+            // 실사 비디오 일시 정지
+            if (liveVideo) {
+                try {
+                    liveVideo.pause();
+                } catch (e) { }
+            }
+
             // 영상 팝업 완전 강제 소멸
             if (liveCamModal) {
                 liveCamModal.classList.add('hidden');
@@ -764,7 +787,7 @@ class RouletteApp {
             this.onSpinResult(targetNum, color);
         };
 
-        // 2. 정확히 6.0초(6000ms) 자연스러운 타임라인 가동 (5.0s 구슬 질주 회전 -> 0.7s 포켓 낙하 -> 낙하 즉시 전환)
+        // 2. 정확히 6.0초(6000ms) 자연스러운 타임라인 가동 (5.0s 실사 휠/구슬 회전 -> 0.7s 포켓 낙하 -> 낙하 즉시 전환)
         this.runTimeBasedLiveCam(targetNum, handleSpinFinished);
 
         // 3. [Fail-Safe 안전 타이머 6.2초] 브라우저 백그라운드 등 어떤 예외에서도 100% 진행 보장
@@ -776,11 +799,12 @@ class RouletteApp {
     }
 
     /**
-     * 구슬 5초 질주 및 낙하 즉시 화면 전환 대형 3D 구슬 물리 렌더러
-     * [시간 배정: 0~5.0s(5초간) 고속 질주 회전 -> 5.0~5.7s 감속 포켓 낙하 -> 5.7~6.0s 번호 확정 즉시 메인 전환]
+     * 실사 룰렛 영상 및 HUD 오버레이 / Fallback 3D 물리 렌더러
+     * [시간 배정: 0~5.0s(5초간) 실사 고속 회전 -> 5.0~5.7s 감속 포켓 낙하 -> 5.7~6.0s 번호 확정 즉시 메인 전환]
      */
     runTimeBasedLiveCam(targetNum, onFinished) {
         const canvas = document.getElementById('live-cam-canvas');
+        const liveVideo = document.getElementById('live-cam-video');
         if (!canvas) {
             if (onFinished) onFinished();
             return;
@@ -791,7 +815,7 @@ class RouletteApp {
         const h = canvas.height;
         const cx = w / 2;
         const cy = h / 2 + 10;
-        const outerR = Math.min(w, h) * 0.44; // 760x540 기준 약 237px의 대형 휠
+        const outerR = Math.min(w, h) * 0.44;
 
         const numbers = [
             0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5,
@@ -800,12 +824,12 @@ class RouletteApp {
         const sliceAngle = (Math.PI * 2) / numbers.length;
         const targetIdx = numbers.indexOf(targetNum);
 
-        const TOTAL_DURATION = 6000; // 요청하신 5초 회전 + 낙하 즉시 전환 타임라인 (총 6.0초)
+        const TOTAL_DURATION = 6000;
         const startTime = performance.now();
 
         let bouncePlayed = false;
         let lockOnShown = false;
-        let finalStoppedWheelAngle = null; // 정지 휠의 고정 각도
+        let finalStoppedWheelAngle = null;
 
         if (this.liveCamAnimId) cancelAnimationFrame(this.liveCamAnimId);
 
@@ -818,13 +842,11 @@ class RouletteApp {
             let ballRadius = outerR * 0.92;
 
             if (elapsed < 5000) {
-                // 1구간 (0.0s ~ 5.0s, 총 5.0초간): [사용자 핵심 요구] 외곽 림을 타고 시원하게 도는 고속 질주 회전
                 const t1 = elapsed / 5000;
                 wheelAngle = (elapsed / 1000) * 0.85;
                 ballAngle = -((elapsed / 1000) * 11.5) * (1 - t1 * 0.12);
                 ballRadius = outerR * 0.92;
             } else if (elapsed < 5700) {
-                // 2구간 (5.0s ~ 5.7s, 0.7초간): 감속하며 번호 포켓으로 탁 떨어져 안착
                 const t2 = (elapsed - 5000) / 700;
                 wheelAngle = (5.0 * 0.85) + (t2 * (0.7 * 0.85) * (1 - t2 * 0.7));
                 ballAngle = -((elapsed / 1000) * 4.2) * (1 - t2 * 0.8);
@@ -837,13 +859,12 @@ class RouletteApp {
                     if (window.rouletteAudio && window.rouletteAudio.playBounce) window.rouletteAudio.playBounce();
                 }
             } else {
-                // 3구간 (5.7s ~ 6.0s, 0.3초간): 휠 정지 및 번호 포켓 안착 확정 후 즉시 메인 테이블 전환
                 if (finalStoppedWheelAngle === null) {
                     finalStoppedWheelAngle = (5.0 * 0.85) + (1.0 * (0.7 * 0.85) * 0.3);
                 }
                 wheelAngle = finalStoppedWheelAngle;
                 ballAngle = wheelAngle + targetIdx * sliceAngle + sliceAngle / 2;
-                ballRadius = outerR * 0.65; // 포켓 안착 고정
+                ballRadius = outerR * 0.65;
 
                 if (!lockOnShown) {
                     lockOnShown = true;
@@ -860,91 +881,142 @@ class RouletteApp {
             // 캔버스 그리기
             ctx.clearRect(0, 0, w, h);
 
-            // 1. 마호가니 원목 림
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
-            ctx.fillStyle = '#220b04';
-            ctx.fill();
-            ctx.strokeStyle = '#d4af37';
-            ctx.lineWidth = 5;
-            ctx.stroke();
+            // 비디오 활성 여부 검사
+            const isVideoActive = liveVideo && !liveVideo.paused && liveVideo.readyState >= 2;
 
-            // 2. 휠 슬라이스 회전 (정지 구간에서는 정지된 각도 유지)
-            ctx.translate(cx, cy);
-            ctx.rotate(wheelAngle);
+            if (isVideoActive) {
+                // [실사 영상 활성화 모드] - 실사 비디오 위 라이브 카지노 HUD 오버레이
+                ctx.save();
+                // 코너 뷰파인더 브래킷
+                ctx.strokeStyle = 'rgba(212, 175, 55, 0.45)';
+                ctx.lineWidth = 2.5;
+                const bSize = 24;
+                const pad = 24;
+                ctx.beginPath(); ctx.moveTo(pad, pad + bSize); ctx.lineTo(pad, pad); ctx.lineTo(pad + bSize, pad); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(w - pad - bSize, pad); ctx.lineTo(w - pad, pad); ctx.lineTo(w - pad, pad + bSize); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(pad, h - pad - bSize); ctx.lineTo(pad, h - pad); ctx.lineTo(pad + bSize, h - pad); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(w - pad - bSize, h - pad); ctx.lineTo(w - pad, h - pad); ctx.lineTo(w - pad, h - pad - bSize); ctx.stroke();
 
-            for (let i = 0; i < numbers.length; i++) {
-                const sAngle = i * sliceAngle;
-                const eAngle = sAngle + sliceAngle;
-                const n = numbers[i];
-                const isWinner = (progress >= 0.77 && n === targetNum);
+                // 구슬 낙하 시점(5.0초 이후) 당첨 번호 락온 스코프 그래픽
+                if (elapsed >= 5000) {
+                    const lockProgress = Math.min(1.0, (elapsed - 5000) / 700);
+                    ctx.save();
+                    ctx.translate(cx, cy);
 
-                ctx.beginPath();
-                ctx.arc(0, 0, outerR * 0.92, sAngle, eAngle);
-                ctx.arc(0, 0, outerR * 0.45, eAngle, sAngle, true);
-                ctx.closePath();
+                    // 회전하는 골드 타겟 링
+                    ctx.rotate((elapsed / 1000) * 1.8);
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 75 + Math.sin(lockProgress * Math.PI) * 12, 0, Math.PI * 2);
+                    ctx.strokeStyle = '#ffd700';
+                    ctx.lineWidth = 3;
+                    ctx.setLineDash([14, 8]);
+                    ctx.shadowColor = 'rgba(255, 215, 0, 0.8)';
+                    ctx.shadowBlur = 15;
+                    ctx.stroke();
 
-                if (isWinner) {
-                    ctx.fillStyle = '#ffd700';
-                } else if (n === 0) {
-                    ctx.fillStyle = '#10b981';
-                } else if ([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36].includes(n)) {
-                    ctx.fillStyle = '#dc2626';
-                } else {
-                    ctx.fillStyle = '#171717';
+                    // 중심 당첨 번호 락온 원반
+                    ctx.beginPath();
+                    ctx.arc(0, 0, 42, 0, Math.PI * 2);
+                    ctx.fillStyle = 'rgba(0, 0, 0, 0.75)';
+                    ctx.fill();
+                    ctx.strokeStyle = '#22c55e';
+                    ctx.lineWidth = 2.5;
+                    ctx.setLineDash([]);
+                    ctx.stroke();
+
+                    // 당첨 번호 텍스트
+                    ctx.fillStyle = '#ffffff';
+                    ctx.font = "bold 30px 'Cinzel', sans-serif";
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.shadowColor = '#000000';
+                    ctx.shadowBlur = 6;
+                    ctx.fillText(targetNum.toString(), 0, 0);
+                    ctx.restore();
                 }
-                ctx.fill();
-
-                // 격벽
-                ctx.strokeStyle = isWinner ? '#ffffff' : '#f59e0b';
-                ctx.lineWidth = isWinner ? 3.5 : 1.2;
+                ctx.restore();
+            } else {
+                // [Fallback 모드] 3D 마호가니 룰렛 휠 및 물리 구슬 풀 렌더링
+                ctx.save();
                 ctx.beginPath();
-                ctx.moveTo(Math.cos(sAngle) * outerR * 0.45, Math.sin(sAngle) * outerR * 0.45);
-                ctx.lineTo(Math.cos(sAngle) * outerR * 0.92, Math.sin(sAngle) * outerR * 0.92);
+                ctx.arc(cx, cy, outerR, 0, Math.PI * 2);
+                ctx.fillStyle = '#220b04';
+                ctx.fill();
+                ctx.strokeStyle = '#d4af37';
+                ctx.lineWidth = 5;
                 ctx.stroke();
 
-                // 번호 표기
+                ctx.translate(cx, cy);
+                ctx.rotate(wheelAngle);
+
+                for (let i = 0; i < numbers.length; i++) {
+                    const sAngle = i * sliceAngle;
+                    const eAngle = sAngle + sliceAngle;
+                    const n = numbers[i];
+                    const isWinner = (progress >= 0.77 && n === targetNum);
+
+                    ctx.beginPath();
+                    ctx.arc(0, 0, outerR * 0.92, sAngle, eAngle);
+                    ctx.arc(0, 0, outerR * 0.45, eAngle, sAngle, true);
+                    ctx.closePath();
+
+                    if (isWinner) {
+                        ctx.fillStyle = '#ffd700';
+                    } else if (n === 0) {
+                        ctx.fillStyle = '#10b981';
+                    } else if ([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36].includes(n)) {
+                        ctx.fillStyle = '#dc2626';
+                    } else {
+                        ctx.fillStyle = '#171717';
+                    }
+                    ctx.fill();
+
+                    ctx.strokeStyle = isWinner ? '#ffffff' : '#f59e0b';
+                    ctx.lineWidth = isWinner ? 3.5 : 1.2;
+                    ctx.beginPath();
+                    ctx.moveTo(Math.cos(sAngle) * outerR * 0.45, Math.sin(sAngle) * outerR * 0.45);
+                    ctx.lineTo(Math.cos(sAngle) * outerR * 0.92, Math.sin(sAngle) * outerR * 0.92);
+                    ctx.stroke();
+
+                    ctx.save();
+                    const mAngle = sAngle + sliceAngle / 2;
+                    const tx = Math.cos(mAngle) * (outerR * 0.72);
+                    const ty = Math.sin(mAngle) * (outerR * 0.72);
+                    ctx.translate(tx, ty);
+                    ctx.rotate(mAngle + Math.PI / 2);
+                    ctx.fillStyle = isWinner ? '#000000' : '#ffffff';
+                    ctx.font = `bold ${isWinner ? '16px' : '12px'} 'Outfit', sans-serif`;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(n.toString(), 0, 0);
+                    ctx.restore();
+                }
+
+                ctx.beginPath();
+                ctx.arc(0, 0, outerR * 0.42, 0, Math.PI * 2);
+                ctx.fillStyle = '#854d0e';
+                ctx.fill();
+                ctx.strokeStyle = '#ffd700';
+                ctx.lineWidth = 3.5;
+                ctx.stroke();
+                ctx.restore();
+
+                const bx = cx + Math.cos(ballAngle) * ballRadius;
+                const by = cy + Math.sin(ballAngle) * ballRadius;
+
                 ctx.save();
-                const mAngle = sAngle + sliceAngle / 2;
-                const tx = Math.cos(mAngle) * (outerR * 0.72);
-                const ty = Math.sin(mAngle) * (outerR * 0.72);
-                ctx.translate(tx, ty);
-                ctx.rotate(mAngle + Math.PI / 2);
-                ctx.fillStyle = isWinner ? '#000000' : '#ffffff';
-                ctx.font = `bold ${isWinner ? '16px' : '12px'} 'Outfit', sans-serif`;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(n.toString(), 0, 0);
+                ctx.beginPath();
+                ctx.arc(bx, by, 9.5, 0, Math.PI * 2);
+                const ballGrad = ctx.createRadialGradient(bx - 3, by - 3, 1, bx, by, 10);
+                ballGrad.addColorStop(0, '#ffffff');
+                ballGrad.addColorStop(0.5, '#e2e8f0');
+                ballGrad.addColorStop(1, '#64748b');
+                ctx.fillStyle = ballGrad;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
+                ctx.shadowBlur = 8;
+                ctx.fill();
                 ctx.restore();
             }
-
-            // 중심 황동 콘
-            ctx.beginPath();
-            ctx.arc(0, 0, outerR * 0.42, 0, Math.PI * 2);
-            ctx.fillStyle = '#854d0e';
-            ctx.fill();
-            ctx.strokeStyle = '#ffd700';
-            ctx.lineWidth = 3.5;
-            ctx.stroke();
-            ctx.restore();
-
-            // 3. 은구슬 렌더링 (대형화 9.5px)
-            const bx = cx + Math.cos(ballAngle) * ballRadius;
-            const by = cy + Math.sin(ballAngle) * ballRadius;
-
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(bx, by, 9.5, 0, Math.PI * 2);
-            const ballGrad = ctx.createRadialGradient(bx - 3, by - 3, 1, bx, by, 10);
-            ballGrad.addColorStop(0, '#ffffff');
-            ballGrad.addColorStop(0.5, '#e2e8f0');
-            ballGrad.addColorStop(1, '#64748b');
-            ctx.fillStyle = ballGrad;
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.9)';
-            ctx.shadowBlur = 8;
-            ctx.fill();
-            ctx.restore();
 
             if (progress < 1.0) {
                 this.liveCamAnimId = requestAnimationFrame(renderFrame);
