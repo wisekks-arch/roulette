@@ -743,7 +743,7 @@ class RouletteApp {
             window.rouletteWheel.spin(targetNum, () => { });
         }
 
-        // 6.5초 절대 시간 완료 처리 함수
+        // 6.0초 절대 시간 완료 처리 함수 (구슬 떨어진 직후 지체 없이 메인 테이블 화면 전환)
         let isSpinFinished = false;
         const handleSpinFinished = () => {
             if (isSpinFinished) return;
@@ -764,20 +764,20 @@ class RouletteApp {
             this.onSpinResult(targetNum, color);
         };
 
-        // 2. 정확히 6.5초(6500ms) 자연스러운 타임라인 시퀀서 가동
+        // 2. 정확히 6.0초(6000ms) 자연스러운 타임라인 가동 (5.0s 구슬 질주 회전 -> 0.7s 포켓 낙하 -> 낙하 즉시 전환)
         this.runTimeBasedLiveCam(targetNum, handleSpinFinished);
 
-        // 3. [Fail-Safe 안전 타이머 6.8초] 브라우저 백그라운드 등 어떤 예외에서도 100% 진행 보장
+        // 3. [Fail-Safe 안전 타이머 6.2초] 브라우저 백그라운드 등 어떤 예외에서도 100% 진행 보장
         setTimeout(() => {
             if (!isSpinFinished) {
                 handleSpinFinished();
             }
-        }, 6800);
+        }, 6200);
     }
 
     /**
-     * 정확히 6.5초(6500ms) 동안 구동되는 대형 3D 구슬 물리 렌더러
-     * [시간 배정: 0~3.0s 고속 질주 -> 3.0~5.0s 감속 포켓 진입 -> 5.0~6.5s 휠 완전 정지 & 당첨 번호 확정 유지]
+     * 구슬 5초 질주 및 낙하 즉시 화면 전환 대형 3D 구슬 물리 렌더러
+     * [시간 배정: 0~5.0s(5초간) 고속 질주 회전 -> 5.0~5.7s 감속 포켓 낙하 -> 5.7~6.0s 번호 확정 즉시 메인 전환]
      */
     runTimeBasedLiveCam(targetNum, onFinished) {
         const canvas = document.getElementById('live-cam-canvas');
@@ -800,12 +800,12 @@ class RouletteApp {
         const sliceAngle = (Math.PI * 2) / numbers.length;
         const targetIdx = numbers.indexOf(targetNum);
 
-        const TOTAL_DURATION = 6500; // 요청하신 자연스러운 6.5초 배정
+        const TOTAL_DURATION = 6000; // 요청하신 5초 회전 + 낙하 즉시 전환 타임라인 (총 6.0초)
         const startTime = performance.now();
 
         let bouncePlayed = false;
         let lockOnShown = false;
-        let finalStoppedWheelAngle = null; // 5.0초에 정지될 휠의 최종 고정 각도
+        let finalStoppedWheelAngle = null; // 정지 휠의 고정 각도
 
         if (this.liveCamAnimId) cancelAnimationFrame(this.liveCamAnimId);
 
@@ -817,32 +817,31 @@ class RouletteApp {
             let ballAngle = 0;
             let ballRadius = outerR * 0.92;
 
-            if (progress < 0.46) {
-                // 1구간 (0.0s ~ 3.0s, 3.0초간): 외곽 림을 타고 도는 초고속 회전
-                const t1 = progress / 0.46;
+            if (elapsed < 5000) {
+                // 1구간 (0.0s ~ 5.0s, 총 5.0초간): [사용자 핵심 요구] 외곽 림을 타고 시원하게 도는 고속 질주 회전
+                const t1 = elapsed / 5000;
                 wheelAngle = (elapsed / 1000) * 0.85;
-                ballAngle = -((elapsed / 1000) * 11.5) * (1 - t1 * 0.20);
+                ballAngle = -((elapsed / 1000) * 11.5) * (1 - t1 * 0.12);
                 ballRadius = outerR * 0.92;
-            } else if (progress < 0.77) {
-                // 2구간 (3.0s ~ 5.0s, 2.0초간): 감속하며 번호 포켓 진입 및 바운스
-                const t2 = (progress - 0.46) / 0.31;
-                // 휠도 서서히 감속
-                wheelAngle = (3.0 * 0.85) + (t2 * (2.0 * 0.85) * (1 - t2 * 0.65));
-                ballAngle = -((elapsed / 1000) * 4.8) * (1 - t2 * 0.75);
-                ballRadius = (outerR * 0.92) - (outerR * 0.92 - outerR * 0.65) * t2 + Math.sin(t2 * Math.PI * 2) * 5;
+            } else if (elapsed < 5700) {
+                // 2구간 (5.0s ~ 5.7s, 0.7초간): 감속하며 번호 포켓으로 탁 떨어져 안착
+                const t2 = (elapsed - 5000) / 700;
+                wheelAngle = (5.0 * 0.85) + (t2 * (0.7 * 0.85) * (1 - t2 * 0.7));
+                ballAngle = -((elapsed / 1000) * 4.2) * (1 - t2 * 0.8);
+                ballRadius = (outerR * 0.92) - (outerR * 0.92 - outerR * 0.65) * t2 + Math.sin(t2 * Math.PI) * 4;
 
                 if (!bouncePlayed) {
                     bouncePlayed = true;
                     const statusText = document.getElementById('live-cam-status-text');
-                    if (statusText) statusText.textContent = "🟡 DECELERATING: 구슬이 감속하며 번호 포켓으로 진입 중...";
+                    if (statusText) statusText.textContent = "🟡 BALL DROPPING: 구슬이 번호 포켓으로 떨어지고 있습니다!";
                     if (window.rouletteAudio && window.rouletteAudio.playBounce) window.rouletteAudio.playBounce();
                 }
             } else {
-                // 3구간 (5.0s ~ 6.5s, 1.5초간): [핵심 요구사항] 룰렛판 움직임 완전 정지 & 당첨 번호 확정 노출
+                // 3구간 (5.7s ~ 6.0s, 0.3초간): 휠 정지 및 번호 포켓 안착 확정 후 즉시 메인 테이블 전환
                 if (finalStoppedWheelAngle === null) {
-                    finalStoppedWheelAngle = (3.0 * 0.85) + (1.0 * (2.0 * 0.85) * 0.35);
+                    finalStoppedWheelAngle = (5.0 * 0.85) + (1.0 * (0.7 * 0.85) * 0.3);
                 }
-                wheelAngle = finalStoppedWheelAngle; // 휠 속도 0: 완전 정지 상태 고정!
+                wheelAngle = finalStoppedWheelAngle;
                 ballAngle = wheelAngle + targetIdx * sliceAngle + sliceAngle / 2;
                 ballRadius = outerR * 0.65; // 포켓 안착 고정
 
@@ -853,7 +852,7 @@ class RouletteApp {
                     const statusText = document.getElementById('live-cam-status-text');
                     if (winNumEl) winNumEl.textContent = targetNum;
                     if (winBadge) winBadge.classList.remove('hidden');
-                    if (statusText) statusText.textContent = `🎯 휠 정지 확정! 당첨 번호 #${targetNum} 안착 완료`;
+                    if (statusText) statusText.textContent = `🎯 당첨 번호 #${targetNum} 안착 완료!`;
                     if (window.rouletteAudio && window.rouletteAudio.playDrop) window.rouletteAudio.playDrop();
                 }
             }
