@@ -956,16 +956,20 @@ class RouletteApp {
                 if (finalStoppedW === null) finalStoppedW = rotorW(T3);
                 W = finalStoppedW;
 
-                // [핵심]: 확정된 당첨 번호 칸 홈의 정중앙 각도(W + targetIdx * STEP)로 100% 자석 스냅 안착!
-                // 번호와 번호 사이 경계선(프렛)에 걸치는 현상을 원천 차단하고 홈 바닥에 쏙 들어감
+                // [핵심 해결]: 확정된 당첨 번호 칸 홈의 정중앙 각도(W + targetIdx * STEP)로 최단 각도 자석 스냅!
+                // 모듈로 2PI 정규화를 거쳐 튀는 현상 없이 번호 칸 골(Cup) 정중앙 바닥에 100% 정확하게 쏙 안착
+                const rawBs = ballState(Math.min(T3, elapsed));
                 const exactPocketAngle = W + targetIdx * STEP;
+                let angleDiff = (exactPocketAngle - rawBs.a) % (Math.PI * 2);
+                if (angleDiff > Math.PI) angleDiff -= Math.PI * 2;
+                if (angleDiff < -Math.PI) angleDiff += Math.PI * 2;
+
                 const snapProgress = Math.min(1, (elapsed - T3) / 0.35);
                 const smoothSnap = snapProgress * snapProgress * (3 - 2 * snapProgress);
-                const rawBs = ballState(Math.min(T3, elapsed));
-                const snappedAngle = rawBs.a + (exactPocketAngle - rawBs.a) * smoothSnap;
+                const finalAngle = rawBs.a + angleDiff * smoothSnap;
 
                 bs = {
-                    a: (elapsed >= T3 + 0.35) ? exactPocketAngle : snappedAngle,
+                    a: (elapsed >= T3 + 0.35) ? (rawBs.a + angleDiff) : finalAngle,
                     r: R_POCKET,
                     y: surf(R_POCKET) + BR
                 };

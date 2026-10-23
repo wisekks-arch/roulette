@@ -428,28 +428,28 @@ class RouletteWheel {
             ctx.fill();
             ctx.filter = 'none';
 
-            // 순백색 세라믹 룰렛 볼 (Pure Ceramic White 그라디언트)
-            const whiteGrad = ctx.createRadialGradient(
+            // 크리스탈 유리구슬 본체 (영롱한 유리 굴절 그라디언트)
+            const glassGrad = ctx.createRadialGradient(
                 bx - bSize * 0.35, by - bSize * 0.35, bSize * 0.08,
                 bx, by, bSize
             );
-            whiteGrad.addColorStop(0, '#ffffff');       // 강렬한 순백색 하이라이트
-            whiteGrad.addColorStop(0.45, '#ffffff');     // 깨끗한 순백색 세라믹 면
-            whiteGrad.addColorStop(0.75, '#f1f5f9');     // 부드러운 펄 화이트
-            whiteGrad.addColorStop(0.92, '#cbd5e1');     // 가장자리 입체 음영
-            whiteGrad.addColorStop(1, '#94a3b8');        // 볼 외곽 에지
+            glassGrad.addColorStop(0, '#ffffff');       // 강한 하이라이트 반사
+            glassGrad.addColorStop(0.35, '#f0f9ff');     // 맑은 크리스탈 면
+            glassGrad.addColorStop(0.65, '#cce7f5');     // 내부 굴절 아쿠아 틴트
+            glassGrad.addColorStop(0.9, '#82b5d1');      // 림 굴절 음영
+            glassGrad.addColorStop(1, '#3b6278');        // 외곽 림 에지
 
             ctx.beginPath();
             ctx.arc(bx, by, bSize, 0, Math.PI * 2);
-            ctx.fillStyle = whiteGrad;
-            ctx.shadowColor = 'rgba(255, 255, 255, 0.8)';
+            ctx.fillStyle = glassGrad;
+            ctx.shadowColor = 'rgba(180, 230, 255, 0.9)';
             ctx.shadowBlur = 6;
             ctx.fill();
 
-            // 순백색 볼 하단 2차 반사광
+            // 유리구슬 하단 2차 반사광 (Rim Caustic)
             ctx.beginPath();
             ctx.arc(bx + bSize * 0.25, by + bSize * 0.25, bSize * 0.35, 0, Math.PI * 2);
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.6)';
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
             ctx.fill();
 
             // 상단 정밀 핀포인트 크리스탈 광채

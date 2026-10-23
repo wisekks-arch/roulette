@@ -465,89 +465,6 @@ body {
     min-width: 760px;
 }
 
-/* 0번 바로 위: 실시간 초록색 배팅 시간 게이지 바 (그래프 길이가 줄어드는 스타일) */
-.table-bet-timer-gauge-container {
-    width: 100%;
-    background: rgba(3, 24, 15, 0.88);
-    border: 1px solid rgba(16, 185, 129, 0.35);
-    border-radius: 8px;
-    padding: 6px 14px 8px 14px;
-    margin-bottom: 2px;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.6), inset 0 1px 4px rgba(16, 185, 129, 0.15);
-    transition: all 0.3s ease;
-}
-
-.table-bet-timer-header {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-bottom: 5px;
-    font-size: 0.8rem;
-    font-weight: 700;
-    color: #10b981;
-}
-
-.table-bet-timer-header .timer-dot {
-    font-size: 0.85rem;
-    animation: timerDotPulse 1s infinite alternate;
-}
-
-.table-bet-timer-header .timer-title {
-    color: rgba(255, 255, 255, 0.85);
-    letter-spacing: 0.5px;
-    font-size: 0.76rem;
-}
-
-.table-timer-gauge-num {
-    margin-left: auto;
-    font-family: var(--font-heading);
-    font-size: 0.95rem;
-    font-weight: 900;
-    color: #34d399;
-    letter-spacing: 1px;
-}
-
-.table-bet-timer-track {
-    width: 100%;
-    height: 10px;
-    background: rgba(0, 0, 0, 0.65);
-    border-radius: 6px;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    position: relative;
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.8);
-}
-
-.table-bet-timer-progress {
-    height: 100%;
-    width: 100%;
-    background: linear-gradient(90deg, #059669 0%, #10b981 40%, #34d399 70%, #6ee7b7 100%);
-    border-radius: 5px;
-    transition: width 0.95s linear;
-    box-shadow: 0 0 14px rgba(16, 185, 129, 0.85), inset 0 1px 2px rgba(255, 255, 255, 0.4);
-}
-
-/* 5초 이하 위험 임박 시 옐로우/오렌지 경고 모드 */
-.table-bet-timer-gauge-container.gauge-warning {
-    border-color: rgba(245, 158, 11, 0.6);
-    background: rgba(30, 18, 4, 0.92);
-}
-
-.table-bet-timer-gauge-container.gauge-warning .table-bet-timer-progress {
-    background: linear-gradient(90deg, #b91c1c 0%, #dc2626 30%, #f59e0b 70%, #fbbf24 100%);
-    box-shadow: 0 0 16px rgba(245, 158, 11, 0.9), inset 0 1px 2px rgba(255, 255, 255, 0.5);
-}
-
-.table-bet-timer-gauge-container.gauge-warning .table-timer-gauge-num {
-    color: #fbbf24;
-    text-shadow: 0 0 8px rgba(245, 158, 11, 0.8);
-}
-
-@keyframes timerDotPulse {
-    from { transform: scale(0.9); opacity: 0.8; }
-    to { transform: scale(1.2); opacity: 1; }
-}
-
 /* 0 (싱글 제로) 및 메인 36개 숫자 그리드 */
 .table-zero-area {
     width: 100%;
@@ -1034,89 +951,71 @@ body {
 /* ==========================================================================
    컨트롤 패널 (칩 선택 바 & 액션 버튼들)
    ========================================================================== */
-/* ==========================================================================
-   컨트롤 패널 (칩 선택 바 & 액션 버튼들 가로 1줄 통합 배치)
-   ========================================================================== */
 .table-controls-panel {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: center !important;
-    flex-wrap: nowrap !important;
-    width: 100% !important;
-    max-width: 980px !important;
-    margin: 0 auto !important;
-    gap: 10px !important;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 12px;
 }
 
 .chip-selector-bar {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
-    background: linear-gradient(180deg, rgba(25, 20, 15, 0.85) 0%, rgba(10, 8, 6, 0.95) 100%) !important;
-    padding: 6px 12px !important;
-    border-radius: 40px !important;
-    border: 1px solid #5a3d1c !important;
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8), 0 4px 12px rgba(0, 0, 0, 0.5) !important;
-    flex-shrink: 0 !important;
+    display: flex;
+    justify-content: center;
+    gap: 14px;
+    background: linear-gradient(180deg, rgba(25, 20, 15, 0.8) 0%, rgba(10, 8, 6, 0.95) 100%);
+    padding: 12px 18px;
+    border-radius: 40px;
+    border: 1px solid #5a3d1c;
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8), 0 8px 20px rgba(0, 0, 0, 0.6);
 }
 
 .chip-selector-btn {
-    width: 40px !important;
-    height: 40px !important;
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.72rem !important;
+    font-size: 0.78rem;
     font-weight: 900;
     font-family: var(--font-body);
     cursor: pointer;
     box-shadow:
-        0 4px 8px rgba(0, 0, 0, 0.7),
+        0 6px 12px rgba(0, 0, 0, 0.7),
         inset 0 0 0 2px rgba(255, 255, 255, 0.4),
-        inset 0 0 5px rgba(0, 0, 0, 0.5);
-    transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        inset 0 0 6px rgba(0, 0, 0, 0.5);
+    transition: all 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .chip-selector-btn:hover {
-    transform: translateY(-3px) scale(1.1);
-    box-shadow: 0 8px 14px rgba(0, 0, 0, 0.85);
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.85);
 }
 
 .chip-selector-btn.active {
-    transform: translateY(-5px) scale(1.18);
-    box-shadow: 0 8px 18px rgba(255, 215, 0, 0.75), 0 0 12px rgba(255, 215, 0, 0.5);
-    outline: 2.5px solid var(--gold-primary);
+    transform: translateY(-8px) scale(1.22);
+    box-shadow: 0 10px 22px rgba(255, 215, 0, 0.75), 0 0 15px rgba(255, 215, 0, 0.5);
+    outline: 3px solid var(--gold-primary);
 }
 
 .action-buttons-bar {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
-    width: auto !important;
-    margin: 0 !important;
-    flex-shrink: 0 !important;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
 }
 
 .act-btn {
     font-family: var(--font-heading);
     font-weight: 700;
-    font-size: 0.78rem !important;
-    padding: 8px 10px !important;
-    height: 40px !important;
+    font-size: 0.85rem;
+    padding: 10px 18px;
     border-radius: 8px;
     border: 1px solid #444;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 4px;
-    white-space: nowrap !important;
-    letter-spacing: -0.02em !important;
+    gap: 6px;
     transition: all 0.2s ease;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
 }
@@ -1998,22 +1897,6 @@ body {
     overflow: hidden;
 }
 
-.live-cam-3d-stage {
-    position: absolute;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1;
-    overflow: hidden;
-}
-
-.live-cam-3d-stage canvas {
-    display: block;
-    width: 100% !important;
-    height: 100% !important;
-    object-fit: cover;
-}
-
 #live-cam-video {
     position: absolute;
     inset: 0;
@@ -2094,21 +1977,6 @@ body {
     font-weight: 900;
     color: #ffffff;
     line-height: 1.1;
-}
-
-.cam-win-num.color-red {
-    color: #ff4d5a !important;
-    text-shadow: 0 0 16px rgba(255, 77, 90, 0.85), 0 2px 6px #000;
-}
-
-.cam-win-num.color-black {
-    color: #f1f5f9 !important;
-    text-shadow: 0 0 16px rgba(241, 245, 249, 0.75), 0 2px 6px #000;
-}
-
-.cam-win-num.color-green {
-    color: #10b981 !important;
-    text-shadow: 0 0 16px rgba(16, 185, 129, 0.85), 0 2px 6px #000;
 }
 
 .live-cam-footer {
@@ -3838,51 +3706,25 @@ body {
     transform: scale(1.02);
 }
 
-/* 칩 바와 4대 편의 버튼 바 레이아웃: 언제나 가로 1줄 컴팩트 유지 */
+/* 스핀 버튼 제거 후 4대 편의 버튼 바 레이아웃 정돈 */
 .action-buttons-bar {
-    display: flex !important;
-    flex-direction: row !important;
-    align-items: center !important;
-    justify-content: center !important;
-    gap: 6px !important;
-    max-width: none !important;
-    margin: 0 !important;
-    width: auto !important;
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 12px !important;
+    max-width: 640px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 .action-buttons-bar .act-btn {
-    justify-content: center !important;
-    padding: 7px 8px !important;
-    font-size: 0.74rem !important;
-    height: 38px !important;
-    white-space: nowrap !important;
-    letter-spacing: -0.02em !important;
+    justify-content: center;
+    padding: 12px 16px;
+    font-size: 0.9rem;
 }
 
-@media (max-width: 768px) {
-    .table-controls-panel {
-        gap: 5px !important;
-        overflow-x: auto !important;
-        padding-bottom: 4px !important;
-        justify-content: flex-start !important;
-        -webkit-overflow-scrolling: touch;
-    }
-    .chip-selector-bar {
-        padding: 4px 8px !important;
-        gap: 4px !important;
-    }
-    .chip-selector-btn {
-        width: 32px !important;
-        height: 32px !important;
-        font-size: 0.62rem !important;
-    }
+@media (max-width: 600px) {
     .action-buttons-bar {
-        gap: 4px !important;
-    }
-    .action-buttons-bar .act-btn {
-        padding: 6px 6px !important;
-        font-size: 0.68rem !important;
-        height: 32px !important;
+        grid-template-columns: repeat(2, 1fr) !important;
     }
 }
 
