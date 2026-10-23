@@ -652,15 +652,15 @@ class RouletteApp {
             this.onSpinResult(targetNum, color);
         };
 
-        // 2. 정확히 4.0초(4000ms) 타임라인 시퀀서 가동
+        // 2. 3D 정밀 물리 룰렛 시퀀서 가동 (안착 후 4.5초간 결과 감상, 총 10.7초)
         this.runTimeBasedLiveCam(targetNum, handleSpinFinished);
 
-        // 3. [Fail-Safe 안전 타이머 4.2초] 브라우저 백그라운드 등 어떤 예외에서도 100% 진행 보장
+        // 3. [Fail-Safe 안전 타이머 12.5초] 영상 시퀀스 종료 후 100% 다음 단계 보장
         setTimeout(() => {
             if (!isSpinFinished) {
                 handleSpinFinished();
             }
-        }, 4200);
+        }, 12500);
     }
 
     /**
@@ -704,8 +704,8 @@ class RouletteApp {
             return 0;
         };
 
-        // ---------- 2. 물리 궤적 타임라인 상수 ----------
-        const T1 = 4.2, T2 = 5.4, T3 = 7.2, D3 = T3 - T2, TOTAL_SHOW = T3 + 3.0; // 7.2초 안착 후 3.0초간 결과 감상 (총 10.2초)
+        // ---------- 2. 물리 궤적 타임라인 상수 (6.2초 쏙 안착 후 4.5초간 충분한 결과 확인, 총 10.7초) ----------
+        const T1 = 3.8, T2 = 5.0, T3 = 6.2, D3 = T3 - T2, TOTAL_SHOW = T3 + 4.5;
         const ROT_A = 0.55, ROT_B = 1.85, ROT_K = 0.22;
         const WB0 = 12, WB1 = 3.4, M = Math.log(WB0 / WB1) / T1;
         let W0 = 0, B0 = 0;
@@ -928,11 +928,11 @@ class RouletteApp {
             let bs = null;
 
             if (elapsed < T1) {
-                // 1구간 (0.0s ~ 4.2s): 볼 고속 스핀
+                // 1구간 (0.0s ~ 3.8s): 볼 고속 트랙 질주
                 W = rotorW(elapsed);
                 bs = ballState(elapsed);
             } else if (elapsed < T2) {
-                // 2구간 (4.2s ~ 5.4s): 감속 및 디플렉터 충돌 낙하
+                // 2구간 (3.8s ~ 5.0s): 디플렉터 충돌 및 감속 낙하
                 W = rotorW(elapsed);
                 bs = ballState(elapsed);
                 if (!bouncePlayed) {
@@ -941,14 +941,21 @@ class RouletteApp {
                     if (window.rouletteAudio && window.rouletteAudio.playBounce) window.rouletteAudio.playBounce();
                 }
             } else if (elapsed < T3) {
-                // 3구간 (5.4s ~ 7.2s): 포켓 프렛 바운스
+                // 3구간 (5.0s ~ 6.2s): 포켓 프렛 바운스
                 W = rotorW(elapsed);
                 bs = ballState(elapsed);
             } else {
-                // 4구간 (7.2s ~ 10.2s, 3.0초간): 당첨 번호 포켓에 100% 쏙 안착 & 결과 노출!
+                // 4구간 (6.2s ~ 10.7s, 약 4.5초간): 당첨 번호 포켓에 100% 쏙 안착 & 정밀 클로즈업 노출!
                 if (finalStoppedW === null) finalStoppedW = rotorW(T3);
                 W = finalStoppedW;
                 bs = ballState(T3 + 0.1);
+
+                // 안착 후 카메라가 당첨 번호 포켓으로 부드럽게 시네마틱 줌인 (fov 36 -> 28)
+                const zoomProgress = Math.min(1, (elapsed - T3) / 1.0);
+                const easeZoom = zoomProgress * (2 - zoomProgress);
+                camera.fov = 36 - 8 * easeZoom;
+                camera.position.set(0, 3.1 - 0.45 * easeZoom, 3.4 - 0.55 * easeZoom);
+                camera.updateProjectionMatrix();
 
                 if (!lockOnShown) {
                     lockOnShown = true;
@@ -965,11 +972,16 @@ class RouletteApp {
                         winBadge.classList.add('badge-revealed');
                         winBadge.classList.remove('hidden');
                     }
-                    if (statusText) statusText.textContent = `🎯 당첨 번호 #${targetNum} 3D 포켓 안착 확정! (3초간 결과 노출)`;
                     if (window.rouletteAudio && window.rouletteAudio.playDrop) window.rouletteAudio.playDrop();
                 }
 
-                markerMat.opacity = 0.5 + 0.3 * Math.sin((elapsed - T3) * 6);
+                const remainSec = Math.max(0, Math.ceil(TOTAL_SHOW - elapsed));
+                if (statusText) {
+                    statusText.textContent = `🎯 당첨 번호 #${targetNum} 포켓 안착 확정! (${remainSec}초 후 배당 정산)`;
+                }
+
+                // 당첨 포켓 황금빛 네온 링 마커 화려한 점멸
+                markerMat.opacity = 0.75 + 0.25 * Math.sin((elapsed - T3) * 8);
             }
 
             rotor.rotation.y = W;
@@ -980,7 +992,7 @@ class RouletteApp {
             if (elapsed < TOTAL_SHOW) {
                 this.liveCamAnimId = requestAnimationFrame(renderFrame);
             } else {
-                // 10.2초 완료 후 정산 화면으로 자연스럽게 전환
+                // 10.7초 완료 후 정산 화면으로 자연스럽게 전환
                 if (onFinished) onFinished();
             }
         };
