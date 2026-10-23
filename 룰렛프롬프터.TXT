@@ -498,3 +498,25 @@ Undo
    - Headless Edge DOM 덤프 검증 결과 문법 에러 0건, NO_SCRIPT_ERRORS_DETECTED 확인 완료.
    - index.html 캐시 버스팅 파라미터 ?v=20261023_0950 전면 갱신 및 GitHub Pages 실서버 배포 완료.
 
+[33차 사용자 요청 원문 - 2026-10-23]
+"배팅시간 표시를 6S,3S,1S, 씩으로 숫자로 표시하지말고 초록색 가로그래픽이 줄어드는 형식으로 시각화해서 보여줘"
+- 사용자 최종 확인: 승인 (컨펌 완료)
+
+[33차 핵심 구현 사항]
+1. 숫자 카운트다운 텍스트 완전 배제 및 에메랄드 그린 가로 게이지 바 그래픽화 (index.html, css/style.css, js/app.js):
+   - 기존의 투박한 숫자 텍스트(15s, 6s, 3s, 1s 등) 노출을 완전히 제거하고, 고급 라이브 카지노 스타일의 에메랄드 그린 네온 가로 게이지 바로 전면 교체.
+   - index.html: 딜러 아나운스 배너 내 #betting-timer-container(다크 슬롯 트랙 + #betting-gauge-bar 게이지 바) 및 배너 하단 풀-와이드 네온 그린 타이머 라인(#banner-bottom-timer-line) 마크업 신설.
+   - css/style.css:
+     * .timer-gauge-track: 너비 140px, 높이 10px, 다크 엠보싱 트랙 프레임.
+     * .timer-gauge-bar: linear-gradient(90deg, #047857 0%, #10b981 55%, #34d399 100%) 및 에메랄드 네온 글로우(box-shadow), transition: width 1s linear 적용으로 15초 동안 끊김 없이 매끄럽게 100%에서 0%로 실시간 축소.
+     * .banner-bottom-timer-line: 배너 최하단 전체에 흐르는 3px 초록색 네온 광채 라인 구축.
+     * .timer-badge: display: none !important로 기존 숫자 박스 완전 소멸.
+   - js/app.js:
+     * updateTimerDisplay(seconds): 15초 대비 잔여 비율(pct = (validSeconds / 15) * 100)을 정밀 계산하여 초록색 게이지 바와 하단 네온 라인의 width를 실시간으로 감소 제어.
+     * 배팅 시작(startBettingPhase) 시 100% 완전 충전 ➔ 15초 동안 실시간 감소 ➔ 마감(closeBettingPhase) 시 0%로 자연스럽게 정지.
+
+2. 배포 전 무결성 검증 및 GitHub Pages 실서버 배포:
+   - Headless Edge DOM 덤프 검증 결과 문법 에러 0건, NO_SCRIPT_ERRORS_DETECTED 확인 완료.
+   - index.html 캐시 버스팅 파라미터 ?v=20261023_1005 전면 갱신 및 GitHub Pages 실서버 배포 완료.
+
+

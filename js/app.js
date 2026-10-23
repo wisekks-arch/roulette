@@ -1060,12 +1060,30 @@ class RouletteApp {
     }
 
     /**
-     * 타이머 UI 업데이트
+     * 배팅 시간 초록색 가로 게이지 바 UI 실시간 업데이트 (숫자 텍스트 완전 배제)
      */
     updateTimerDisplay(seconds) {
+        // 15초 대비 잔여 비율 (0% ~ 100%)
+        const totalDuration = 15;
+        const validSeconds = Math.max(0, Math.min(totalDuration, seconds));
+        const pct = (validSeconds / totalDuration) * 100;
+
+        // 1. 우측 트랙 내 초록색 게이지 바
+        const gaugeBar = document.getElementById('betting-gauge-bar');
+        if (gaugeBar) {
+            gaugeBar.style.width = `${pct}%`;
+        }
+
+        // 2. 딜러 배너 하단 전체 일체형 네온 그린 타이머 라인
+        const bottomLine = document.getElementById('banner-bottom-timer-line');
+        if (bottomLine) {
+            bottomLine.style.width = `${pct}%`;
+        }
+
+        // 3. 내부 호환성 갱신 (화면에는 노출 안 됨)
         const timerEl = document.getElementById('phase-timer');
         if (timerEl) {
-            timerEl.textContent = `${seconds}s`;
+            timerEl.textContent = `${validSeconds}s`;
         }
     }
 
