@@ -2441,19 +2441,19 @@ body {
     background: transparent !important;
 }
 
-/* [사용자 핵심 요구] 3초간 눈부시게 노출되는 대형 당첨 번호 결과 화면 뱃지 */
+/* [사용자 핵심 요구] 당첨 번호 결과 안내창: 중앙에서 휠을 가리지 않는 좌측 상단(Top-Left)으로 이동 */
 .live-cam-win-badge {
     position: absolute;
-    top: 24px;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 20px;
+    left: 20px;
+    transform: none;
     background: linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(5, 5, 5, 0.98) 100%);
     border: 2px solid var(--gold-primary);
-    border-radius: 16px;
-    padding: 12px 28px;
+    border-radius: 14px;
+    padding: 10px 20px;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: flex-start;
     justify-content: center;
     z-index: 30;
     box-shadow: 0 0 30px rgba(255, 215, 0, 0.7), 0 10px 30px rgba(0, 0, 0, 0.9);
@@ -2462,31 +2462,73 @@ body {
 
 @keyframes winBadgePulse {
     0% {
-        transform: translateX(-50%) scale(1);
+        transform: scale(1);
         box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
     }
     100% {
-        transform: translateX(-50%) scale(1.05);
+        transform: scale(1.05);
         box-shadow: 0 0 40px rgba(255, 215, 0, 0.95);
     }
 }
 
 .cam-win-label {
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     font-weight: 800;
     color: var(--gold-primary);
-    letter-spacing: 2px;
+    letter-spacing: 1.5px;
     text-transform: uppercase;
     text-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
 }
 
 .cam-win-num {
     font-family: var(--font-heading);
-    font-size: 3rem;
+    font-size: 2.4rem;
     font-weight: 900;
-    line-height: 1.1;
+    line-height: 1.05;
     color: #ffffff;
     text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 2px 5px #000;
+}
+
+/* [사용자 핵심 요구] 테이블 0번 바로 위에 길게 펼쳐진 배팅시간 와이드 게이지 바 */
+.table-betting-timer-container {
+    width: 100%;
+    margin-bottom: 8px;
+    background: rgba(10, 16, 26, 0.85);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    border-radius: 20px;
+    padding: 5px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), inset 0 0 12px rgba(16, 185, 129, 0.1);
+    box-sizing: border-box;
+}
+
+.table-betting-timer-container .timer-gauge-icon {
+    font-size: 1.1rem;
+    filter: drop-shadow(0 0 6px #10b981);
+    flex-shrink: 0;
+}
+
+.table-betting-timer-container .wide-track {
+    flex: 1;
+    width: 100%;
+    height: 14px;
+    background: #090e17;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8);
+}
+
+.table-betting-timer-container .timer-gauge-bar {
+    height: 100%;
+    width: 100%;
+    background: linear-gradient(90deg, #047857 0%, #10b981 55%, #34d399 100%);
+    border-radius: 8px;
+    transition: width 1s linear;
+    box-shadow: 0 0 12px rgba(16, 185, 129, 0.8);
 }
 
 @media (max-width: 768px) {

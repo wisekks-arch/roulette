@@ -15,7 +15,7 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Outfit:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=20261023_1305">
+    <link rel="stylesheet" href="css/style.css?v=20261023_1315">
 </head>
 
 <body>
@@ -91,15 +91,6 @@
             <div id="status-message-text" class="status-message">
                 🎲 베팅을 진행해 주세요 (Place your bets)
             </div>
-            <!-- 초록색 가로 배팅 시간 그래픽 바 (숫자 표기 없이 가로 바로 시각화) -->
-            <div id="betting-timer-container" class="betting-timer-container" title="배팅 잔여 시간">
-                <span class="timer-gauge-icon">⏳</span>
-                <div class="timer-gauge-track">
-                    <div id="betting-gauge-bar" class="timer-gauge-bar"></div>
-                </div>
-                <!-- 하위 호환성을 위한 숨김 엘리먼트 -->
-                <span id="phase-timer" class="hidden" style="display: none;"></span>
-            </div>
             <!-- 배너 하단 풀와이드 네온 그린 타이머 라인 -->
             <div id="banner-bottom-timer-line" class="banner-bottom-timer-line"></div>
         </div>
@@ -142,6 +133,16 @@
                         <span id="orient-icon">📱</span>
                         <span id="orient-text">세로 보기</span>
                     </button>
+                </div>
+
+                <!-- [사용자 요청] 룰렛 테이블 0번 바로 위에 길게 적용된 배팅시간 와이드 게이지 바 -->
+                <div id="betting-timer-container" class="table-betting-timer-container" title="배팅 잔여 시간">
+                    <span class="timer-gauge-icon">⏳</span>
+                    <div class="timer-gauge-track wide-track">
+                        <div id="betting-gauge-bar" class="timer-gauge-bar"></div>
+                    </div>
+                    <!-- 하위 호환 숨김 엘리먼트 -->
+                    <span id="phase-timer" class="hidden" style="display: none;"></span>
                 </div>
 
                 <div class="table-scroll-wrapper">
@@ -435,13 +436,13 @@
     </div>
 
     <!-- 스크립트 모듈 로드 (강력한 캐시 방지 쿼리스트링 적용) -->
-    <script src="js/audio.js?v=20261023_1305"></script>
-    <script src="js/wheel.js?v=20261023_1305"></script>
-    <script src="js/table.js?v=20261023_1305"></script>
-    <script src="js/auth.js?v=20261023_1305"></script>
-    <script src="js/stats.js?v=20261023_1305"></script>
-    <script src="js/lobby.js?v=20261023_1305"></script>
-    <script src="js/app.js?v=20261023_1305"></script>
+    <script src="js/audio.js?v=20261023_1315"></script>
+    <script src="js/wheel.js?v=20261023_1315"></script>
+    <script src="js/table.js?v=20261023_1315"></script>
+    <script src="js/auth.js?v=20261023_1315"></script>
+    <script src="js/stats.js?v=20261023_1315"></script>
+    <script src="js/lobby.js?v=20261023_1315"></script>
+    <script src="js/app.js?v=20261023_1315"></script>
 </body>
 
 </html>

@@ -563,11 +563,11 @@ class RouletteApp {
     }
 
     /**
-     * 1단계: 배팅 페이즈 시작 (15초 카운트다운 및 다중 봇 배팅 시뮬레이션)
+     * 1단계: 배팅 페이즈 시작 (25초 여유로운 카운트다운 및 다중 봇 배팅 시뮬레이션)
      */
     startBettingPhase() {
         this.currentPhase = 'BETTING';
-        this.timerSeconds = 15; // 15.0초 배팅 시간 배정
+        this.timerSeconds = 25; // 25.0초 여유로운 배팅 시간 배정
 
         // 이번 회차의 당첨 번호를 사전에 단일 확정 (0~36, 100% 동기화 보장)
         this.currentWinningNumber = Math.floor(Math.random() * 37);
@@ -618,7 +618,7 @@ class RouletteApp {
             this.updateBetDisplay();
         }
 
-        // 15초 카운트다운 타이머
+        // 25초 카운트다운 타이머
         if (this.timerInterval) clearInterval(this.timerInterval);
         this.timerInterval = setInterval(() => {
             this.timerSeconds--;
@@ -638,7 +638,7 @@ class RouletteApp {
     }
 
     /**
-     * 2단계: 배팅 마감 (1.0초 마감 안내 후 즉시 딜러 룰렛 휠 회전 및 구슬 투구 라이브 캠 오픈)
+     * 2단계: 배팅 마감 (3.0초(X3배) 마감 안내 후 여유롭게 딜러 룰렛 휠 회전 및 구슬 투구 라이브 캠 오픈)
      */
     closeBettingPhase() {
         if (this.currentPhase !== 'BETTING') return;
@@ -675,10 +675,10 @@ class RouletteApp {
             }
         }
 
-        this.updatePhaseStatus("⛔ NO MORE BETS! - 딜러 배팅 마감 (구슬 투구)", "closed");
+        this.updatePhaseStatus("⛔ NO MORE BETS! - 딜러 배팅 마감 (구슬 투구 대기)", "closed");
         this.updateTimerDisplay(0);
 
-        // 상단 마감 알림 배너 표출 (1.0초 후 자연스럽게 스핀으로 전환)
+        // 상단 마감 알림 배너 표출 (3.0초간(X3배) 여유롭게 안내 후 휠 스핀 라이브 캠으로 자연스럽게 전환)
         const nmbModal = document.getElementById('no-more-bets-modal');
         if (nmbModal) {
             nmbModal.classList.remove('hidden');
@@ -686,7 +686,11 @@ class RouletteApp {
             setTimeout(() => {
                 nmbModal.classList.add('hidden');
                 nmbModal.style.display = 'none';
-            }, 1000);
+                // 3초 마감 배너 후 딜러 주도 구슬 투구 및 휠 회전 라이브 캠 오픈
+                this.triggerSpin();
+            }, 3000);
+        } else {
+            this.triggerSpin();
         }
 
         // 관리자 배팅 로그 기록
@@ -699,9 +703,6 @@ class RouletteApp {
                 }
             }
         }
-
-        // 딜러 주도 구슬 투구 및 휠 회전 라이브 캠 오픈
-        this.triggerSpin();
     }
 
     /**
@@ -801,7 +802,7 @@ class RouletteApp {
         const sliceAngle = (Math.PI * 2) / numbers.length;
         const targetIdx = numbers.indexOf(targetNum);
 
-        const TOTAL_DURATION = 8200; // 요청하신 3초 당첨 결과 노출 포함 총 8.2초
+        const TOTAL_DURATION = 8600; // 5초 구슬 회전/낙하 + 3초 당첨 결과 노출 = 총 8.6초
         const startTime = performance.now();
 
         let bouncePlayed = false;
@@ -816,35 +817,36 @@ class RouletteApp {
 
             let wheelAngle = 0;
             let ballAngle = 0;
-            let ballRadius = outerR * 0.92;
+            let ballRadius = outerR * 0.88;
 
-            if (elapsed < 4500) {
-                // 1구간 (0.0s ~ 4.5s, 4.5초간): 실사 룰렛 휠과 구슬의 시원한 고속 회전
-                const t1 = elapsed / 4500;
+            if (elapsed < 4800) {
+                // 1구간 (0.0s ~ 4.8s, 4.8초간): 실사 룰렛 휠과 구슬이 번호 위를 흐르듯 고속 질주
+                const t1 = elapsed / 4800;
                 wheelAngle = (elapsed / 1000) * 0.95;
-                ballAngle = -((elapsed / 1000) * 12.0) * (1 - t1 * 0.15);
-                ballRadius = outerR * 0.92;
-            } else if (elapsed < 5200) {
-                // 2구간 (4.5s ~ 5.2s, 0.7초간): 감속하며 번호 포켓으로 탁 떨어져 안착
-                const t2 = (elapsed - 4500) / 700;
-                wheelAngle = (4.5 * 0.95) + (t2 * (0.7 * 0.95) * (1 - t2 * 0.7));
-                ballAngle = -((elapsed / 1000) * 4.5) * (1 - t2 * 0.85);
-                ballRadius = (outerR * 0.92) - (outerR * 0.92 - outerR * 0.65) * t2 + Math.sin(t2 * Math.PI) * 4;
+                ballAngle = -((elapsed / 1000) * 11.0) * (1 - t1 * 0.15);
+                ballRadius = outerR * 0.88 - (t1 * outerR * 0.08); // 외곽에서 번호 트랙으로 서서히 진입
+            } else if (elapsed < 5600) {
+                // 2구간 (4.8s ~ 5.6s, 0.8초간): 감속하며 번호 위를 흘러가다 당첨 번호 포켓으로 탁 떨어짐
+                const t2 = (elapsed - 4800) / 800;
+                wheelAngle = (4.8 * 0.95) + (t2 * (0.8 * 0.95) * (1 - t2 * 0.65));
+                ballAngle = -((elapsed / 1000) * 3.5) * (1 - t2 * 0.82);
+                ballRadius = (outerR * 0.80) - (outerR * 0.80 - outerR * 0.65) * t2 + Math.sin(t2 * Math.PI) * 5;
 
                 if (!bouncePlayed) {
                     bouncePlayed = true;
                     const statusText = document.getElementById('live-cam-status-text');
-                    if (statusText) statusText.textContent = "🟡 BALL DROPPING: 구슬이 감속하며 번호 포켓으로 안착 중...";
+                    if (statusText) statusText.textContent = "🟡 BALL DROPPING: 구슬이 번호 위를 흘러가며 포켓으로 떨어지는 중...";
                     if (window.rouletteAudio && window.rouletteAudio.playBounce) window.rouletteAudio.playBounce();
                 }
             } else {
-                // 3구간 (5.2s ~ 8.2s, 정확히 3.0초간): [사용자 핵심 요구] 휠 완전 정지 & 대형 당첨 번호 결과 3초간 노출!
+                // 3구간 (5.6s ~ 8.6s, 정확히 3.0초간): [사용자 핵심 요구] 구슬이 당첨 번호 포켓에 쏙 안착 & 좌상단 당첨 안내 표출!
                 if (finalStoppedWheelAngle === null) {
-                    finalStoppedWheelAngle = (4.5 * 0.95) + (1.0 * (0.7 * 0.95) * 0.3);
+                    finalStoppedWheelAngle = (4.8 * 0.95) + (1.0 * (0.8 * 0.95) * 0.35);
                 }
                 wheelAngle = finalStoppedWheelAngle;
+                // 확정된 당첨 번호의 정확한 포켓 각도에 100% 동기화
                 ballAngle = wheelAngle + targetIdx * sliceAngle + sliceAngle / 2;
-                ballRadius = outerR * 0.65; // 포켓 안착 고정
+                ballRadius = outerR * 0.65; // 포켓 홈 안착
 
                 if (!lockOnShown) {
                     lockOnShown = true;
@@ -863,7 +865,7 @@ class RouletteApp {
                 realWheel.style.transform = `rotate(${wheelAngle * 180 / Math.PI}deg)`;
             }
 
-            // 캔버스 그리기 (실사 휠 위 구슬 및 HUD 오버레이)
+            // 캔버스 그리기 (실사 휠 위 단 하나의 3D 은구슬 및 섬세한 HUD)
             ctx.clearRect(0, 0, w, h);
             ctx.save();
 
@@ -877,9 +879,21 @@ class RouletteApp {
             ctx.beginPath(); ctx.moveTo(pad, h - pad - bSize); ctx.lineTo(pad, h - pad); ctx.lineTo(pad + bSize, h - pad); ctx.stroke();
             ctx.beginPath(); ctx.moveTo(w - pad - bSize, h - pad); ctx.lineTo(w - pad, h - pad); ctx.lineTo(w - pad, h - pad - bSize); ctx.stroke();
 
-            // 2. 3D 물리 은구슬 (실사 휠 텍스처 위에서 부드럽게 롤링)
+            // 2. 단 하나의 3D 물리 은구슬 (실사 휠 위에서 부드럽게 롤링 & 포켓 안착)
             const bx = cx + Math.cos(ballAngle) * ballRadius;
             const by = cy + Math.sin(ballAngle) * ballRadius;
+
+            // 안착 구간(3초간 노출)에서는 구슬 주변에 은은한 골드 펄스 링 표시 (중앙을 가리지 않고 구슬 포켓 강조)
+            if (elapsed >= 5600) {
+                const pulseTime = elapsed - 5600;
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(bx, by, 16 + Math.sin(pulseTime / 200) * 3, 0, Math.PI * 2);
+                ctx.strokeStyle = 'rgba(255, 215, 0, 0.85)';
+                ctx.lineWidth = 2;
+                ctx.stroke();
+                ctx.restore();
+            }
 
             ctx.save();
             ctx.beginPath();
@@ -893,44 +907,6 @@ class RouletteApp {
             ctx.shadowBlur = 10;
             ctx.fill();
             ctx.restore();
-
-            // 3. [핵심] 당첨 번호 결과 화면 3초간 노출 중 회전 타겟 스코프 링 연출
-            if (elapsed >= 5200) {
-                const lockTime = elapsed - 5200; // 0 ~ 3000ms
-                ctx.save();
-                ctx.translate(cx, cy);
-
-                // 회전하는 골드 타겟 스코프 링
-                ctx.rotate((elapsed / 1000) * 1.5);
-                ctx.beginPath();
-                ctx.arc(0, 0, 75 + Math.sin(lockTime / 250) * 8, 0, Math.PI * 2);
-                ctx.strokeStyle = '#ffd700';
-                ctx.lineWidth = 3;
-                ctx.setLineDash([16, 8]);
-                ctx.shadowColor = 'rgba(255, 215, 0, 0.85)';
-                ctx.shadowBlur = 18;
-                ctx.stroke();
-
-                // 중심 당첨 번호 락온 디스크
-                ctx.beginPath();
-                ctx.arc(0, 0, 44, 0, Math.PI * 2);
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.8)';
-                ctx.fill();
-                ctx.strokeStyle = '#22c55e';
-                ctx.lineWidth = 2.5;
-                ctx.setLineDash([]);
-                ctx.stroke();
-
-                // 당첨 번호 텍스트
-                ctx.fillStyle = '#ffffff';
-                ctx.font = "bold 32px 'Cinzel', sans-serif";
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.shadowColor = '#000000';
-                ctx.shadowBlur = 8;
-                ctx.fillText(targetNum.toString(), 0, 0);
-                ctx.restore();
-            }
 
             ctx.restore();
 
@@ -1041,11 +1017,11 @@ class RouletteApp {
         } catch (err) {
             console.error("Error in onSpinResult:", err);
         } finally {
-            // 5단계: 여유 있는 3.5초 정산 및 승리 확인 후 다음 회차로 자동 순환
+            // 5단계: 여유 있는 10.5초(3.5초의 3배) 정산 및 승리 확인 후 다음 회차로 자동 순환
             if (this.nextRoundTimeout) clearTimeout(this.nextRoundTimeout);
             this.nextRoundTimeout = setTimeout(() => {
                 this.nextRound();
-            }, 3500);
+            }, 10500);
         }
     }
 
@@ -1131,8 +1107,8 @@ class RouletteApp {
      * 배팅 시간 초록색 가로 게이지 바 UI 실시간 업데이트 (숫자 텍스트 완전 배제)
      */
     updateTimerDisplay(seconds) {
-        // 15초 대비 잔여 비율 (0% ~ 100%)
-        const totalDuration = 15;
+        // 25초 대비 잔여 비율 (0% ~ 100%)
+        const totalDuration = 25;
         const validSeconds = Math.max(0, Math.min(totalDuration, seconds));
         const pct = (validSeconds / totalDuration) * 100;
 
