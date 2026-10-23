@@ -42,9 +42,6 @@ class RouletteApp {
             window.rouletteWheel = new RouletteWheel('roulette-wheel-canvas');
         }
 
-        // 모바일/PC 테이블 방향 모드 초기화 (768px 이하 모바일 화면일 때 자동 세로 모드 적용)
-        this.initOrientationMode();
-
         this.updateBalanceDisplay();
         this.updateBetDisplay();
         this.updateRoundDisplay();
@@ -60,55 +57,8 @@ class RouletteApp {
             window.rouletteLobby.enterRoom(2);
         }
 
-        // 최근 10회 히스토리 바 초기화 (가로 스크롤 없이 10개 볼 정렬)
-        this.initHistoryBadges();
-
         // 첫 라운드 시작
         this.startBettingPhase();
-    }
-
-    /**
-     * 모바일/PC 테이블 방향 모드 초기화 및 디바이스 감지
-     */
-    initOrientationMode() {
-        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-        if (isMobileDevice) {
-            document.body.classList.add('mobile-table-mode');
-        } else {
-            document.body.classList.remove('mobile-table-mode');
-        }
-        this.updateOrientationBtnText();
-
-        // 윈도우 창 크기 변경 시 자동 대응 (사용자가 수동으로 바꾸지 않은 경우)
-        window.addEventListener('resize', () => {
-            if (this._userOrientationToggled) return;
-            const mobileNow = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
-            if (mobileNow) {
-                document.body.classList.add('mobile-table-mode');
-            } else {
-                document.body.classList.remove('mobile-table-mode');
-            }
-            this.updateOrientationBtnText();
-        });
-    }
-
-    /**
-     * 가로/세로 방향 토글 버튼 텍스트 및 안내 툴팁 갱신
-     */
-    updateOrientationBtnText() {
-        const btn = document.getElementById('btn-toggle-table-orientation');
-        if (!btn) return;
-        const isVertical = document.body.classList.contains('mobile-table-mode');
-        const iconEl = document.getElementById('orient-icon');
-        const textEl = document.getElementById('orient-text');
-
-        if (iconEl) iconEl.textContent = isVertical ? '🖥️' : '📱';
-        if (textEl) textEl.textContent = isVertical ? '가로 보기' : '세로 보기';
-        if (!iconEl && !textEl) {
-            btn.textContent = isVertical ? '🖥️ 가로 보기' : '📱 세로 보기';
-        }
-        btn.title = isVertical ? 'PC 스타일 가로 테이블로 보기' : '모바일 한손 터치 세로 테이블로 보기';
-        btn.classList.toggle('active', isVertical);
     }
 
     /**
@@ -221,7 +171,7 @@ class RouletteApp {
         if (undoBtn) {
             undoBtn.addEventListener('click', () => {
                 if (this.currentPhase !== 'BETTING') {
-                    this.showToast("⛔ 구슬 회전 및 정산 중에는 조작할 수 없습니다.");
+                    this.showToast("배팅 진행 중에만 취소할 수 있습니다.");
                     return;
                 }
                 if (window.rouletteTable) {
@@ -240,11 +190,7 @@ class RouletteApp {
         const clearBtn = document.getElementById('btn-clear');
         if (clearBtn) {
             clearBtn.addEventListener('click', () => {
-                if (this.currentPhase !== 'BETTING') {
-                    this.showToast("⛔ 구슬 회전 및 정산 중에는 조작할 수 없습니다.");
-                    return;
-                }
-                if (window.rouletteTable) {
+                if (this.currentPhase === 'BETTING' && window.rouletteTable) {
                     window.rouletteTable.clearBets();
                     this.updateBetDisplay();
                     this.showToast("모든 배팅이 취소되었습니다.");
@@ -256,11 +202,7 @@ class RouletteApp {
         const rebetBtn = document.getElementById('btn-rebet');
         if (rebetBtn) {
             rebetBtn.addEventListener('click', () => {
-                if (this.currentPhase !== 'BETTING') {
-                    this.showToast("⛔ 구슬 회전 및 정산 중에는 배팅할 수 없습니다.");
-                    return;
-                }
-                if (window.rouletteTable) {
+                if (this.currentPhase === 'BETTING' && window.rouletteTable) {
                     window.rouletteTable.rebet();
                     this.updateBetDisplay();
                 }
@@ -271,11 +213,7 @@ class RouletteApp {
         const doubleBtn = document.getElementById('btn-double');
         if (doubleBtn) {
             doubleBtn.addEventListener('click', () => {
-                if (this.currentPhase !== 'BETTING') {
-                    this.showToast("⛔ 구슬 회전 및 정산 중에는 배팅할 수 없습니다.");
-                    return;
-                }
-                if (window.rouletteTable) {
+                if (this.currentPhase === 'BETTING' && window.rouletteTable) {
                     window.rouletteTable.doubleBets();
                     this.updateBetDisplay();
                 }
@@ -341,7 +279,6 @@ class RouletteApp {
             autoBtn.addEventListener('click', () => {
                 const modal = document.getElementById('autoplay-modal');
                 if (modal) modal.classList.remove('hidden');
-                this.updateBalanceDisplay();
             });
         }
         const closeAutoBtn = document.getElementById('btn-close-autoplay');
@@ -351,38 +288,6 @@ class RouletteApp {
                 if (modal) modal.classList.add('hidden');
             });
         }
-
-        // 오토플레이 빠른 횟수 프리셋 버튼 (10, 25, 50, 100회)
-        const presetBtns = document.querySelectorAll('.auto-preset-btn');
-        presetBtns.forEach(pBtn => {
-            pBtn.addEventListener('click', () => {
-                presetBtns.forEach(b => b.classList.remove('active'));
-                pBtn.classList.add('active');
-                const rounds = parseInt(pBtn.getAttribute('data-rounds'), 10);
-                const input = document.getElementById('auto-rounds-input');
-                if (input && rounds) {
-                    input.value = rounds;
-                }
-            });
-        });
-
-        // 오토플레이 빠른 목표수익/손절가 스텝 조절 버튼 (+10만, +30만/50만, 초기화)
-        const stepBtns = document.querySelectorAll('.auto-step-btn');
-        stepBtns.forEach(sBtn => {
-            sBtn.addEventListener('click', () => {
-                const targetId = sBtn.getAttribute('data-target');
-                const targetInput = document.getElementById(targetId);
-                if (!targetInput) return;
-
-                if (sBtn.hasAttribute('data-set')) {
-                    targetInput.value = parseInt(sBtn.getAttribute('data-set'), 10);
-                } else if (sBtn.hasAttribute('data-add')) {
-                    const addVal = parseInt(sBtn.getAttribute('data-add'), 10);
-                    const currentVal = parseInt(targetInput.value, 10) || 0;
-                    targetInput.value = Math.max(0, currentVal + addVal);
-                }
-            });
-        });
 
         const startAutoBtn = document.getElementById('btn-start-autoplay');
         if (startAutoBtn) {
@@ -454,18 +359,7 @@ class RouletteApp {
             });
         }
 
-        // 14. 테이블 방향 전환 (모바일 세로형 ↔ PC 가로형) 토글 버튼
-        const orientBtn = document.getElementById('btn-toggle-table-orientation');
-        if (orientBtn) {
-            orientBtn.addEventListener('click', () => {
-                this._userOrientationToggled = true; // 사용자의 수동 변경 선택 기억
-                const isVertical = document.body.classList.toggle('mobile-table-mode');
-                this.updateOrientationBtnText();
-                this.showToast(isVertical ? "📱 모바일 세로 테이블 모드로 전환되었습니다." : "🖥️ PC 가로 테이블 모드로 전환되었습니다.");
-            });
-        }
-
-        // 15. 모달 배경 클릭 시 닫기 (라이브 캠 및 승리 모달 제외)
+        // 14. 모달 배경 클릭 시 닫기 (라이브 캠 및 승리 모달 제외)
         window.addEventListener('click', (e) => {
             if (e.target.classList.contains('modal-overlay') &&
                 e.target.id !== 'live-cam-modal' &&
@@ -563,11 +457,11 @@ class RouletteApp {
     }
 
     /**
-     * 1단계: 배팅 페이즈 시작 (25초 여유로운 카운트다운 및 다중 봇 배팅 시뮬레이션)
+     * 1단계: 배팅 페이즈 시작 (20초 카운트다운 및 다중 봇 배팅 시뮬레이션)
      */
     startBettingPhase() {
         this.currentPhase = 'BETTING';
-        this.timerSeconds = 25; // 25.0초 여유로운 배팅 시간 배정
+        this.timerSeconds = 20;
 
         // 이번 회차의 당첨 번호를 사전에 단일 확정 (0~36, 100% 동기화 보장)
         this.currentWinningNumber = Math.floor(Math.random() * 37);
@@ -618,7 +512,7 @@ class RouletteApp {
             this.updateBetDisplay();
         }
 
-        // 25초 카운트다운 타이머
+        // 20초 카운트다운 타이머
         if (this.timerInterval) clearInterval(this.timerInterval);
         this.timerInterval = setInterval(() => {
             this.timerSeconds--;
@@ -638,7 +532,7 @@ class RouletteApp {
     }
 
     /**
-     * 2단계: 배팅 마감 (3.0초(X3배) 마감 안내 후 여유롭게 딜러 룰렛 휠 회전 및 구슬 투구 라이브 캠 오픈)
+     * 2단계: 배팅 마감 (배팅 시간 종료 즉시 지체 없이 바로 룰렛 휠 회전 및 구슬 질주 시작!)
      */
     closeBettingPhase() {
         if (this.currentPhase !== 'BETTING') return;
@@ -661,7 +555,7 @@ class RouletteApp {
             window.rouletteLobby.onBettingClosed();
         }
 
-        // 땡!! 벨 소리 및 딜러 마감 음성
+        // 땡!! 벨 소리 및 딜러 마감 음성 (방어 코드 완비)
         if (window.rouletteAudio) {
             try {
                 if (typeof window.rouletteAudio.playBetClosedBell === 'function') {
@@ -675,10 +569,10 @@ class RouletteApp {
             }
         }
 
-        this.updatePhaseStatus("⛔ NO MORE BETS! - 딜러 배팅 마감 (구슬 투구 대기)", "closed");
+        this.updatePhaseStatus("⛔ NO MORE BETS! - 딜러 배팅 마감 (구슬 투구)", "closed");
         this.updateTimerDisplay(0);
 
-        // 상단 마감 알림 배너 표출 (3.0초간(X3배) 여유롭게 안내 후 휠 스핀 라이브 캠으로 자연스럽게 전환)
+        // 상단 마감 알림 배너 표출 (구슬 도는 화면을 방해하지 않고 1.5초 후 자동 소멸)
         const nmbModal = document.getElementById('no-more-bets-modal');
         if (nmbModal) {
             nmbModal.classList.remove('hidden');
@@ -686,11 +580,7 @@ class RouletteApp {
             setTimeout(() => {
                 nmbModal.classList.add('hidden');
                 nmbModal.style.display = 'none';
-                // 3초 마감 배너 후 딜러 주도 구슬 투구 및 휠 회전 라이브 캠 오픈
-                this.triggerSpin();
-            }, 3000);
-        } else {
-            this.triggerSpin();
+            }, 1500);
         }
 
         // 관리자 배팅 로그 기록
@@ -703,31 +593,28 @@ class RouletteApp {
                 }
             }
         }
+
+        // [핵심] 배팅 시간이 종료되면 기다리지 않고 0초 딜레이로 즉시 휠을 돌리고 구슬을 투구!
+        this.triggerSpin();
     }
 
     /**
-     * 3단계: 딜러 주도 구슬 투구 및 휠 회전 실사 라이브 캠 (총 6.5초: 고속질주 3.0s -> 감속 2.0s -> 완전정지/확정 1.5s)
+     * 3단계: 딜러 주도 구슬 투구 및 휠 회전 실사 라이브 연동 (정확히 4.0초 고정 실행 후 자동 닫힘)
      */
     triggerSpin() {
         this.currentPhase = 'SPINNING';
         this.purgeLockoutOverlay();
-
-        // [핵심] 구슬 회전 중 테이블 및 하단 패널 완전 잠금
-        if (window.rouletteTable) {
-            window.rouletteTable.setLocked(true);
-        }
-
         this.updatePhaseStatus("🔴 딜러가 구슬을 투구하여 휠을 회전시키고 있습니다!", "spinning");
 
         const targetNum = this.currentWinningNumber;
 
-        // 1. 실사 룰렛 영상 팝업 화면 최상단 전면 강제 표출 (z-index: 999999)
+        // 1. 영상 팝업 화면 최상단 전면 강제 표출 (z-index: 999999)
         const liveCamModal = document.getElementById('live-cam-modal');
         const winBadge = document.getElementById('live-cam-win-badge');
         const statusText = document.getElementById('live-cam-status-text');
 
         if (winBadge) winBadge.classList.add('hidden');
-        if (statusText) statusText.textContent = "🔴 LIVE CASINO: 구슬이 외곽 림을 타고 고속 질주하고 있습니다...";
+        if (statusText) statusText.textContent = "🔴 LIVE: 구슬이 외곽 림을 타고 고속 질주하고 있습니다...";
 
         if (liveCamModal) {
             liveCamModal.classList.remove('hidden');
@@ -744,7 +631,7 @@ class RouletteApp {
             window.rouletteWheel.spin(targetNum, () => { });
         }
 
-        // 8.2초 절대 시간 완료 처리 함수 (결과 화면 당첨 번호 3초간 노출 완료 후 메인 테이블 전환)
+        // 4.0초 절대 시간 완료 처리 함수
         let isSpinFinished = false;
         const handleSpinFinished = () => {
             if (isSpinFinished) return;
@@ -765,154 +652,290 @@ class RouletteApp {
             this.onSpinResult(targetNum, color);
         };
 
-        // 2. 정확히 8.2초(8200ms) 자연스러운 타임라인 가동 (4.5s 구슬 회전 -> 0.7s 낙하 -> [핵심] 3.0s 당첨 번호 결과 화면 노출)
+        // 2. Three.js 3D 정밀 물리 룰렛 팝업 엔진 가동 (스핀 + 낙하 + 바운스 + 3초 결과 노출 = 총 8.3초)
         this.runTimeBasedLiveCam(targetNum, handleSpinFinished);
 
-        // 3. [Fail-Safe 안전 타이머 8.5초] 브라우저 백그라운드 등 어떤 예외에서도 100% 진행 보장
+        // 3. [Fail-Safe 안전 타이머 8.8초] 브라우저 백그라운드 등 어떤 예외에서도 100% 진행 보장
         setTimeout(() => {
             if (!isSpinFinished) {
                 handleSpinFinished();
             }
-        }, 8500);
+        }, 8800);
     }
 
     /**
-     * 초고화질 실사 룰렛 휠 회전 및 3초 결과 화면 노출 물리 렌더러
-     * [시간 배정: 0~4.5s(4.5초간) 구슬 질주 회전 -> 4.5~5.2s 감속 포켓 낙하 -> 5.2~8.2s(정확히 3.0초간) 당첨 번호 결과 노출]
+     * Three.js 기반 3D 정밀 물리 룰렛 엔진 (지정 당첨 번호 100% 안착 & 실시간 3D 렌더링)
      */
     runTimeBasedLiveCam(targetNum, onFinished) {
-        const canvas = document.getElementById('live-cam-canvas');
-        const realWheel = document.getElementById('live-cam-real-wheel');
-        if (!canvas) {
-            if (onFinished) onFinished();
+        const stage = document.getElementById('live-cam-3d-stage');
+        const legacyCanvas = document.getElementById('live-cam-canvas');
+        if (!window.THREE || !stage) {
+            // Three.js 미지원 환경 시 2D 폴백
+            if (legacyCanvas) {
+                legacyCanvas.style.display = 'block';
+            }
+            if (onFinished) setTimeout(onFinished, 3000);
             return;
         }
 
-        const ctx = canvas.getContext('2d');
-        const w = canvas.width;
-        const h = canvas.height;
-        const cx = w / 2;
-        const cy = h / 2 + 10;
-        const outerR = Math.min(w, h) * 0.44;
+        if (legacyCanvas) {
+            legacyCanvas.style.display = 'none';
+        }
 
-        const numbers = [
-            0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5,
-            24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
-        ];
-        const sliceAngle = (Math.PI * 2) / numbers.length;
-        const targetIdx = numbers.indexOf(targetNum);
+        stage.innerHTML = ''; // 이전 3D 캔버스 정리
 
-        const TOTAL_DURATION = 8600; // 5초 구슬 회전/낙하 + 3초 당첨 결과 노출 = 총 8.6초
+        // ---------- 1. 휠 데이터 & 물리 역학 계산식 ----------
+        const ORDER = ['0','28','9','26','30','11','7','20','32','17','5','22','34','15','3','24','36','13','1',
+                       '00','27','10','25','29','12','8','19','31','18','6','21','33','16','4','23','35','14','2'];
+        const N = ORDER.length, STEP = (Math.PI * 2) / N;
+        const REDS = new Set(['1','3','5','7','9','12','14','16','18','19','21','23','25','27','30','32','34','36']);
+        const colorOf = n => (n === '0' || n === '00') ? 'green' : REDS.has(n) ? 'red' : 'black';
+        const HEX = { red: '#b8262e', black: '#1b1716', green: '#1f6b45' };
+        const FONT = '"Bodoni Moda","Didot","Cinzel",Georgia,serif';
+
+        const R_ROTOR = 1.01, R_NUM_IN = 0.86, R_POCKET_IN = 0.66, R_POCKET = 0.765, R_ENTRY = 0.95;
+        const R_TRACK = 1.385, BR = 0.032;
+
+        const surf = r => {
+            if (r >= 1.15) return 0.15 + (r - 1.15) * 0.16;
+            if (r >= 1.02) return 0.045 + (r - 1.02) / 0.13 * 0.105;
+            if (r >= 0.87) return 0.045;
+            if (r >= 0.85) return 0.045 * (r - 0.85) / 0.02;
+            return 0;
+        };
+
+        const T1 = 4.2, T2 = 5.2, T3 = 6.0, D3 = T3 - T2, TOTAL_SHOW = 8.3;
+        const ROT_A = 0.55, ROT_B = 1.85, ROT_K = 0.22;
+        const WB0 = 12, WB1 = 3.4, M = Math.log(WB0 / WB1) / T1;
+        const clamp01 = x => Math.max(0, Math.min(1, x));
+
+        const rotorW = t => ROT_A * t + (ROT_B / ROT_K) * (1 - Math.exp(-ROT_K * t));
+        const rotorOmega = t => ROT_A + ROT_B * Math.exp(-ROT_K * t);
+        const ballFree = (t, b0) => b0 - (WB0 / M) * (1 - Math.exp(-M * t));
+        const ballOmega = t => -WB0 * Math.exp(-M * t);
+
+        const settleRel = b0 => {
+            const rel2 = ballFree(T2, b0) - rotorW(T2);
+            const delta = (ballOmega(T2) - rotorOmega(T2)) * D3 / 2;
+            return { rel2, delta, final: rel2 + delta };
+        };
+
+        const targetStr = String(targetNum);
+        const targetIdx = ORDER.indexOf(targetStr) !== -1 ? ORDER.indexOf(targetStr) : 0;
+        // [핵심 역계산 알고리즘]: 이번 회차의 당첨 번호 칸으로 100% 골인하도록 발사각 B0 역산출!
+        const B0 = targetIdx * STEP - settleRel(0).final;
+
+        const ballState = t => {
+            if (t <= T1) {
+                const r = R_TRACK + 0.003 * Math.sin(t * 37);
+                return { a: ballFree(t, B0), r, y: surf(r) + BR };
+            }
+            if (t <= T2) {
+                const s = (t - T1) / (T2 - T1);
+                const r = R_TRACK + (R_ENTRY - R_TRACK) * s * s;
+                const h = clamp01((s - 0.62) / 0.22);
+                return { a: ballFree(t, B0) + 0.05 * Math.sin(Math.PI * h), r, y: surf(r) + BR + 0.06 * Math.sin(Math.PI * h) };
+            }
+            const { rel2, delta, final } = settleRel(B0);
+            if (t <= T3) {
+                const s = (t - T2) / D3, e = (1 - s) * (1 - s);
+                const rel = rel2 + delta * (1 - e) + 0.10 * Math.sin(4 * Math.PI * s) * e;
+                const r = R_POCKET + (R_ENTRY - R_POCKET) * e + 0.05 * Math.sin(5 * Math.PI * s) * e;
+                const hop = 0.09 * Math.abs(Math.sin(3.5 * Math.PI * s)) * Math.pow(1 - s, 1.5);
+                return { a: rotorW(t) + rel, r, y: surf(r) + BR + hop };
+            }
+            return { a: rotorW(t) + final, r: R_POCKET, y: BR };
+        };
+
+        // ---------- 2. Three.js 씬 구축 ----------
+        const width = stage.clientWidth || 760;
+        const height = stage.clientHeight || 540;
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+        renderer.setSize(width, height);
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        renderer.outputEncoding = THREE.sRGBEncoding;
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        renderer.toneMappingExposure = 1.05;
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+        stage.appendChild(renderer.domElement);
+
+        const scene = new THREE.Scene();
+        const camera = new THREE.PerspectiveCamera(36, width / height, 0.05, 50);
+        camera.position.set(0.65, 2.05, 2.95);
+        camera.lookAt(0, 0.05, 0.25);
+
+        scene.add(new THREE.HemisphereLight(0xfff1dc, 0x1a0e08, 0.55));
+        const spot = new THREE.SpotLight(0xfff0d8, 1.85, 0, 0.55, 0.6, 1);
+        spot.position.set(1.4, 5.2, 2.2);
+        spot.castShadow = true;
+        spot.shadow.mapSize.set(1024, 1024);
+        scene.add(spot, spot.target);
+        const warmLight = new THREE.PointLight(0xffb066, 0.4);
+        warmLight.position.set(-3, 2, -2.5);
+        scene.add(warmLight);
+
+        const woodTexture = (base, grain) => {
+            const c = document.createElement('canvas'); c.width = c.height = 256;
+            const g = c.getContext('2d'); g.fillStyle = base; g.fillRect(0, 0, 256, 256);
+            for (let i = 0; i < 140; i++) {
+                const x = Math.random() * 256; g.strokeStyle = grain; g.globalAlpha = 0.08 + Math.random() * 0.2;
+                g.lineWidth = 0.5 + Math.random() * 2; g.beginPath(); g.moveTo(x, 0);
+                for (let y = 0; y <= 256; y += 32) g.lineTo(x + Math.sin(y * 0.02 + i) * 3, y);
+                g.stroke();
+            }
+            const t = new THREE.CanvasTexture(c); t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
+        };
+
+        const brass = new THREE.MeshStandardMaterial({ color: 0xc9a24a, metalness: 0.9, roughness: 0.28 });
+        const chrome = new THREE.MeshStandardMaterial({ color: 0xdedede, metalness: 1, roughness: 0.16 });
+        const darkWood = new THREE.MeshStandardMaterial({ map: woodTexture('#2e160c', '#0e0502'), roughness: 0.3, side: THREE.DoubleSide });
+        const lightWood = new THREE.MeshStandardMaterial({ map: woodTexture('#5a2a12', '#1e0a03'), roughness: 0.38, side: THREE.DoubleSide });
+        const coneWood = new THREE.MeshStandardMaterial({ map: woodTexture('#55290f', '#1c0902'), roughness: 0.34, side: THREE.DoubleSide });
+
+        const lathe = (pts, mat) => {
+            const m = new THREE.Mesh(new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), 128), mat);
+            m.receiveShadow = true; m.castShadow = true; scene.add(m); return m;
+        };
+        lathe([[1.02, 0.035], [1.15, 0.15], [1.40, 0.19], [1.42, 0.19]], darkWood);
+        lathe([[1.42, 0.19], [1.425, 0.30], [1.47, 0.345], [1.58, 0.35], [1.64, 0.31], [1.66, 0.2], [1.66, -0.26]], lightWood);
+
+        for (let i = 0; i < 8; i++) {
+            const a = i * Math.PI / 4 + Math.PI / 8, r = 1.09;
+            const d = new THREE.Mesh(new THREE.OctahedronGeometry(0.03), brass);
+            d.scale.set(i % 2 ? 0.8 : 2.2, 0.55, i % 2 ? 2.2 : 0.8);
+            d.position.set(r * Math.cos(a), surf(r) + 0.01, -r * Math.sin(a));
+            d.rotation.y = a; d.castShadow = true; scene.add(d);
+        }
+
+        const rotor = new THREE.Group(); scene.add(rotor);
+
+        const wheelCanvas = document.createElement('canvas'); wheelCanvas.width = wheelCanvas.height = 1024;
+        const wg = wheelCanvas.getContext('2d'), wk = 1024 / 2 / R_ROTOR; wg.translate(512, 512);
+        wg.fillStyle = '#120d0b'; wg.beginPath(); wg.arc(0, 0, 512, 0, Math.PI * 2); wg.fill();
+        ORDER.forEach((n, i) => {
+            const th = i * STEP, a0 = -th - STEP / 2, a1 = -th + STEP / 2, col = HEX[colorOf(n)];
+            wg.beginPath(); wg.arc(0, 0, R_ROTOR * wk, a0, a1); wg.arc(0, 0, R_NUM_IN * wk, a1, a0, true); wg.closePath();
+            wg.fillStyle = col; wg.fill();
+            wg.beginPath(); wg.arc(0, 0, R_NUM_IN * wk, a0, a1); wg.arc(0, 0, R_POCKET_IN * wk, a1, a0, true); wg.closePath();
+            wg.fillStyle = col === '#1f6b45' ? '#14462d' : (col === '#b8262e' ? '#78151b' : '#0a0808'); wg.fill();
+            wg.save(); wg.rotate(a0); wg.strokeStyle = '#d2a84f'; wg.lineWidth = 3;
+            wg.beginPath(); wg.moveTo(R_NUM_IN * wk, 0); wg.lineTo(R_ROTOR * wk, 0); wg.stroke(); wg.restore();
+            wg.save(); wg.rotate(-th); wg.translate(0.935 * wk, 0); wg.rotate(Math.PI / 2);
+            wg.fillStyle = '#f6ecd8'; wg.font = `bold ${n.length > 1 ? 40 : 46}px ${FONT}`;
+            wg.textAlign = 'center'; wg.textBaseline = 'middle'; wg.fillText(n, 0, 4); wg.restore();
+        });
+        wg.strokeStyle = '#d2a84f'; wg.lineWidth = 5;
+        [R_NUM_IN, R_ROTOR - 0.004].forEach(r => { wg.beginPath(); wg.arc(0, 0, r * wk, 0, Math.PI * 2); wg.stroke(); });
+        const wheelTex = new THREE.CanvasTexture(wheelCanvas); wheelTex.encoding = THREE.sRGBEncoding;
+
+        const ringGeo = (rin, rout) => {
+            const geo = new THREE.RingGeometry(rin, rout, 120, 1);
+            const p = geo.attributes.position, uv = geo.attributes.uv;
+            for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) / R_ROTOR + 1) / 2, (p.getY(i) / R_ROTOR + 1) / 2);
+            geo.rotateX(-Math.PI / 2); return geo;
+        };
+
+        const wheelMat = new THREE.MeshStandardMaterial({ map: wheelTex, roughness: 0.42, metalness: 0.05 });
+        const numRing = new THREE.Mesh(ringGeo(R_NUM_IN, R_ROTOR), wheelMat); numRing.position.y = 0.04;
+        const floorRing = new THREE.Mesh(ringGeo(R_POCKET_IN, R_NUM_IN), wheelMat);
+        rotor.add(numRing, floorRing);
+
+        const fretGeo = new THREE.BoxGeometry(R_NUM_IN + 0.012 - R_POCKET_IN, 0.05, 0.009);
+        for (let i = 0; i < N; i++) {
+            const a = i * STEP + STEP / 2, r = (R_NUM_IN + 0.012 + R_POCKET_IN) / 2;
+            const f = new THREE.Mesh(fretGeo, chrome);
+            f.position.set(r * Math.cos(a), 0.025, -r * Math.sin(a)); f.rotation.y = a; rotor.add(f);
+        }
+
+        const cone = new THREE.Mesh(new THREE.LatheGeometry(
+            [[0.66, 0.07], [0.52, 0.1], [0.34, 0.15], [0.16, 0.19], [0.001, 0.2]].map(([r, y]) => new THREE.Vector2(r, y)), 64), coneWood);
+        rotor.add(cone);
+
+        const turret = new THREE.Group(); rotor.add(turret);
+        const post = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.09, 0.16, 32), brass); post.position.y = 0.27;
+        const cap = new THREE.Mesh(new THREE.SphereGeometry(0.045, 24, 16), brass); cap.position.y = 0.39;
+        turret.add(post, cap);
+        for (let i = 0; i < 2; i++) {
+            const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.36, 16), brass);
+            arm.rotation.z = Math.PI / 2; arm.rotation.y = i * Math.PI / 2; arm.position.y = 0.335; turret.add(arm);
+        }
+
+        // 3D 은구슬
+        const ball = new THREE.Mesh(new THREE.SphereGeometry(BR, 32, 24),
+            new THREE.MeshStandardMaterial({ color: 0xf7f5f0, roughness: 0.16, metalness: 0.1, envMapIntensity: 1.2 }));
+        ball.castShadow = true; scene.add(ball);
+
+        // 당첨 포켓 골드 펄스 마커
+        const markerMat = new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0, blending: THREE.AdditiveBlending });
+        const markerTh = targetIdx * STEP;
+        const markerGeo = new THREE.RingGeometry(R_POCKET_IN + 0.01, R_ROTOR - 0.01, 12, 1, markerTh - STEP / 2, STEP);
+        markerGeo.rotateX(-Math.PI / 2);
+        const marker = new THREE.Mesh(markerGeo, markerMat);
+        marker.position.y = 0.047; rotor.add(marker);
+
+        // ---------- 3. 물리 애니메이션 루프 ----------
         const startTime = performance.now();
-
         let bouncePlayed = false;
         let lockOnShown = false;
-        let finalStoppedWheelAngle = null;
+        let finalStoppedW = null;
 
-        if (this.liveCamAnimId) cancelAnimationFrame(this.liveCamAnimId);
+        const statusText = document.getElementById('live-cam-status-text');
+        const winBadge = document.getElementById('live-cam-win-badge');
+        const winNumEl = document.getElementById('live-cam-win-num');
+        if (winBadge) winBadge.classList.add('hidden');
+        if (statusText) statusText.textContent = "🔴 LIVE CASINO: 3D 룰렛 휠과 구슬이 고속 회전하고 있습니다...";
 
         const renderFrame = (now) => {
-            const elapsed = now - startTime;
-            const progress = Math.min(1.0, elapsed / TOTAL_DURATION);
+            const elapsed = (now - startTime) / 1000;
 
-            let wheelAngle = 0;
-            let ballAngle = 0;
-            let ballRadius = outerR * 0.88;
+            let W = 0;
+            let bs = null;
 
-            if (elapsed < 4800) {
-                // 1구간 (0.0s ~ 4.8s, 4.8초간): 실사 룰렛 휠과 구슬이 번호 위를 흐르듯 고속 질주
-                const t1 = elapsed / 4800;
-                wheelAngle = (elapsed / 1000) * 0.95;
-                ballAngle = -((elapsed / 1000) * 11.0) * (1 - t1 * 0.15);
-                ballRadius = outerR * 0.88 - (t1 * outerR * 0.08); // 외곽에서 번호 트랙으로 서서히 진입
-            } else if (elapsed < 5600) {
-                // 2구간 (4.8s ~ 5.6s, 0.8초간): 감속하며 번호 위를 흘러가다 당첨 번호 포켓으로 탁 떨어짐
-                const t2 = (elapsed - 4800) / 800;
-                wheelAngle = (4.8 * 0.95) + (t2 * (0.8 * 0.95) * (1 - t2 * 0.65));
-                ballAngle = -((elapsed / 1000) * 3.5) * (1 - t2 * 0.82);
-                ballRadius = (outerR * 0.80) - (outerR * 0.80 - outerR * 0.65) * t2 + Math.sin(t2 * Math.PI) * 5;
-
+            if (elapsed < T1) {
+                // 1구간 (0.0s ~ 4.2s): 볼 고속 스핀
+                W = rotorW(elapsed);
+                bs = ballState(elapsed);
+            } else if (elapsed < T2) {
+                // 2구간 (4.2s ~ 5.2s): 감속 및 디플렉터 충돌 낙하
+                W = rotorW(elapsed);
+                bs = ballState(elapsed);
                 if (!bouncePlayed) {
                     bouncePlayed = true;
-                    const statusText = document.getElementById('live-cam-status-text');
-                    if (statusText) statusText.textContent = "🟡 BALL DROPPING: 구슬이 번호 위를 흘러가며 포켓으로 떨어지는 중...";
+                    if (statusText) statusText.textContent = "🟡 BALL DROPPING: 구슬이 디플렉터에 부딪히며 포켓으로 낙하 중...";
                     if (window.rouletteAudio && window.rouletteAudio.playBounce) window.rouletteAudio.playBounce();
                 }
+            } else if (elapsed < T3) {
+                // 3구간 (5.2s ~ 6.0s): 포켓 프렛 바운스
+                W = rotorW(elapsed);
+                bs = ballState(elapsed);
             } else {
-                // 3구간 (5.6s ~ 8.6s, 정확히 3.0초간): [사용자 핵심 요구] 구슬이 당첨 번호 포켓에 쏙 안착 & 좌상단 당첨 안내 표출!
-                if (finalStoppedWheelAngle === null) {
-                    finalStoppedWheelAngle = (4.8 * 0.95) + (1.0 * (0.8 * 0.95) * 0.35);
-                }
-                wheelAngle = finalStoppedWheelAngle;
-                // 확정된 당첨 번호의 정확한 포켓 각도에 100% 동기화
-                ballAngle = wheelAngle + targetIdx * sliceAngle + sliceAngle / 2;
-                ballRadius = outerR * 0.65; // 포켓 홈 안착
+                // 4구간 (6.0s ~ 8.3s, 3.0초간): 당첨 번호 포켓에 100% 쏙 안착 & 결과 노출!
+                if (finalStoppedW === null) finalStoppedW = rotorW(T3);
+                W = finalStoppedW;
+                bs = ballState(T3 + 0.1);
 
                 if (!lockOnShown) {
                     lockOnShown = true;
-                    const winBadge = document.getElementById('live-cam-win-badge');
-                    const winNumEl = document.getElementById('live-cam-win-num');
-                    const statusText = document.getElementById('live-cam-status-text');
                     if (winNumEl) winNumEl.textContent = targetNum;
                     if (winBadge) winBadge.classList.remove('hidden');
-                    if (statusText) statusText.textContent = `🎯 당첨 번호 #${targetNum} 확정! (3초간 결과 노출 중)`;
+                    if (statusText) statusText.textContent = `🎯 당첨 번호 #${targetNum} 안착 확정! (3초간 결과 노출)`;
                     if (window.rouletteAudio && window.rouletteAudio.playDrop) window.rouletteAudio.playDrop();
                 }
+
+                markerMat.opacity = 0.5 + 0.3 * Math.sin((elapsed - T3) * 6);
             }
 
-            // 실사 룰렛 휠 이미지 물리 각도 동기화 실시간 회전
-            if (realWheel) {
-                realWheel.style.transform = `rotate(${wheelAngle * 180 / Math.PI}deg)`;
-            }
+            rotor.rotation.y = W;
+            ball.position.set(bs.r * Math.cos(bs.a), bs.y, -bs.r * Math.sin(bs.a));
 
-            // 캔버스 그리기 (실사 휠 위 단 하나의 3D 은구슬 및 섬세한 HUD)
-            ctx.clearRect(0, 0, w, h);
-            ctx.save();
+            renderer.render(scene, camera);
 
-            // 1. 코너 뷰파인더 브래킷
-            ctx.strokeStyle = 'rgba(212, 175, 55, 0.45)';
-            ctx.lineWidth = 2.5;
-            const bSize = 24;
-            const pad = 24;
-            ctx.beginPath(); ctx.moveTo(pad, pad + bSize); ctx.lineTo(pad, pad); ctx.lineTo(pad + bSize, pad); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(w - pad - bSize, pad); ctx.lineTo(w - pad, pad); ctx.lineTo(w - pad, pad + bSize); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(pad, h - pad - bSize); ctx.lineTo(pad, h - pad); ctx.lineTo(pad + bSize, h - pad); ctx.stroke();
-            ctx.beginPath(); ctx.moveTo(w - pad - bSize, h - pad); ctx.lineTo(w - pad, h - pad); ctx.lineTo(w - pad, h - pad - bSize); ctx.stroke();
-
-            // 2. 단 하나의 3D 물리 은구슬 (실사 휠 위에서 부드럽게 롤링 & 포켓 안착)
-            const bx = cx + Math.cos(ballAngle) * ballRadius;
-            const by = cy + Math.sin(ballAngle) * ballRadius;
-
-            // 안착 구간(3초간 노출)에서는 구슬 주변에 은은한 골드 펄스 링 표시 (중앙을 가리지 않고 구슬 포켓 강조)
-            if (elapsed >= 5600) {
-                const pulseTime = elapsed - 5600;
-                ctx.save();
-                ctx.beginPath();
-                ctx.arc(bx, by, 16 + Math.sin(pulseTime / 200) * 3, 0, Math.PI * 2);
-                ctx.strokeStyle = 'rgba(255, 215, 0, 0.85)';
-                ctx.lineWidth = 2;
-                ctx.stroke();
-                ctx.restore();
-            }
-
-            ctx.save();
-            ctx.beginPath();
-            ctx.arc(bx, by, 9.5, 0, Math.PI * 2);
-            const ballGrad = ctx.createRadialGradient(bx - 3, by - 3, 1, bx, by, 10);
-            ballGrad.addColorStop(0, '#ffffff');
-            ballGrad.addColorStop(0.5, '#e2e8f0');
-            ballGrad.addColorStop(1, '#64748b');
-            ctx.fillStyle = ballGrad;
-            ctx.shadowColor = 'rgba(0, 0, 0, 0.95)';
-            ctx.shadowBlur = 10;
-            ctx.fill();
-            ctx.restore();
-
-            ctx.restore();
-
-            if (progress < 1.0) {
+            if (elapsed < TOTAL_SHOW) {
                 this.liveCamAnimId = requestAnimationFrame(renderFrame);
             } else {
+                // 8.3초 완료 후 팝업 닫고 정산 화면 연결
                 if (onFinished) onFinished();
             }
         };
@@ -921,15 +944,10 @@ class RouletteApp {
     }
 
     /**
-     * 4단계: 당첨 결과 발표 및 배당 정산 (3.5초 정산 대기 후 다음 게임으로 자동 연결)
+     * 4단계: 당첨 결과 발표 및 배당 정산 (3.0초 후 다음 게임으로 자동 연결)
      */
     onSpinResult(winningNumber, color) {
         this.currentPhase = 'RESULT';
-
-        // [핵심] 정산 및 배당금 지급 완료될 때까지 테이블 잠금 철저 유지
-        if (window.rouletteTable) {
-            window.rouletteTable.setLocked(true);
-        }
 
         const colorName = color === 'red' ? '레드' : (color === 'black' ? '블랙' : '싱글 제로');
         this.updatePhaseStatus(`🎯 당첨 번호: ${winningNumber} (${colorName}) - 딜러 배당금 정산`, "result");
@@ -944,7 +962,7 @@ class RouletteApp {
             window.rouletteTable.placeDolly(winningNumber);
         }
 
-        // 3. 최근 10회 히스토리 바 업데이트 (10개 엄격 유지)
+        // 3. 최근 20회 히스토리 바 업데이트
         this.addHistoryBadge(winningNumber, color);
 
         // 4. 통계 시스템 기록
@@ -1017,11 +1035,11 @@ class RouletteApp {
         } catch (err) {
             console.error("Error in onSpinResult:", err);
         } finally {
-            // 5단계: 여유 있는 10.5초(3.5초의 3배) 정산 및 승리 확인 후 다음 회차로 자동 순환
+            // 5단계: 정확히 3.0초 후 무조건 다음 회차로 자동 순환
             if (this.nextRoundTimeout) clearTimeout(this.nextRoundTimeout);
             this.nextRoundTimeout = setTimeout(() => {
                 this.nextRound();
-            }, 10500);
+            }, 3000);
         }
     }
 
@@ -1104,74 +1122,17 @@ class RouletteApp {
     }
 
     /**
-     * 배팅 시간 초록색 가로 게이지 바 UI 실시간 업데이트 (숫자 텍스트 완전 배제)
+     * 타이머 UI 업데이트
      */
     updateTimerDisplay(seconds) {
-        // 25초 대비 잔여 비율 (0% ~ 100%)
-        const totalDuration = 25;
-        const validSeconds = Math.max(0, Math.min(totalDuration, seconds));
-        const pct = (validSeconds / totalDuration) * 100;
-
-        // 1. 우측 트랙 내 초록색 게이지 바
-        const gaugeBar = document.getElementById('betting-gauge-bar');
-        if (gaugeBar) {
-            gaugeBar.style.width = `${pct}%`;
-        }
-
-        // 2. 딜러 배너 하단 전체 일체형 네온 그린 타이머 라인
-        const bottomLine = document.getElementById('banner-bottom-timer-line');
-        if (bottomLine) {
-            bottomLine.style.width = `${pct}%`;
-        }
-
-        // 3. 내부 호환성 갱신 (화면에는 노출 안 됨)
         const timerEl = document.getElementById('phase-timer');
         if (timerEl) {
-            timerEl.textContent = `${validSeconds}s`;
+            timerEl.textContent = `${seconds}s`;
         }
     }
 
     /**
-     * 최근 10회 히스토리 바 초기 렌더링 (가로 스크롤 없이 10개 볼 정렬)
-     */
-    initHistoryBadges() {
-        const historyList = document.getElementById('table-history-list');
-        if (!historyList) return;
-
-        historyList.innerHTML = '';
-
-        // stats.js에 이미 저장된 히스토리에서 최근 10개를 가져오거나, 없으면 기본 배열 사용
-        let initialHistory = [];
-        if (window.rouletteStats && Array.isArray(window.rouletteStats.history) && window.rouletteStats.history.length > 0) {
-            initialHistory = window.rouletteStats.history.slice(0, 10);
-        } else {
-            // 기본 10회 최근 당첨 데이터
-            initialHistory = [
-                { number: 17, color: 'black' },
-                { number: 32, color: 'red' },
-                { number: 0, color: 'green' },
-                { number: 7, color: 'red' },
-                { number: 11, color: 'black' },
-                { number: 26, color: 'black' },
-                { number: 9, color: 'red' },
-                { number: 28, color: 'black' },
-                { number: 15, color: 'black' },
-                { number: 19, color: 'red' }
-            ];
-        }
-
-        // 최신순으로 10개 뱃지 생성 (왼쪽이 가장 최신)
-        initialHistory.forEach(item => {
-            const badge = document.createElement('span');
-            const col = item.color || (item.number === 0 ? 'green' : ([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36].includes(item.number) ? 'red' : 'black'));
-            badge.className = `history-badge badge-${col}`;
-            badge.textContent = item.number;
-            historyList.appendChild(badge);
-        });
-    }
-
-    /**
-     * 최근 10회 히스토리 바에 배지 추가 (최대 10개 엄격 유지)
+     * 최근 20회 히스토리 바에 배지 추가
      */
     addHistoryBadge(number, color) {
         const historyList = document.getElementById('table-history-list');
@@ -1183,7 +1144,7 @@ class RouletteApp {
 
         historyList.insertBefore(badge, historyList.firstChild);
 
-        while (historyList.children.length > 10) {
+        while (historyList.children.length > 20) {
             historyList.removeChild(historyList.lastChild);
         }
     }

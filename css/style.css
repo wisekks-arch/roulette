@@ -177,15 +177,11 @@ body {
 /* ==========================================================================
    딜러 아나운스 배너
    ========================================================================== */
-/* ==========================================================================
-   딜러 아나운스 배너 및 에메랄드 그린 가로 타이머 그래픽 바
-   ========================================================================== */
 .announcement-banner {
-    position: relative;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 24px;
+    padding: 8px 24px;
     background: linear-gradient(90deg, #12151b 0%, #1e2638 50%, #12151b 100%);
     border-bottom: 1px solid #2a3348;
     box-shadow: inset 0 1px 4px rgba(255, 255, 255, 0.05);
@@ -207,74 +203,14 @@ body {
     text-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
 }
 
-/* 초록색 가로 배팅 시간 게이지 바 컨테이너 (숫자 텍스트 완전 제거) */
-.betting-timer-container {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(10, 16, 26, 0.85);
-    border: 1px solid rgba(16, 185, 129, 0.4);
-    padding: 5px 14px;
-    border-radius: 20px;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.6), inset 0 1px 3px rgba(0, 0, 0, 0.8);
-    transition: all 0.3s ease;
-}
-
-.timer-gauge-icon {
-    font-size: 0.95rem;
-    filter: drop-shadow(0 0 5px #10b981);
-    animation: iconPulse 1.2s infinite alternate ease-in-out;
-}
-
-@keyframes iconPulse {
-    from {
-        transform: scale(1);
-        opacity: 0.85;
-    }
-    to {
-        transform: scale(1.15);
-        opacity: 1;
-    }
-}
-
-/* 게이지 바 다크 트랙 슬롯 */
-.timer-gauge-track {
-    width: 140px;
-    height: 10px;
-    background: #090e17;
-    border-radius: 6px;
-    overflow: hidden;
-    position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.85);
-}
-
-/* 초록색 네온 가로 게이지 바 (시간에 따라 100% -> 0%로 실시간 감소) */
-.timer-gauge-bar {
-    height: 100%;
-    width: 100%;
-    background: linear-gradient(90deg, #047857 0%, #10b981 55%, #34d399 100%);
-    border-radius: 6px;
-    box-shadow: 0 0 10px rgba(16, 185, 129, 0.9), inset 0 1px 2px rgba(255, 255, 255, 0.6);
-    transition: width 1s linear;
-}
-
-/* 배너 하단 풀-와이드 네온 그린 타이머 라인 */
-.banner-bottom-timer-line {
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    height: 3px;
-    width: 100%;
-    background: linear-gradient(90deg, #059669 0%, #10b981 50%, #6ee7b7 100%);
-    box-shadow: 0 0 12px rgba(16, 185, 129, 0.95);
-    transition: width 1s linear;
-    z-index: 10;
-}
-
-/* 레거시 타이머 배지 숨김 호환 */
 .timer-badge {
-    display: none !important;
+    background: rgba(0, 0, 0, 0.5);
+    border: 1px solid var(--gold-dark);
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-family: var(--font-heading);
+    font-weight: 800;
+    color: var(--gold-primary);
 }
 
 .banner-betting {
@@ -1013,80 +949,98 @@ body {
 }
 
 /* ==========================================================================
-   컨트롤 패널 (칩 선택 바 & 액션 버튼들)
+   컨트롤 패널 (칩 선택 바 & 액션 버튼들 - 가로 1줄 컴팩트 배치)
    ========================================================================== */
 .table-controls-panel {
     display: flex;
     flex-direction: column;
     width: 100%;
-    gap: 12px;
+    gap: 8px;
+    align-items: center;
 }
 
 .chip-selector-bar {
     display: flex;
     justify-content: center;
-    gap: 14px;
-    background: linear-gradient(180deg, rgba(25, 20, 15, 0.8) 0%, rgba(10, 8, 6, 0.95) 100%);
-    padding: 12px 18px;
+    align-items: center;
+    gap: 10px;
+    background: linear-gradient(180deg, rgba(25, 20, 15, 0.85) 0%, rgba(10, 8, 6, 0.95) 100%);
+    padding: 6px 16px;
     border-radius: 40px;
     border: 1px solid #5a3d1c;
-    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8), 0 8px 20px rgba(0, 0, 0, 0.6);
+    box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.8), 0 6px 16px rgba(0, 0, 0, 0.6);
+    flex-wrap: nowrap;
+    max-width: 540px;
+    width: 100%;
 }
 
 .chip-selector-btn {
-    width: 46px;
-    height: 46px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.78rem;
+    font-size: 0.72rem;
     font-weight: 900;
     font-family: var(--font-body);
     cursor: pointer;
     box-shadow:
-        0 6px 12px rgba(0, 0, 0, 0.7),
+        0 4px 8px rgba(0, 0, 0, 0.7),
         inset 0 0 0 2px rgba(255, 255, 255, 0.4),
-        inset 0 0 6px rgba(0, 0, 0, 0.5);
+        inset 0 0 5px rgba(0, 0, 0, 0.5);
     transition: all 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    flex-shrink: 0;
 }
 
 .chip-selector-btn:hover {
-    transform: translateY(-5px) scale(1.1);
-    box-shadow: 0 10px 18px rgba(0, 0, 0, 0.85);
+    transform: translateY(-3px) scale(1.08);
+    box-shadow: 0 8px 14px rgba(0, 0, 0, 0.85);
 }
 
 .chip-selector-btn.active {
-    transform: translateY(-8px) scale(1.22);
-    box-shadow: 0 10px 22px rgba(255, 215, 0, 0.75), 0 0 15px rgba(255, 215, 0, 0.5);
-    outline: 3px solid var(--gold-primary);
+    transform: translateY(-5px) scale(1.18);
+    box-shadow: 0 8px 18px rgba(255, 215, 0, 0.75), 0 0 12px rgba(255, 215, 0, 0.5);
+    outline: 2.5px solid var(--gold-primary);
 }
 
 .action-buttons-bar {
-    display: flex;
-    justify-content: center;
-    gap: 10px;
-    flex-wrap: wrap;
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8px !important;
+    max-width: 540px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
 }
 
 .act-btn {
     font-family: var(--font-heading);
     font-weight: 700;
-    font-size: 0.85rem;
-    padding: 10px 18px;
+    font-size: 0.78rem !important;
+    padding: 7px 8px !important;
+    height: 36px !important;
     border-radius: 8px;
     border: 1px solid #444;
     cursor: pointer;
     display: flex;
     align-items: center;
-    gap: 6px;
+    justify-content: center;
+    gap: 5px;
     transition: all 0.2s ease;
     box-shadow: 0 3px 6px rgba(0, 0, 0, 0.5);
+    white-space: nowrap;
+    letter-spacing: -0.02em;
 }
 
 .act-btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.7);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.7);
+}
+
+.btn-undo {
+    background: #2b2b2b;
+    color: #e2e8f0;
+    border-color: #555;
 }
 
 .btn-clear {
@@ -1102,9 +1056,9 @@ body {
 }
 
 .btn-double {
-    background: #3c2f16;
-    color: #ffdf9e;
-    border-color: #70551e;
+    background: #2f2a18;
+    color: #f7d774;
+    border-color: #5c4e1f;
 }
 
 .btn-spin-gold {
@@ -1970,13 +1924,28 @@ body {
     z-index: 1;
 }
 
+#live-cam-3d-stage {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    overflow: hidden;
+}
+
+#live-cam-3d-stage canvas {
+    width: 100% !important;
+    height: 100% !important;
+    display: block;
+}
+
 #live-cam-canvas {
     position: absolute;
     inset: 0;
     width: 100%;
     height: 100%;
     object-fit: contain;
-    z-index: 2;
+    z-index: 3;
     pointer-events: none;
 }
 
@@ -2386,7 +2355,7 @@ body {
 }
 
 /* ==========================================================================
-   38차: 워터마크 없는 초고화질 카지노 룰렛 실사 비주얼 및 3초 결과 화면 노출
+   23차 개편: 실사 룰렛 구슬 낙하 팝업 (나비 영상 제거, 보라색 단색 #230638, 대형 뷰포트)
    ========================================================================== */
 #live-cam-video {
     display: none !important;
@@ -2395,39 +2364,24 @@ body {
 .live-cam-modal-content {
     max-width: 840px !important;
     width: 95% !important;
-    background: radial-gradient(circle at 50% 20%, #1e0b2e 0%, #0d0214 80%, #050008 100%) !important;
-    border: 2px solid var(--gold-primary) !important;
-    box-shadow: 0 0 60px rgba(212, 175, 55, 0.4), 0 20px 60px rgba(0, 0, 0, 0.95) !important;
-    border-radius: 16px;
-    overflow: hidden;
+    background: #180326 !important;
+    border: 2px solid #a855f7 !important;
+    box-shadow: 0 0 50px rgba(168, 85, 247, 0.4), 0 20px 60px rgba(0, 0, 0, 0.9) !important;
 }
 
 .live-cam-viewport {
     position: relative;
     width: 100%;
-    height: 520px !important;
-    background: radial-gradient(circle, #1a0f05 0%, #080402 100%) !important;
+    height: 540px !important;
+    /* 대형 화면 확대 */
+    background: #230638 !important;
+    /* 요청하신 고급스러운 보라색 단색 */
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
     border-radius: 8px;
-    box-shadow: inset 0 0 50px rgba(0, 0, 0, 0.9);
-}
-
-/* 초고화질 실사 룰렛 휠 텍스처 (글자/워터마크 완전 무결) */
-.live-cam-real-wheel {
-    position: absolute !important;
-    width: 480px !important;
-    height: 480px !important;
-    max-width: 90% !important;
-    max-height: 90% !important;
-    object-fit: contain !important;
-    z-index: 4 !important;
-    border-radius: 50% !important;
-    box-shadow: 0 0 45px rgba(0, 0, 0, 0.95), 0 0 20px rgba(212, 175, 55, 0.3) !important;
-    transform-origin: center center;
-    pointer-events: none !important;
+    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.6);
 }
 
 #live-cam-canvas {
@@ -2439,109 +2393,6 @@ body {
     z-index: 10 !important;
     pointer-events: none !important;
     background: transparent !important;
-}
-
-/* [사용자 핵심 요구] 당첨 번호 결과 안내창: 중앙에서 휠을 가리지 않는 좌측 상단(Top-Left)으로 이동 */
-.live-cam-win-badge {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    transform: none;
-    background: linear-gradient(135deg, rgba(17, 24, 39, 0.95) 0%, rgba(5, 5, 5, 0.98) 100%);
-    border: 2px solid var(--gold-primary);
-    border-radius: 14px;
-    padding: 10px 20px;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start;
-    justify-content: center;
-    z-index: 30;
-    box-shadow: 0 0 30px rgba(255, 215, 0, 0.7), 0 10px 30px rgba(0, 0, 0, 0.9);
-    animation: winBadgePulse 0.8s infinite alternate;
-}
-
-@keyframes winBadgePulse {
-    0% {
-        transform: scale(1);
-        box-shadow: 0 0 25px rgba(255, 215, 0, 0.6);
-    }
-    100% {
-        transform: scale(1.05);
-        box-shadow: 0 0 40px rgba(255, 215, 0, 0.95);
-    }
-}
-
-.cam-win-label {
-    font-size: 0.72rem;
-    font-weight: 800;
-    color: var(--gold-primary);
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-    text-shadow: 0 0 8px rgba(212, 175, 55, 0.6);
-}
-
-.cam-win-num {
-    font-family: var(--font-heading);
-    font-size: 2.4rem;
-    font-weight: 900;
-    line-height: 1.05;
-    color: #ffffff;
-    text-shadow: 0 0 20px rgba(255, 255, 255, 0.8), 0 2px 5px #000;
-}
-
-/* [사용자 핵심 요구] 테이블 0번 바로 위에 길게 펼쳐진 배팅시간 와이드 게이지 바 */
-.table-betting-timer-container {
-    width: 100%;
-    margin-bottom: 8px;
-    background: rgba(10, 16, 26, 0.85);
-    border: 1px solid rgba(16, 185, 129, 0.35);
-    border-radius: 20px;
-    padding: 5px 14px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.6), inset 0 0 12px rgba(16, 185, 129, 0.1);
-    box-sizing: border-box;
-}
-
-.table-betting-timer-container .timer-gauge-icon {
-    font-size: 1.1rem;
-    filter: drop-shadow(0 0 6px #10b981);
-    flex-shrink: 0;
-}
-
-.table-betting-timer-container .wide-track {
-    flex: 1;
-    width: 100%;
-    height: 14px;
-    background: #090e17;
-    border-radius: 8px;
-    overflow: hidden;
-    position: relative;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.8);
-}
-
-.table-betting-timer-container .timer-gauge-bar {
-    height: 100%;
-    width: 100%;
-    background: linear-gradient(90deg, #047857 0%, #10b981 55%, #34d399 100%);
-    border-radius: 8px;
-    transition: width 1s linear;
-    box-shadow: 0 0 12px rgba(16, 185, 129, 0.8);
-}
-
-@media (max-width: 768px) {
-    .live-cam-viewport {
-        height: 350px !important;
-    }
-    .live-cam-real-wheel {
-        width: 310px !important;
-        height: 310px !important;
-    }
-    .cam-win-num {
-        font-size: 2.2rem;
-    }
 }
 
 /* ==========================================================================
@@ -3888,25 +3739,43 @@ body {
     transform: scale(1.02);
 }
 
-/* 스핀 버튼 제거 후 4대 편의 버튼 바 레이아웃 정돈 */
+/* 4대 편의 버튼 바 레이아웃: 언제나 가로 1줄 컴팩트 유지 */
 .action-buttons-bar {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
-    gap: 12px !important;
-    max-width: 640px;
-    margin: 0 auto;
-    width: 100%;
+    gap: 8px !important;
+    max-width: 540px !important;
+    margin: 0 auto !important;
+    width: 100% !important;
 }
 
 .action-buttons-bar .act-btn {
-    justify-content: center;
-    padding: 12px 16px;
-    font-size: 0.9rem;
+    justify-content: center !important;
+    padding: 7px 6px !important;
+    font-size: 0.78rem !important;
+    height: 36px !important;
+    white-space: nowrap !important;
+    letter-spacing: -0.02em !important;
 }
 
 @media (max-width: 600px) {
+    .chip-selector-bar {
+        gap: 6px !important;
+        padding: 5px 8px !important;
+    }
+    .chip-selector-btn {
+        width: 34px !important;
+        height: 34px !important;
+        font-size: 0.65rem !important;
+    }
     .action-buttons-bar {
-        grid-template-columns: repeat(2, 1fr) !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: 4px !important;
+    }
+    .action-buttons-bar .act-btn {
+        padding: 6px 3px !important;
+        font-size: 0.70rem !important;
+        height: 34px !important;
     }
 }
 
@@ -4028,1067 +3897,3 @@ body {
     margin: 0;
     line-height: 1.4;
 }
-
-/* ==========================================================================
-   최근 10회 당첨 번호 히스토리 보드 (가로 스크롤바 완전 제거 및 10개 핏)
-   ========================================================================== */
-.history-board {
-    background: rgba(15, 23, 42, 0.75);
-    backdrop-filter: blur(8px);
-    border: 1px solid rgba(212, 175, 55, 0.3);
-    border-radius: 12px;
-    padding: 8px 12px;
-    margin-bottom: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.history-title {
-    font-family: var(--font-heading);
-    font-size: 0.72rem;
-    font-weight: 800;
-    color: var(--gold-primary);
-    letter-spacing: 1.5px;
-    text-transform: uppercase;
-}
-
-.history-badges {
-    display: flex;
-    gap: 6px;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    overflow: hidden !important;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    box-sizing: border-box;
-}
-
-.history-badges::-webkit-scrollbar {
-    display: none !important;
-}
-
-.history-badge {
-    flex: 1 1 0;
-    min-width: 0;
-    max-width: 34px;
-    height: 32px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    font-family: var(--font-heading);
-    font-size: 0.85rem;
-    font-weight: 900;
-    color: #ffffff;
-    box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.35), 0 3px 6px rgba(0, 0, 0, 0.6);
-    border: 1.5px solid rgba(255, 255, 255, 0.25);
-    transition: all 0.25s ease;
-    user-select: none;
-}
-
-/* 최신 출현 1번째 뱃지 강조 효과 */
-.history-badge:first-child {
-    transform: scale(1.08);
-    border-color: #ffd700;
-    box-shadow: 0 0 12px rgba(255, 215, 0, 0.8), inset 0 2px 4px rgba(255, 255, 255, 0.5);
-}
-
-.history-badge.badge-red {
-    background: radial-gradient(circle at 35% 35%, #ef4444 0%, #b91c1c 65%, #7f1d1d 100%);
-    border-color: #f87171;
-}
-
-.history-badge.badge-black {
-    background: radial-gradient(circle at 35% 35%, #334155 0%, #0f172a 65%, #020617 100%);
-    border-color: #64748b;
-}
-
-.history-badge.badge-green {
-    background: radial-gradient(circle at 35% 35%, #10b981 0%, #047857 65%, #064e3b 100%);
-    border-color: #34d399;
-    box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
-}
-
-/* ==========================================================================
-   1. 통계 분석 모달 (STATS MODAL) - 럭셔리 글래스모피즘 & 네온 테마
-   ========================================================================== */
-.stats-modal-content {
-    background: radial-gradient(circle at 50% 10%, #171f30 0%, #0b0f19 80%, #05070d 100%);
-    border: 2px solid var(--gold-primary);
-    border-radius: 18px;
-    width: 92%;
-    max-width: 960px;
-    max-height: 88vh;
-    overflow-y: auto;
-    padding: 24px 28px;
-    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.95), 0 0 30px rgba(212, 175, 55, 0.25);
-}
-
-.stats-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.25);
-    padding-bottom: 16px;
-    margin-bottom: 22px;
-}
-
-.stats-modal-title h2 {
-    font-family: var(--font-heading);
-    font-size: 1.55rem;
-    color: var(--gold-primary);
-    margin: 0;
-    text-shadow: 0 0 15px rgba(212, 175, 55, 0.4);
-}
-
-.stats-modal-title p {
-    font-size: 0.85rem;
-    color: #94a3b8;
-    margin-top: 5px;
-}
-
-.stats-grid-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
-    gap: 18px;
-}
-
-.stats-card {
-    background: rgba(15, 23, 42, 0.7);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 14px;
-    padding: 18px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4);
-    transition: transform 0.2s ease, border-color 0.2s ease;
-}
-
-.stats-card:hover {
-    border-color: rgba(212, 175, 55, 0.4);
-    transform: translateY(-2px);
-}
-
-.stats-card-title {
-    font-family: var(--font-heading);
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: var(--gold-light);
-    margin: 0 0 14px 0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-    padding-bottom: 8px;
-}
-
-/* 듀얼/트리플 비율 바 */
-.stats-bars {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-}
-
-.bar-row {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.bar-header {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.82rem;
-    color: #cbd5e1;
-}
-
-.bar-counts {
-    font-weight: 700;
-    color: var(--gold-light);
-}
-
-.dual-bar, .triple-bar {
-    height: 26px;
-    border-radius: 13px;
-    background: #0f172a;
-    display: flex;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.6);
-}
-
-.bar-segment {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.78rem;
-    font-weight: 800;
-    color: #ffffff;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
-    transition: width 0.5s ease-in-out;
-}
-
-.red-segment {
-    background: linear-gradient(90deg, #ef4444 0%, #dc2626 100%);
-}
-
-.black-segment {
-    background: linear-gradient(90deg, #334155 0%, #1e293b 100%);
-}
-
-.green-segment {
-    background: linear-gradient(90deg, #10b981 0%, #059669 100%);
-}
-
-.odd-segment {
-    background: linear-gradient(90deg, #8b5cf6 0%, #6d28d9 100%);
-}
-
-.even-segment {
-    background: linear-gradient(90deg, #06b6d4 0%, #0891b2 100%);
-}
-
-.d1-segment {
-    background: linear-gradient(90deg, #f59e0b 0%, #d97706 100%);
-}
-
-.d2-segment {
-    background: linear-gradient(90deg, #3b82f6 0%, #2563eb 100%);
-}
-
-.d3-segment {
-    background: linear-gradient(90deg, #ec4899 0%, #db2777 100%);
-}
-
-/* HOT & COLD */
-.hot-cold-box {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 14px;
-}
-
-.hot-section, .cold-section {
-    background: rgba(0, 0, 0, 0.35);
-    border-radius: 10px;
-    padding: 12px;
-}
-
-.hc-title {
-    display: block;
-    font-size: 0.82rem;
-    font-weight: 800;
-    margin-bottom: 10px;
-}
-
-.hot-text {
-    color: #f87171;
-}
-
-.cold-text {
-    color: #67e8f9;
-}
-
-.hc-badges {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-
-.hc-badge {
-    padding: 4px 10px;
-    border-radius: 12px;
-    font-weight: 800;
-    font-size: 0.88rem;
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.hot-badge {
-    background: linear-gradient(135deg, rgba(239, 68, 68, 0.3) 0%, rgba(220, 38, 38, 0.5) 100%);
-    border: 1px solid #ef4444;
-    color: #fca5a5;
-    box-shadow: 0 0 8px rgba(239, 68, 68, 0.4);
-}
-
-.cold-badge {
-    background: linear-gradient(135deg, rgba(6, 182, 212, 0.3) 0%, rgba(14, 116, 144, 0.5) 100%);
-    border: 1px solid #06b6d4;
-    color: #a5f3fc;
-    box-shadow: 0 0 8px rgba(6, 182, 212, 0.4);
-}
-
-/* VIP 전적 그리드 */
-.perf-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
-.perf-item {
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 10px;
-    padding: 12px 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-}
-
-.perf-label {
-    font-size: 0.78rem;
-    color: #94a3b8;
-}
-
-.perf-val {
-    font-family: var(--font-heading);
-    font-size: 1.15rem;
-    font-weight: 800;
-    color: #ffffff;
-}
-
-.perf-val.gold-val {
-    color: #ffd700;
-}
-
-.perf-val.gold-glow {
-    color: #ffd700;
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-}
-
-.profit-plus {
-    color: #34d399 !important;
-}
-
-.profit-minus {
-    color: #f87171 !important;
-}
-
-/* 100회 히스토리 그리드 */
-.history-full-card {
-    grid-column: 1 / -1;
-}
-
-.stats-history-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(52px, 1fr));
-    gap: 6px;
-    max-height: 190px;
-    overflow-y: auto;
-    padding-right: 4px;
-}
-
-.stat-hist-item {
-    border-radius: 8px;
-    padding: 6px 2px;
-    text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    transition: transform 0.15s ease;
-}
-
-.stat-hist-item:hover {
-    transform: scale(1.12);
-    z-index: 10;
-}
-
-.stat-hist-item .num {
-    font-family: var(--font-heading);
-    font-size: 0.95rem;
-    font-weight: 900;
-    color: #ffffff;
-}
-
-.stat-hist-item .rnd {
-    font-size: 0.65rem;
-    color: rgba(255, 255, 255, 0.75);
-}
-
-/* ==========================================================================
-   2. 자동 배팅 모달 (AUTOPLAY MODAL) - 프리셋 칩 & 사용자 친화적 UI
-   ========================================================================== */
-.autoplay-modal-content {
-    background: radial-gradient(circle at 50% 15%, #1e2638 0%, #0d121c 100%);
-    border: 2px solid var(--gold-primary);
-    border-radius: 18px;
-    width: 90%;
-    max-width: 520px;
-    padding: 24px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.95), 0 0 30px rgba(212, 175, 55, 0.25);
-}
-
-.autoplay-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.25);
-    padding-bottom: 14px;
-    margin-bottom: 18px;
-}
-
-.autoplay-modal-title h2 {
-    font-family: var(--font-heading);
-    font-size: 1.35rem;
-    color: var(--gold-primary);
-    margin: 0;
-}
-
-.autoplay-modal-title p {
-    font-size: 0.82rem;
-    color: #94a3b8;
-    margin-top: 4px;
-}
-
-.auto-balance-card {
-    background: rgba(212, 175, 55, 0.1);
-    border: 1px solid rgba(212, 175, 55, 0.35);
-    border-radius: 12px;
-    padding: 12px 16px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 18px;
-}
-
-.auto-bal-label {
-    font-size: 0.85rem;
-    color: #cbd5e1;
-    font-weight: 600;
-}
-
-.auto-val-text {
-    font-family: var(--font-heading);
-    font-size: 1.25rem;
-    font-weight: 900;
-    color: #ffd700;
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
-}
-
-.auto-input-group {
-    margin-bottom: 16px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-.auto-input-group label {
-    font-size: 0.85rem;
-    font-weight: 700;
-    color: #e2e8f0;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.auto-input-group label small {
-    font-size: 0.75rem;
-    color: #94a3b8;
-    font-weight: normal;
-}
-
-.auto-preset-row, .auto-step-row {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 4px;
-}
-
-.auto-preset-btn, .auto-step-btn {
-    flex: 1;
-    background: #1e293b;
-    border: 1px solid #334155;
-    color: #cbd5e1;
-    padding: 6px 0;
-    border-radius: 8px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.auto-preset-btn:hover, .auto-step-btn:hover {
-    background: #334155;
-    color: #ffffff;
-    border-color: var(--gold-light);
-}
-
-.auto-preset-btn.active {
-    background: linear-gradient(135deg, var(--gold-primary) 0%, #b8860b 100%);
-    color: #000000;
-    border-color: #ffd700;
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.4);
-}
-
-.auto-input-group input {
-    background: #090d16;
-    border: 1px solid #2a3449;
-    border-radius: 8px;
-    color: #ffffff;
-    padding: 10px 14px;
-    font-size: 1rem;
-    font-weight: 700;
-    outline: none;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-}
-
-.auto-input-group input:focus {
-    border-color: var(--gold-primary);
-    box-shadow: 0 0 8px rgba(212, 175, 55, 0.4);
-}
-
-.autoplay-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-    margin-top: 22px;
-}
-
-.btn-auto-start {
-    background: linear-gradient(135deg, #ffd700 0%, #d4af37 50%, #996515 100%);
-    color: #050505;
-    border: none;
-    border-radius: 10px;
-    padding: 12px;
-    font-size: 0.95rem;
-    font-weight: 900;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
-    transition: all 0.25s ease;
-}
-
-.btn-auto-start:hover {
-    filter: brightness(1.15);
-    box-shadow: 0 6px 20px rgba(255, 215, 0, 0.65);
-    transform: translateY(-2px);
-}
-
-.btn-auto-stop {
-    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
-    color: #ffffff;
-    border: none;
-    border-radius: 10px;
-    padding: 12px;
-    font-size: 0.95rem;
-    font-weight: 900;
-    cursor: pointer;
-    box-shadow: 0 4px 15px rgba(239, 68, 68, 0.4);
-    transition: all 0.25s ease;
-}
-
-.btn-auto-stop:hover {
-    filter: brightness(1.15);
-    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.65);
-    transform: translateY(-2px);
-}
-
-/* ==========================================================================
-   3. 카지노 관리자 모달 (ADMIN MODAL) - 럭셔리 대시보드 테마
-   ========================================================================== */
-.admin-modal-content {
-    background: radial-gradient(circle at 50% 10%, #171d2b 0%, #0c1019 100%);
-    border: 2px solid var(--gold-primary);
-    border-radius: 18px;
-    width: 92%;
-    max-width: 1060px;
-    max-height: 88vh;
-    overflow-y: auto;
-    padding: 24px 28px;
-    box-shadow: 0 25px 70px rgba(0, 0, 0, 0.95), 0 0 30px rgba(212, 175, 55, 0.3);
-}
-
-.admin-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid rgba(212, 175, 55, 0.25);
-    padding-bottom: 16px;
-    margin-bottom: 20px;
-}
-
-.admin-modal-title h2 {
-    font-family: var(--font-heading);
-    font-size: 1.5rem;
-    color: var(--gold-primary);
-    margin: 0;
-}
-
-.admin-modal-title p {
-    font-size: 0.85rem;
-    color: #94a3b8;
-    margin-top: 4px;
-}
-
-.admin-nav-tabs {
-    display: flex;
-    gap: 12px;
-    border-bottom: 1px solid #243048;
-    margin-bottom: 20px;
-}
-
-.admin-tab-btn {
-    background: transparent;
-    border: none;
-    color: #94a3b8;
-    font-size: 0.95rem;
-    font-weight: 700;
-    padding: 10px 18px;
-    cursor: pointer;
-    border-bottom: 3px solid transparent;
-    transition: all 0.2s ease;
-}
-
-.admin-tab-btn:hover {
-    color: #ffffff;
-}
-
-.admin-tab-btn.active {
-    color: var(--gold-primary);
-    border-bottom-color: var(--gold-primary);
-}
-
-.admin-section {
-    background: rgba(15, 23, 42, 0.65);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 14px;
-    padding: 20px;
-    margin-bottom: 18px;
-}
-
-.admin-section h3 {
-    font-family: var(--font-heading);
-    font-size: 1.15rem;
-    color: var(--gold-light);
-    margin: 0 0 12px 0;
-}
-
-.admin-section-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 14px;
-}
-
-.admin-search-box {
-    display: flex;
-    gap: 8px;
-}
-
-.admin-search-box input {
-    background: #090d16;
-    border: 1px solid #2a3449;
-    border-radius: 6px;
-    color: #ffffff;
-    padding: 6px 12px;
-    font-size: 0.85rem;
-    width: 220px;
-}
-
-.btn-sm-gold {
-    background: var(--gold-primary);
-    border: none;
-    border-radius: 6px;
-    color: #000000;
-    font-weight: 700;
-    padding: 6px 14px;
-    cursor: pointer;
-}
-
-.admin-table-wrapper {
-    overflow-x: auto;
-    border-radius: 10px;
-    border: 1px solid #252f44;
-}
-
-.admin-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 0.85rem;
-    text-align: left;
-}
-
-.admin-table th {
-    background: #111827;
-    color: var(--gold-light);
-    padding: 12px 14px;
-    font-weight: 700;
-    border-bottom: 1px solid #252f44;
-}
-
-.admin-table td {
-    padding: 12px 14px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    color: #cbd5e1;
-}
-
-.admin-table tr:hover {
-    background: rgba(255, 255, 255, 0.03);
-}
-
-.user-cell {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.user-avatar {
-    font-size: 1.4rem;
-}
-
-.user-nick {
-    color: #ffffff;
-    font-size: 0.9rem;
-    display: block;
-}
-
-.user-email {
-    color: #64748b;
-    font-size: 0.75rem;
-}
-
-.status-badge {
-    padding: 3px 8px;
-    border-radius: 10px;
-    font-size: 0.75rem;
-    font-weight: 700;
-}
-
-.badge-active {
-    background: rgba(16, 185, 129, 0.2);
-    color: #34d399;
-    border: 1px solid rgba(16, 185, 129, 0.4);
-}
-
-.badge-banned {
-    background: rgba(239, 68, 68, 0.2);
-    color: #f87171;
-    border: 1px solid rgba(239, 68, 68, 0.4);
-}
-
-.admin-action-btns {
-    display: flex;
-    gap: 6px;
-}
-
-.btn-toggle-ban, .btn-view-records {
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    cursor: pointer;
-    border: 1px solid transparent;
-}
-
-.btn-ban {
-    background: #2a1515;
-    color: #fca5a5;
-    border-color: #7f1d1d;
-}
-
-.btn-unban {
-    background: #0e2a1b;
-    color: #86efac;
-    border-color: #14532d;
-}
-
-.btn-view-records {
-    background: #1e293b;
-    color: #93c5fd;
-    border-color: #334155;
-}
-
-/* 10대 공식 배당률 설정 그리드 */
-.payout-setting-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 12px;
-}
-
-.payout-field {
-    background: rgba(0, 0, 0, 0.4);
-    border: 1px solid #243048;
-    border-radius: 10px;
-    padding: 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.payout-field label {
-    font-size: 0.82rem;
-    color: #cbd5e1;
-    font-weight: 700;
-}
-
-.input-ratio {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.input-ratio input {
-    background: #090d16;
-    border: 1px solid #334155;
-    border-radius: 6px;
-    color: #ffd700;
-    font-size: 1rem;
-    font-weight: 800;
-    padding: 6px 10px;
-    width: 70px;
-}
-
-.input-ratio span {
-    font-size: 0.82rem;
-    color: #94a3b8;
-}
-
-.notice-input-row {
-    display: flex;
-    gap: 10px;
-}
-
-.notice-input-row input {
-    flex: 1;
-    background: #090d16;
-    border: 1px solid #2a3449;
-    border-radius: 8px;
-    color: #ffffff;
-    padding: 10px 14px;
-    font-size: 0.9rem;
-}
-
-.btn-gold-action {
-    background: linear-gradient(135deg, var(--gold-primary) 0%, #b8860b 100%);
-    color: #000000;
-    border: none;
-    border-radius: 8px;
-    padding: 10px 18px;
-    font-weight: 800;
-    cursor: pointer;
-}
-
-/* ==========================================================================
-   구슬 회전 및 정산 중 배팅 원천 차단 (배팅 페이즈에만 칩 배치 허용)
-   ========================================================================== */
-.table-locked,
-.roulette-felt-table.table-locked {
-    pointer-events: none !important;
-    user-select: none !important;
-    filter: brightness(0.88) contrast(0.95);
-    transition: filter 0.3s ease;
-}
-
-.table-locked .bet-spot,
-.table-locked .bet-hotspot,
-.table-locked .grid-hotspot,
-.table-locked .grid-corner-hotspot,
-.table-locked .grid-line-hotspot {
-    pointer-events: none !important;
-    cursor: not-allowed !important;
-}
-
-/* 하단 칩 선택 바 및 액션 버튼 잠금 (구슬 회전 및 정산 중 조작 불가) */
-.controls-locked,
-.table-controls-panel.controls-locked {
-    opacity: 0.45 !important;
-    pointer-events: none !important;
-    filter: grayscale(0.5) !important;
-    transition: all 0.3s ease;
-    cursor: not-allowed !important;
-}
-
-.controls-locked button,
-.controls-locked .chip-selector-btn {
-    pointer-events: none !important;
-    cursor: not-allowed !important;
-}
-
-/* ==========================================================================
-   📱 모바일 접속 전용 세로 룰렛 테이블 (VERTICAL TABLE LAYOUT)
-   핸드폰 접속 시 가로 스크롤 없이 위->아래 세로 큼직한 터치 배팅 제공
-   (PC 접속 시에는 기존 가로형 펠트 테이블 100% 유지)
-   ========================================================================== */
-.table-top-bar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    width: 100%;
-    margin-bottom: 8px;
-    gap: 8px;
-}
-
-/* 테이블 방향 전환 토글 버튼 */
-.btn-table-orient {
-    background: linear-gradient(135deg, rgba(212, 175, 55, 0.25) 0%, rgba(184, 134, 11, 0.35) 100%);
-    border: 1px solid var(--gold-primary);
-    border-radius: 8px;
-    color: var(--gold-light);
-    font-size: 0.8rem;
-    font-weight: 700;
-    padding: 6px 12px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    white-space: nowrap;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
-    transition: all 0.2s ease;
-}
-
-.btn-table-orient:hover {
-    background: linear-gradient(135deg, rgba(255, 215, 0, 0.4) 0%, rgba(212, 175, 55, 0.5) 100%);
-    color: #ffffff;
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
-    transform: translateY(-1px);
-}
-
-/* 모바일 화면 반응형 기본 배치 */
-@media (max-width: 768px) {
-    .game-container {
-        flex-direction: column !important;
-        padding: 8px !important;
-        gap: 12px !important;
-    }
-
-    .wheel-section {
-        width: 100% !important;
-        max-width: 100% !important;
-    }
-
-    .wheel-canvas-box {
-        max-width: 290px !important;
-        height: 290px !important;
-        margin: 0 auto !important;
-    }
-
-    #roulette-wheel-canvas {
-        width: 290px !important;
-        height: 290px !important;
-    }
-
-    .table-section {
-        width: 100% !important;
-        max-width: 100% !important;
-    }
-}
-
-/* ==========================================================================
-   세로 모드 (mobile-table-mode) 활성화 시:
-   핸드폰에서 가로 스크롤 없이 위에서 아래로 1~36이 시원하게 흐르는 레이아웃
-   ========================================================================== */
-.mobile-table-mode .table-scroll-wrapper {
-    overflow-x: hidden !important;
-    width: 100% !important;
-    padding: 0 !important;
-}
-
-.mobile-table-mode .roulette-felt-table {
-    min-width: unset !important;
-    width: 100% !important;
-    padding: 10px 8px !important;
-    border-width: 8px !important;
-    border-radius: 14px !important;
-    display: flex !important;
-    flex-direction: column !important;
-    gap: 8px !important;
-    box-sizing: border-box !important;
-}
-
-/* 1. 상단 0 (그린 싱글 제로 전폭 헤더) */
-.mobile-table-mode .table-zero-area {
-    width: 100% !important;
-}
-
-.mobile-table-mode .spot-zero {
-    width: 100% !important;
-    height: 48px !important;
-    font-size: 1.4rem !important;
-    border-radius: 8px !important;
-}
-
-/* 2. 메인 36개 숫자 그리드 (위에서 아래로 12행 세로 진행) */
-.mobile-table-mode .table-grid-area {
-    display: flex !important;
-    flex-direction: column !important;
-    width: 100% !important;
-    gap: 5px !important;
-}
-
-.mobile-table-mode .table-numbers-grid {
-    display: flex !important;
-    flex-direction: column !important;
-    width: 100% !important;
-    gap: 5px !important;
-}
-
-/* 각 열(col 1~12) 그룹이 가로 3개 셀([ 1 ] [ 2 ] [ 3 ])로 재배치 */
-.mobile-table-mode .table-column-group {
-    display: flex !important;
-    flex-direction: row-reverse !important;
-    width: 100% !important;
-    gap: 5px !important;
-    position: relative !important;
-}
-
-.mobile-table-mode .spot-number {
-    flex: 1 !important;
-    height: 46px !important;
-    font-size: 1.2rem !important;
-    border-radius: 6px !important;
-}
-
-/* 3. 컬럼 배팅 (2 to 1 세로 3구역) -> 12열 하단에 가로 3분할 배치 */
-.mobile-table-mode .table-columns-bet {
-    display: flex !important;
-    flex-direction: row-reverse !important;
-    width: 100% !important;
-    gap: 5px !important;
-    margin-top: 2px !important;
-}
-
-.mobile-table-mode .spot-col {
-    flex: 1 !important;
-    height: 38px !important;
-    font-size: 0.85rem !important;
-}
-
-/* 4. 다즌 배팅 (1st 12, 2nd 12, 3rd 12) -> 가로 3분할 */
-.mobile-table-mode .table-dozens-area {
-    display: flex !important;
-    flex-direction: row !important;
-    width: 100% !important;
-    gap: 5px !important;
-    margin-top: 4px !important;
-}
-
-.mobile-table-mode .spot-dozen {
-    flex: 1 !important;
-    height: 42px !important;
-    font-size: 0.88rem !important;
-    font-weight: 800 !important;
-}
-
-/* 5. 외부 1:1 배팅 (1-18, EVEN, RED, BLACK, ODD, 19-36) -> 모바일 2행 3열 그리드 */
-.mobile-table-mode .table-outside-area {
-    display: grid !important;
-    grid-template-columns: repeat(3, 1fr) !important;
-    gap: 5px !important;
-    width: 100% !important;
-    margin-top: 4px !important;
-}
-
-.mobile-table-mode .spot-outside {
-    height: 42px !important;
-    font-size: 0.85rem !important;
-    font-weight: 800 !important;
-}
-
-/* 모바일 세로 핫스팟 터치 감도 및 보정 */
-.mobile-table-mode .bet-hotspot {
-    z-index: 20 !important;
-}
-
-

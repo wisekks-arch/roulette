@@ -15,7 +15,9 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Outfit:wght@400;500;600;700&family=Noto+Sans+KR:wght@400;500;700&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css?v=20261023_1415">
+    <link rel="stylesheet" href="css/style.css?v=20261023_1430">
+    <!-- Three.js 3D 엔진 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 
 <body>
@@ -45,10 +47,6 @@
             </div>
 
             <div class="header-right">
-                <a href="spin-test.html" class="nav-btn spin-test-nav-btn" title="원하는 번호로 100% 골인하는 3D 물리 스핀 테스트실" style="text-decoration: none; color: #ffd700; border-color: rgba(255, 215, 0, 0.4); background: rgba(255, 215, 0, 0.1);">
-                    <span class="icon">🎯</span>
-                    <span class="text">스핀 테스트</span>
-                </a>
                 <button id="btn-open-stats" class="nav-btn stats-nav-btn" title="실시간 100회 통계 및 분석">
                     <span class="icon">📊</span>
                     <span class="text">통계 분석</span>
@@ -95,8 +93,9 @@
             <div id="status-message-text" class="status-message">
                 🎲 베팅을 진행해 주세요 (Place your bets)
             </div>
-            <!-- 배너 하단 풀와이드 네온 그린 타이머 라인 -->
-            <div id="banner-bottom-timer-line" class="banner-bottom-timer-line"></div>
+            <div class="timer-badge">
+                <span id="phase-timer">20s</span>
+            </div>
         </div>
 
         <!-- 메인 게임 영역 (상단 휠 + 테이블 / 반응형) -->
@@ -129,25 +128,8 @@
 
             <!-- 우측/하단: 전통 펠트 룰렛 다이 테이블 -->
             <section class="table-section">
-                <div class="table-top-bar">
-                    <!-- 테이블 상단 다중 참석자 바 (나 + 봇 3명, 최대 8명) -->
-                    <div id="table-players-bar" class="table-players-bar"></div>
-                    <!-- 모바일/PC 테이블 방향 전환 토글 버튼 -->
-                    <button id="btn-toggle-table-orientation" class="btn-table-orient" title="테이블 세로/가로 보기 전환">
-                        <span id="orient-icon">📱</span>
-                        <span id="orient-text">세로 보기</span>
-                    </button>
-                </div>
-
-                <!-- [사용자 요청] 룰렛 테이블 0번 바로 위에 길게 적용된 배팅시간 와이드 게이지 바 -->
-                <div id="betting-timer-container" class="table-betting-timer-container" title="배팅 잔여 시간">
-                    <span class="timer-gauge-icon">⏳</span>
-                    <div class="timer-gauge-track wide-track">
-                        <div id="betting-gauge-bar" class="timer-gauge-bar"></div>
-                    </div>
-                    <!-- 하위 호환 숨김 엘리먼트 -->
-                    <span id="phase-timer" class="hidden" style="display: none;"></span>
-                </div>
+                <!-- 테이블 상단 다중 참석자 바 (나 + 봇 3명, 최대 8명) -->
+                <div id="table-players-bar" class="table-players-bar"></div>
 
                 <div class="table-scroll-wrapper">
                     <div id="roulette-table-mount"></div>
@@ -237,56 +219,27 @@
                 <div class="autoplay-modal-header">
                     <div class="autoplay-modal-title">
                         <h2>🤖 자동 배팅 설정 (AUTO PLAY)</h2>
-                        <p>원하는 배팅을 테이블에 올린 후 횟수와 목표 수익/손절가를 지정하여 자동으로 반복 플레이합니다.</p>
+                        <p>테이블에 배팅 후 횟수와 목표 수익/손절가를 지정하여 자동으로 반복 플레이합니다.</p>
                     </div>
                     <button id="btn-close-autoplay" class="btn-close-modal">✕ 닫기</button>
                 </div>
                 <div class="autoplay-modal-body">
-                    <div class="auto-balance-card">
-                        <span class="auto-bal-label">현재 보유 칩</span>
+                    <div class="auto-input-group">
+                        <label>현재 보유 칩</label>
                         <span id="auto-current-balance" class="auto-val-text">1,250,000 Chip</span>
                     </div>
-
                     <div class="auto-input-group">
-                        <label for="auto-rounds-input">
-                            <span>자동 진행 횟수 (회)</span>
-                            <small>설정한 횟수만큼 동일 배팅 반복</small>
-                        </label>
-                        <div class="auto-preset-row">
-                            <button type="button" class="auto-preset-btn active" data-rounds="10">10회</button>
-                            <button type="button" class="auto-preset-btn" data-rounds="25">25회</button>
-                            <button type="button" class="auto-preset-btn" data-rounds="50">50회</button>
-                            <button type="button" class="auto-preset-btn" data-rounds="100">100회</button>
-                        </div>
+                        <label for="auto-rounds-input">자동 진행 횟수 (회)</label>
                         <input type="number" id="auto-rounds-input" value="10" min="1" max="100">
                     </div>
-
                     <div class="auto-input-group">
-                        <label for="auto-profit-input">
-                            <span>🎯 목표 수익 달성 시 자동 정지</span>
-                            <small>(Chip 단위, 0 = 미사용)</small>
-                        </label>
-                        <div class="auto-step-row">
-                            <button type="button" class="auto-step-btn" data-target="auto-profit-input" data-add="100000">+10만</button>
-                            <button type="button" class="auto-step-btn" data-target="auto-profit-input" data-add="500000">+50만</button>
-                            <button type="button" class="auto-step-btn" data-target="auto-profit-input" data-set="0">초기화</button>
-                        </div>
+                        <label for="auto-profit-input">목표 수익 달성 시 자동 정지 (Chip, 0=미사용)</label>
                         <input type="number" id="auto-profit-input" value="500000" step="10000">
                     </div>
-
                     <div class="auto-input-group">
-                        <label for="auto-stoploss-input">
-                            <span>🛡️ 손절 한도 도달 시 자동 정지</span>
-                            <small>(Chip 단위, 0 = 미사용)</small>
-                        </label>
-                        <div class="auto-step-row">
-                            <button type="button" class="auto-step-btn" data-target="auto-stoploss-input" data-add="100000">+10만</button>
-                            <button type="button" class="auto-step-btn" data-target="auto-stoploss-input" data-add="300000">+30만</button>
-                            <button type="button" class="auto-step-btn" data-target="auto-stoploss-input" data-set="0">초기화</button>
-                        </div>
+                        <label for="auto-stoploss-input">손절 한도 도달 시 자동 정지 (Chip, 0=미사용)</label>
                         <input type="number" id="auto-stoploss-input" value="300000" step="10000">
                     </div>
-
                     <div class="autoplay-actions">
                         <button id="btn-start-autoplay" class="btn-auto-start">▶ 자동 배팅 시작</button>
                         <button id="btn-stop-autoplay" class="btn-auto-stop">⏹ 자동 배팅 중지</button>
@@ -371,15 +324,15 @@
                     </div>
                     <span class="cam-table-tag">TABLE #02 LIVE</span>
                 </div>
-                <div class="live-cam-viewport">
-                    <!-- 글자/워터마크 없는 초고화질 카지노 실사 룰렛 휠 배경 이미지 -->
-                    <img id="live-cam-real-wheel" src="assets/images/roulette_wheel_photoreal.jpg" alt="Casino Roulette Wheel" class="live-cam-real-wheel">
-                    <!-- 대형 실사 3D 룰렛 구슬 물리 캔버스 (760 x 540) -->
-                    <canvas id="live-cam-canvas" width="760" height="540"></canvas>
+                <div class="live-cam-viewport" id="live-cam-viewport">
+                    <!-- Three.js 3D 룰렛 씬 컨테이너 -->
+                    <div id="live-cam-3d-stage" style="position: absolute; inset: 0; width: 100%; height: 100%; overflow: hidden;"></div>
+                    <!-- 레거시 캔버스 호환 레이어 -->
+                    <canvas id="live-cam-canvas" width="760" height="540" style="position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 5;"></canvas>
                     <div class="cam-crosshair"></div>
-                    <!-- 구슬 안착 시 팝업 상단 대형 당첨 번호 뱃지 (3초간 확정 노출) -->
-                    <div id="live-cam-win-badge" class="live-cam-win-badge hidden">
-                        <span class="cam-win-label">WINNING NUMBER (당첨 번호)</span>
+                    <!-- 구슬 안착 시 팝업 좌측 상단 대형 당첨 번호 뱃지 -->
+                    <div id="live-cam-win-badge" class="live-cam-win-badge hidden" style="z-index: 20;">
+                        <span class="cam-win-label">BALL DROP NUMBER</span>
                         <div id="live-cam-win-num" class="cam-win-num">17</div>
                     </div>
                 </div>
@@ -440,13 +393,13 @@
     </div>
 
     <!-- 스크립트 모듈 로드 (강력한 캐시 방지 쿼리스트링 적용) -->
-    <script src="js/audio.js?v=20261023_1315"></script>
-    <script src="js/wheel.js?v=20261023_1315"></script>
-    <script src="js/table.js?v=20261023_1315"></script>
-    <script src="js/auth.js?v=20261023_1315"></script>
-    <script src="js/stats.js?v=20261023_1315"></script>
-    <script src="js/lobby.js?v=20261023_1315"></script>
-    <script src="js/app.js?v=20261023_1315"></script>
+    <script src="js/audio.js?v=20261023_0910"></script>
+    <script src="js/wheel.js?v=20261023_0910"></script>
+    <script src="js/table.js?v=20261023_0910"></script>
+    <script src="js/auth.js?v=20261023_0910"></script>
+    <script src="js/stats.js?v=20261023_0910"></script>
+    <script src="js/lobby.js?v=20261023_0910"></script>
+    <script src="js/app.js?v=20261023_0910"></script>
 </body>
 
 </html>
