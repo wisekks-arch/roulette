@@ -506,3 +506,34 @@ Undo
    - 캐시 버스팅 파라미터 ?v=20261023_1445 전면 갱신 및 GitHub Pages 실서버(https://wisekks-arch.github.io/roulette/index.html) 배포 완료.
 
 
+[43차 사용자 요청 원문 - 2026-10-23]
+"팝업창 룰렛을 Three.js 3D 정밀 물리 룰렛으로 전면 교체 (index.html, js/app.js, css/style.css)
+기존의 2D 평면 이미지 회전 팝업 방식을 전면 개편하여, 첨부해 주신 Three.js 기반 3D 물리 룰렛(원목 마호가니 보울, 원목 림, 아메리칸 번호판, 황동 터렛, 8개 다이아몬드 디플렉터, 크롬 프렛, 3D 물리 은구슬)을 팝업창(#live-cam-viewport)에 실시간 3D 렌더링으로 마운트하였습니다.
+100% 당첨 번호 물리 안착 연동:
+매 회차 확정된 당첨 번호(targetNum)에 맞춰 초기 발사 각도(B0)를 수학적으로 역계산하여, 구슬이 3D 휠 위를 시원하게 질주하다가 실제 당첨 번호 칸으로 쏙 들어가는 극적인 물리 바운스 & 안착 장면을 실시간 3D로 완벽 구현하였습니다.
+구슬이 포켓에 안착하면 좌상단에 대형 당첨 번호 뱃지 표출 및 3초간 결과를 충분히 확인한 후 메인 테이블 정산 화면으로 자연스럽게 전환됩니다.
+🎯 3D 룰렛 스핀 테스트실:👉 https://wisekks-arch.github.io/roulette/spin-test.html
+3D룰렛 스핀테스트실의 상단의 3D영상을 
+현재 https://wisekks-arch.github.io/roulette/index.html 에 적용해달라는거야
+배팅시간표시을 6S. 4S 등을  초록색 그래픽 형태로 줄어들어 가는식으로 적용한거 다시 작용해줘
+이 부분이 적용이 안된거 같아 다시한번 검토 적용해줘"
+- 사용자 최종 확인: 승인 (컨펌 완료)
+
+[43차 핵심 구현 사항]
+1. Three.js 3D 정밀 물리 룰렛 시뮬레이터를 메인 index.html 팝업창에 전면 교체 적용 (index.html, js/app.js):
+   - index.html의 <head>에 Three.js r128 CDN 라이브러리를 정식 로드하고, #live-cam-viewport 내부에 3D 스테이지 컨테이너(#live-cam-3d-stage) 구축.
+   - spin-test.html의 최고급 3D 물리 룰렛 엔진(마호가니 고정 보울, 원목 림, 38개 번호판 고해상도 텍스처, 8개 황동 다이아몬드 디플렉터, 크롬 프렛, 황동 터렛, 3D 물리 은구슬)을 app.js의 runTimeBasedLiveCam에 전면 이식.
+   - [100% 당첨 번호 물리 안착 알고리즘]: 매 회차 확정된 당첨 번호(targetNum)에 맞춰 초기 발사 각도 B0를 수학적으로 역계산(B0 = targetIdx * STEP - settleRel(0).final)하여, 구슬이 3D 휠 위를 시원하게 질주하다가 실제 당첨 번호 칸으로 쏙 들어가는 극적인 물리 바운스 & 안착 장면을 실시간 3D로 완벽 구현.
+   - 구슬 안착 시(7.2초 시점) 물음표(?)에서 실제 당첨 번호로 스케일 팝업 전환 표출 및 3초간 결과를 충분히 확인(총 10.2초 타임라인 시퀀서)한 후 메인 테이블 정산 화면으로 자연스럽게 전환.
+
+2. 테이블 0번 바로 위: 실시간 초록색 배팅 시간 게이지 바 신설 (js/table.js, css/style.css, js/app.js):
+   - js/table.js의 renderTable()에서 상단 0번(spot-zero) 바로 위에 긴 가로형 배팅 타이머 게이지 바(#table-bet-timer-gauge-container) 배치.
+   - css/style.css에 에메랄드 그린 네온 그라데이션(linear-gradient(90deg, #059669, #10b981, #34d399)), 골드 테두리 프레임, 0~100% 실시간 축소 트랜지션 적용.
+   - js/app.js의 updateTimerDisplay()와 연동하여 배팅 시간(20초) 동안 초록색 바가 100%에서 0%로 줄어들며, 20s, 6s, 4s 숫자가 실시간 표시되고 5초 이하 진입 시 긴급 레드 네온으로 반응하는 인터랙션 완성.
+
+3. 사전 무결성 검증 및 GitHub Pages 실서버 배포:
+   - Headless 브라우저 런타임 진단 결과 콘솔 에러 0건(NO_SCRIPT_ERRORS_DETECTED) 검증 완료.
+   - 캐시 버스팅 파라미터 ?v=20261023_1455 전면 갱신 및 GitHub Pages 실서버(https://wisekks-arch.github.io/roulette/index.html) 배포 완료.
+
+
+
