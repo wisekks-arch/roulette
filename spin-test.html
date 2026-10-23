@@ -1,0 +1,1156 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>3D 룰렛 스핀 테스트실 · Roulette Spin Test</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:opsz,wght@6..96,500;6..96,700&family=IBM+Plex+Mono:wght@500;600&family=IBM+Plex+Sans+KR:wght@400;500;600;700&display=swap">
+  <style>
+    :root {
+      --bg: #14100d;
+      --panel: #1c1613;
+      --raise: #241c18;
+      --line: #3a2e26;
+      --ink: #efe4cf;
+      --muted: #a8977f;
+      --brass: #d2a84f;
+      --brass-glow: rgba(210, 168, 79, 0.4);
+      --on-brass: #1a120c;
+      --red: #b8262e;
+      --black: #1b1716;
+      --green: #1f6b45;
+      --felt: #123a2b;
+      --ok: #78c693;
+      --bad: #e8695e;
+      --f-display: "Bodoni Moda", "Didot", "Bodoni 72", Georgia, serif;
+      --f-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Noto Sans KR", system-ui, sans-serif;
+      --f-mono: "IBM Plex Mono", ui-monospace, Menlo, monospace;
+      color-scheme: dark;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { height: 100%; width: 100%; overflow: hidden; background: var(--bg); color: var(--ink); font-family: var(--f-body); font-size: 14px; line-height: 1.5; }
+
+    /* 최상단 네비게이션 헤더 */
+    .top-nav {
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 48px;
+      background: rgba(20, 16, 13, 0.92);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px;
+      z-index: 1000;
+    }
+    .nav-brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 700;
+      font-size: 14px;
+      color: var(--brass);
+      letter-spacing: 0.05em;
+    }
+    .nav-brand span { color: var(--ink); font-weight: 400; font-size: 12px; }
+    .nav-back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 8px;
+      background: var(--raise);
+      border: 1px solid var(--line);
+      color: var(--ink);
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+    .nav-back-btn:hover {
+      background: var(--brass);
+      color: var(--on-brass);
+      border-color: var(--brass);
+      box-shadow: 0 0 12px var(--brass-glow);
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 380px;
+      gap: 16px;
+      height: calc(100% - 48px);
+      margin-top: 48px;
+      padding: 16px;
+    }
+
+    .stage {
+      position: relative;
+      min-height: 0;
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      background: radial-gradient(ellipse at 50% 55%, var(--felt), var(--bg) 75%);
+      box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.8);
+    }
+    .stage canvas {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      touch-action: none;
+      cursor: grab;
+    }
+    .stage canvas:active { cursor: grabbing; }
+
+    .status {
+      position: absolute;
+      top: 14px; left: 14px;
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      padding: 6px 14px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--bg) 82%, transparent);
+      backdrop-filter: blur(6px);
+      border: 1px solid var(--line);
+      font-size: 12px;
+      letter-spacing: .04em;
+      pointer-events: none;
+      z-index: 10;
+    }
+    .status i {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: var(--muted);
+      transition: background 0.2s;
+    }
+    .status[data-phase="spin"] i,
+    .status[data-phase="drop"] i,
+    .status[data-phase="bounce"] i { background: var(--brass); box-shadow: 0 0 8px var(--brass); }
+    .status[data-phase="nmb"] i { background: var(--bad); box-shadow: 0 0 8px var(--bad); }
+    .status[data-phase="result"] i { background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+
+    .hint {
+      position: absolute;
+      top: 14px; right: 14px;
+      font-size: 11px;
+      color: var(--muted);
+      background: rgba(20, 16, 13, 0.7);
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      pointer-events: none;
+      text-align: right;
+      z-index: 10;
+    }
+
+    .banner {
+      position: absolute;
+      left: 50%; top: 44%;
+      transform: translate(-50%, -50%) scale(.96);
+      opacity: 0;
+      text-align: center;
+      pointer-events: none;
+      transition: opacity .25s, transform .35s;
+      z-index: 20;
+    }
+    .banner.show {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+    }
+    .banner b {
+      display: block;
+      font-family: var(--f-display);
+      font-weight: 700;
+      font-size: clamp(28px, 5vw, 54px);
+      letter-spacing: .14em;
+      color: var(--ink);
+      text-shadow: 0 2px 24px #000, 0 0 4px #000;
+      white-space: nowrap;
+    }
+    .banner span {
+      font-size: 13px;
+      letter-spacing: .3em;
+      color: var(--brass);
+      text-shadow: 0 1px 8px #000;
+      font-weight: 600;
+    }
+
+    .result {
+      position: absolute;
+      left: 50%; bottom: 20px;
+      transform: translate(-50%, 8px);
+      opacity: 0;
+      pointer-events: none;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 20px 10px 12px;
+      border-radius: 999px;
+      background: color-mix(in srgb, var(--bg) 88%, transparent);
+      backdrop-filter: blur(8px);
+      border: 1px solid var(--brass);
+      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.8), 0 0 16px var(--brass-glow);
+      transition: opacity .3s, transform .3s;
+      white-space: nowrap;
+      z-index: 20;
+    }
+    .result.show {
+      opacity: 1;
+      transform: translate(-50%, 0);
+    }
+    .result .disc {
+      width: 54px; height: 54px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-family: var(--f-display);
+      font-weight: 700;
+      font-size: 26px;
+      border: 2px solid var(--brass);
+      box-shadow: 0 0 12px rgba(0,0,0,0.6);
+    }
+    .result .meta { display: flex; flex-direction: column; line-height: 1.3; }
+    .result .meta strong { font-size: 15px; letter-spacing: .06em; color: var(--ink); }
+    .result .meta small { font-size: 12px; color: var(--muted); }
+
+    /* 우측 사이드 패널 */
+    .panel {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-height: 0;
+      overflow-y: auto;
+      padding: 4px 8px 16px 2px;
+    }
+    .panel::-webkit-scrollbar { width: 6px; }
+    .panel::-webkit-scrollbar-thumb { background: var(--line); border-radius: 3px; }
+
+    .eyebrow {
+      font-size: 11px;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      color: var(--brass);
+      font-weight: 600;
+    }
+    h1 {
+      margin: 4px 0 2px;
+      font-family: var(--f-display);
+      font-weight: 700;
+      font-size: 26px;
+      line-height: 1.15;
+      color: var(--ink);
+    }
+    .lede { margin: 0; color: var(--muted); font-size: 12.5px; }
+
+    .target {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 10px;
+      align-items: end;
+    }
+    .field label {
+      display: block;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 500;
+    }
+    #target-input {
+      width: 100%;
+      height: 52px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--raise);
+      color: var(--ink);
+      font-family: var(--f-display);
+      font-weight: 700;
+      font-size: 28px;
+      padding: 0 14px;
+      letter-spacing: .04em;
+      text-align: center;
+    }
+    #target-input:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+    #target-input[aria-invalid="true"] { border-color: var(--bad); }
+    .err { min-height: 18px; margin-top: 4px; font-size: 12px; color: var(--bad); }
+
+    button { font: inherit; color: inherit; cursor: pointer; }
+    button:focus-visible { outline: 2px solid var(--brass); outline-offset: 2px; }
+    .btn {
+      height: 52px;
+      padding: 0 16px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--raise);
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+    .btn:hover { border-color: var(--muted); background: color-mix(in srgb, var(--raise) 80%, #fff); }
+
+    #start-btn {
+      width: 100%;
+      height: 54px;
+      border: 0;
+      border-radius: 12px;
+      background: linear-gradient(135deg, #e3ba5b, #c2953b);
+      color: var(--on-brass);
+      font-family: var(--f-display);
+      font-weight: 700;
+      font-size: 22px;
+      letter-spacing: .24em;
+      box-shadow: 0 4px 16px rgba(194, 149, 59, 0.35);
+      transition: all 0.2s;
+    }
+    #start-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+    #start-btn:active { transform: translateY(0); filter: brightness(0.95); }
+    #start-btn:disabled { opacity: .45; cursor: not-allowed; filter: none; transform: none; box-shadow: none; }
+
+    /* 배팅 테이블 레이아웃 */
+    .layout {
+      display: grid;
+      grid-template-columns: repeat(13, minmax(0, 1fr));
+      grid-template-rows: repeat(6, 17px);
+      gap: 3px;
+    }
+    .layout button {
+      border: 1px solid color-mix(in srgb, var(--ink) 18%, transparent);
+      border-radius: 4px;
+      padding: 0;
+      font-family: var(--f-display);
+      font-weight: 700;
+      font-size: 12px;
+      color: var(--ink);
+      font-variant-numeric: tabular-nums;
+      transition: transform 0.15s, outline 0.15s;
+    }
+    .layout button:hover { transform: scale(1.08); z-index: 2; }
+    .layout button[data-c="red"] { background: var(--red); }
+    .layout button[data-c="black"] { background: var(--black); }
+    .layout button[data-c="green"] { background: var(--green); }
+    .layout button[aria-pressed="true"] {
+      outline: 2px solid var(--brass);
+      outline-offset: 1px;
+      box-shadow: 0 0 10px var(--brass);
+      position: relative;
+      z-index: 1;
+    }
+    .sec-label {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 8px;
+      font-weight: 500;
+    }
+
+    .row { display: flex; flex-wrap: wrap; gap: 14px; }
+    .seg {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      overflow: hidden;
+      background: var(--panel);
+    }
+    .seg button {
+      border: 0;
+      background: transparent;
+      padding: 7px 14px;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 500;
+      transition: all 0.15s;
+    }
+    .seg button + button { border-left: 1px solid var(--line); }
+    .seg button:hover { color: var(--ink); }
+    .seg button[aria-pressed="true"] { background: var(--raise); color: var(--brass); font-weight: 700; }
+
+    .auto { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .auto .btn { height: 38px; font-size: 12.5px; }
+    #auto-status { font-size: 12px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+    /* 히스토리 */
+    .history { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+    .history li {
+      display: grid;
+      grid-template-columns: 32px 1fr auto;
+      gap: 10px;
+      align-items: center;
+      padding: 6px 10px 6px 6px;
+      border-radius: 10px;
+      background: var(--panel);
+      border: 1px solid rgba(255, 255, 255, 0.03);
+      font-size: 12px;
+    }
+    .history .pill {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      font-family: var(--f-display);
+      font-weight: 700;
+      font-size: 13px;
+      color: #fff;
+    }
+    .history .mono {
+      font-family: var(--f-mono);
+      font-size: 11px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+    .history .ok { color: var(--ok); font-weight: 600; }
+    .history .bad { color: var(--bad); font-weight: 600; }
+    .history .empty { display: block; color: var(--muted); background: transparent; padding: 6px 0; text-align: center; }
+    .c-red { background: var(--red); }
+    .c-black { background: var(--black); box-shadow: inset 0 0 0 1px var(--line); }
+    .c-green { background: var(--green); }
+
+    @media (max-width: 860px) {
+      html, body { height: auto; overflow: auto; }
+      .app { grid-template-columns: 1fr; height: auto; margin-top: 48px; }
+      .stage { aspect-ratio: 1/1; max-width: 100%; max-height: 60vh; width: 100%; }
+      .panel { overflow: visible; }
+    }
+    @media (prefers-reduced-motion: reduce) { .banner, .result { transition: none; } }
+  </style>
+</head>
+<body>
+
+  <!-- 상단 네비게이션 헤더 -->
+  <header class="top-nav">
+    <div class="nav-brand">
+      🎡 3D 룰렛 스핀 물리 엔진 테스트실
+      <span>· 아메리칸 38포켓 (0, 00, 1–36)</span>
+    </div>
+    <a href="index.html" class="nav-back-btn">
+      ← 메인 룰렛 카지노로 돌아가기
+    </a>
+  </header>
+
+  <div class="app">
+    <section class="stage" id="stage" aria-label="3D 룰렛 휠">
+      <div class="status" id="status" data-phase="idle"><i></i><span id="status-text">대기 중</span></div>
+      <div class="hint">드래그: 휠 각도 회전 · 휠: 줌 인/아웃</div>
+      <div class="banner" id="banner"><b>NO MORE BETS</b><span>베팅 마감</span></div>
+      <div class="result" id="result" aria-live="polite">
+        <div class="disc" id="result-disc">17</div>
+        <div class="meta">
+          <strong id="result-title">17 · RED</strong>
+          <small id="result-sub">목표 17 · 100% 일치</small>
+        </div>
+      </div>
+    </section>
+
+    <aside class="panel">
+      <header>
+        <div class="eyebrow">American Roulette · 0 / 00 · 38 Pockets</div>
+        <h1>Roulette Spin Test</h1>
+        <p class="lede">목표 번호를 지정하고 <b>START</b>를 누르면 베팅 마감 ➔ 볼 고속 스핀 ➔ 디플렉터 낙하 ➔ 바운스를 거쳐 <b>입력한 칸에 100% 공이 쏙 들어갑니다.</b></p>
+      </header>
+
+      <form id="spin-form" novalidate>
+        <div class="target">
+          <div class="field">
+            <label for="target-input">목표 번호 입력 (0, 00, 1–36)</label>
+            <input id="target-input" inputmode="numeric" autocomplete="off" maxlength="2" value="17" aria-describedby="target-err">
+          </div>
+          <button type="button" class="btn" id="random-btn">랜덤</button>
+        </div>
+        <div class="err" id="target-err"></div>
+        <button type="submit" id="start-btn">START</button>
+      </form>
+
+      <div>
+        <div class="sec-label"><span>테이블에서 직접 선택</span><span id="pick-label">17 · 빨강</span></div>
+        <div class="layout" id="layout"></div>
+      </div>
+
+      <div class="row">
+        <div>
+          <div class="sec-label"><span>카메라 시점</span></div>
+          <div class="seg" id="view-seg">
+            <button type="button" data-v="table" aria-pressed="true">테이블</button>
+            <button type="button" data-v="close" aria-pressed="false">클로즈업</button>
+            <button type="button" data-v="top" aria-pressed="false">탑뷰</button>
+          </div>
+        </div>
+        <div>
+          <div class="sec-label"><span>스핀 배속</span></div>
+          <div class="seg" id="speed-seg">
+            <button type="button" data-s="1" aria-pressed="true">1×</button>
+            <button type="button" data-s="2" aria-pressed="false">2×</button>
+            <button type="button" data-s="4" aria-pressed="false">4×</button>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sec-label"><span>자동 무결성 검증</span></div>
+        <div class="auto">
+          <button type="button" class="btn" id="auto-btn">랜덤 10회 연속 테스트</button>
+          <span id="auto-status">목표 칸과 실제 착지 칸을 실시간 비교</span>
+        </div>
+      </div>
+
+      <div>
+        <div class="sec-label"><span>스핀 기록 히스토리</span><span id="tally"></span></div>
+        <ul class="history" id="history">
+          <li class="empty">아직 스핀 기록이 없습니다. 상단 START를 눌러보세요.</li>
+        </ul>
+      </div>
+    </aside>
+  </div>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script>
+  (() => {
+    // ---------- 1. Web Audio API 기반 물리 사운드 합성기 (외부 파일 로딩 에러 원천 차단) ----------
+    let audioCtx = null;
+    const initAudio = () => {
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
+    };
+
+    const playSound = {
+      // 베팅 마감 벨 사운드
+      bell() {
+        initAudio();
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(880, now);
+        osc.frequency.exponentialRampToValueAtTime(440, now + 0.8);
+        gain.gain.setValueAtTime(0.3, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.8);
+      },
+      // 볼 롤링 노이즈 사운드 (구슬이 림을 타고 도는 소리)
+      rollingNode: null,
+      startRolling() {
+        initAudio();
+        if (!audioCtx || this.rollingNode) return;
+        const bufferSize = audioCtx.sampleRate * 2;
+        const buffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < bufferSize; i++) {
+          data[i] = (Math.random() * 2 - 1) * 0.15;
+        }
+        const noise = audioCtx.createBufferSource();
+        noise.buffer = buffer;
+        noise.loop = true;
+
+        const filter = audioCtx.createBiquadFilter();
+        filter.type = 'bandpass';
+        filter.frequency.setValueAtTime(1200, audioCtx.currentTime);
+        filter.Q.setValueAtTime(3.0, audioCtx.currentTime);
+
+        const gain = audioCtx.createGain();
+        gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+
+        noise.connect(filter);
+        filter.connect(gain);
+        gain.connect(audioCtx.destination);
+        noise.start();
+        this.rollingNode = { noise, gain, filter };
+      },
+      stopRolling() {
+        if (this.rollingNode && audioCtx) {
+          try {
+            this.rollingNode.gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+            setTimeout(() => {
+              if (this.rollingNode) {
+                this.rollingNode.noise.stop();
+                this.rollingNode = null;
+              }
+            }, 300);
+          } catch(e) { this.rollingNode = null; }
+        }
+      },
+      // 디플렉터 충돌음
+      deflector() {
+        initAudio();
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(1400, now);
+        osc.frequency.exponentialRampToValueAtTime(600, now + 0.08);
+        gain.gain.setValueAtTime(0.25, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.08);
+      },
+      // 프렛 바운스음
+      bounce() {
+        initAudio();
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(450 + Math.random() * 200, now);
+        osc.frequency.exponentialRampToValueAtTime(180, now + 0.06);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.06);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.06);
+      },
+      // 포켓 착지음
+      drop() {
+        initAudio();
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(320, now);
+        osc.frequency.exponentialRampToValueAtTime(110, now + 0.2);
+        gain.gain.setValueAtTime(0.35, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.2);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start(now);
+        osc.stop(now + 0.2);
+      }
+    };
+
+    // ---------- 2. 아메리칸 더블 제로 룰렛 휠 데이터 (시계 방향 순서) ----------
+    const ORDER = ['0','28','9','26','30','11','7','20','32','17','5','22','34','15','3','24','36','13','1',
+                   '00','27','10','25','29','12','8','19','31','18','6','21','33','16','4','23','35','14','2'];
+    const N = ORDER.length, STEP = Math.PI * 2 / N;
+    const REDS = new Set(['1','3','5','7','9','12','14','16','18','19','21','23','25','27','30','32','34','36']);
+    const colorOf = n => (n === '0' || n === '00') ? 'green' : REDS.has(n) ? 'red' : 'black';
+    const KO = { red: '빨강', black: '검정', green: '초록' };
+    const HEX = { red: '#b8262e', black: '#1b1716', green: '#1f6b45' };
+    const FONT = '"Bodoni Moda","Didot","Bodoni 72",Georgia,serif';
+
+    // ---------- 3. 룰렛 기하학 (Rotor 반경 ≈ 1.0) ----------
+    const R_ROTOR = 1.01, R_NUM_IN = 0.86, R_POCKET_IN = 0.66, R_POCKET = 0.765, R_ENTRY = 0.95;
+    const R_TRACK = 1.385, BR = 0.032;
+
+    function surf(r) { // 공이 굴러가는 룰렛 표면 높이
+      if (r >= 1.15) return 0.15 + (r - 1.15) * 0.16;
+      if (r >= 1.02) return 0.045 + (r - 1.02) / 0.13 * 0.105;
+      if (r >= 0.87) return 0.045;
+      if (r >= 0.85) return 0.045 * (r - 0.85) / 0.02;
+      return 0;
+    }
+
+    // ---------- 4. 물리 궤적 타임라인 (구슬 방출 후 경과 시간, 초 단위) ----------
+    const NMB = 1.4; // "No more bets" 마감 배너 + 딜러 로터 가속
+    const T1 = 4.2, T2 = 5.4, T3 = 7.2, D3 = T3 - T2, SHOW = T3 + 0.6;
+    const ROT_A = 0.55, ROT_B = 1.85, ROT_K = 0.22; // 로터 각속도 ω(τ) = A + B·e^(−kτ), 반시계방향
+    const WB0 = 12, WB1 = 3.4, M = Math.log(WB0 / WB1) / T1; // 볼 각속도 ω(τ) = −WB0·e^(−mτ), 시계방향
+    let W0 = 0, B0 = 0;
+    const rotorW = t => W0 + ROT_A * t + (ROT_B / ROT_K) * (1 - Math.exp(-ROT_K * t));
+    const rotorOmega = t => ROT_A + ROT_B * Math.exp(-ROT_K * t);
+    const ballFree = (t, b0) => b0 - (WB0 / M) * (1 - Math.exp(-M * t));
+    const ballOmega = t => -WB0 * Math.exp(-M * t);
+    const clamp01 = x => Math.max(0, Math.min(1, x));
+
+    // 구슬 발사각 b0에 대해 구슬이 최종 안착할 상대 각도 (ball - rotor) 역계산
+    function settleRel(b0) {
+      const rel2 = ballFree(T2, b0) - rotorW(T2);
+      const delta = (ballOmega(T2) - rotorOmega(T2)) * D3 / 2;
+      return { rel2, delta, final: rel2 + delta };
+    }
+
+    function ballState(t) {
+      if (t <= T1) {
+        // 1구간: 외곽 림 트랙 고속 회전
+        const r = R_TRACK + 0.003 * Math.sin(t * 37);
+        return { a: ballFree(t, B0), r, y: surf(r) + BR };
+      }
+      if (t <= T2) {
+        // 2구간: 감속 및 디플렉터 충돌
+        const s = (t - T1) / (T2 - T1);
+        const r = R_TRACK + (R_ENTRY - R_TRACK) * s * s;
+        const h = clamp01((s - 0.62) / 0.22); // 디플렉터 충돌 바운스
+        return { a: ballFree(t, B0) + 0.05 * Math.sin(Math.PI * h), r, y: surf(r) + BR + 0.06 * Math.sin(Math.PI * h) };
+      }
+      const { rel2, delta, final } = settleRel(B0);
+      if (t <= T3) {
+        // 3구간: 포켓 프렛 바운스
+        const s = (t - T2) / D3, e = (1 - s) * (1 - s);
+        const rel = rel2 + delta * (1 - e) + 0.10 * Math.sin(4 * Math.PI * s) * e;
+        const r = R_POCKET + (R_ENTRY - R_POCKET) * e + 0.05 * Math.sin(5 * Math.PI * s) * e;
+        const hop = 0.09 * Math.abs(Math.sin(3.5 * Math.PI * s)) * Math.pow(1 - s, 1.5);
+        return { a: rotorW(t) + rel, r, y: surf(r) + BR + hop };
+      }
+      // 4구간: 포켓 완전 안착
+      return { a: rotorW(t) + final, r: R_POCKET, y: BR };
+    }
+
+    function pocketAt(rel) {
+      const idx = ((Math.round(rel / STEP) % N) + N) % N;
+      let err = rel - idx * STEP;
+      err = ((err % (2 * Math.PI)) + 3 * Math.PI) % (2 * Math.PI) - Math.PI;
+      return { num: ORDER[idx], errDeg: err * 180 / Math.PI };
+    }
+
+    // ---------- 5. Three.js 씬 구축 ----------
+    const stage = document.getElementById('stage');
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    renderer.outputEncoding = THREE.sRGBEncoding;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    stage.prepend(renderer.domElement);
+
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(38, 1, 0.05, 50);
+
+    // 스튜디오 리플렉션 큐브맵 환경
+    (() => {
+      const env = new THREE.Scene();
+      env.background = new THREE.Color(0x0a0705);
+      const panel = (w, h, c, pos, look) => {
+        const m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: c, side: THREE.DoubleSide }));
+        m.position.set(...pos); m.lookAt(...look); env.add(m);
+      };
+      panel(6, 6, new THREE.Color(3.2, 2.8, 2.2), [0, 6, 0], [0, 0, 0]);
+      panel(4, 2, new THREE.Color(1.6, 1.1, 0.6), [6, 2, 2], [0, 0, 0]);
+      panel(4, 2, new THREE.Color(0.7, 0.8, 1.0), [-6, 1.5, -2], [0, 0, 0]);
+      panel(10, 1, new THREE.Color(0.25, 0.5, 0.35), [0, -3, 0], [0, 0, 0]);
+      const pm = new THREE.PMREMGenerator(renderer);
+      scene.environment = pm.fromScene(env, 0.03).texture;
+    })();
+
+    scene.add(new THREE.HemisphereLight(0xfff1dc, 0x1a0e08, 0.45));
+    const spot = new THREE.SpotLight(0xfff0d8, 1.7, 0, 0.55, 0.6, 1);
+    spot.position.set(1.4, 5.2, 2.2);
+    spot.castShadow = true; spot.shadow.mapSize.set(2048, 2048); spot.shadow.bias = -0.0004;
+    spot.shadow.camera.near = 2; spot.shadow.camera.far = 9;
+    scene.add(spot, spot.target);
+    const warm = new THREE.PointLight(0xffb066, 0.35); warm.position.set(-3, 2, -2.5); scene.add(warm);
+
+    function woodTexture(base, grain, repeat) {
+      const c = document.createElement('canvas'); c.width = c.height = 512;
+      const g = c.getContext('2d'); g.fillStyle = base; g.fillRect(0, 0, 512, 512);
+      for (let i = 0; i < 260; i++) {
+        const x = Math.random() * 512; g.strokeStyle = grain; g.globalAlpha = 0.05 + Math.random() * 0.22;
+        g.lineWidth = 0.5 + Math.random() * 2.4; g.beginPath(); g.moveTo(x, 0);
+        for (let y = 0; y <= 512; y += 32) g.lineTo(x + Math.sin(y * 0.02 + i) * 3, y);
+        g.stroke();
+      }
+      const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding;
+      t.wrapS = t.wrapT = THREE.RepeatWrapping; t.repeat.set(repeat, 1); return t;
+    }
+    const shade = (hex, f) => '#' + [1, 3, 5].map(i => Math.round(parseInt(hex.slice(i, i + 2), 16) * f).toString(16).padStart(2, '0')).join('');
+
+    function wheelTexture() {
+      const S = 2048, c = document.createElement('canvas'); c.width = c.height = S;
+      const g = c.getContext('2d'), k = S / 2 / R_ROTOR; g.translate(S / 2, S / 2);
+      g.fillStyle = '#120d0b'; g.beginPath(); g.arc(0, 0, S / 2, 0, Math.PI * 2); g.fill();
+      ORDER.forEach((n, i) => {
+        const th = i * STEP, a0 = -th - STEP / 2, a1 = -th + STEP / 2, col = HEX[colorOf(n)];
+        g.beginPath(); g.arc(0, 0, R_ROTOR * k, a0, a1); g.arc(0, 0, R_NUM_IN * k, a1, a0, true); g.closePath();
+        g.fillStyle = col; g.fill();
+        g.beginPath(); g.arc(0, 0, R_NUM_IN * k, a0, a1); g.arc(0, 0, R_POCKET_IN * k, a1, a0, true); g.closePath();
+        g.fillStyle = shade(col, 0.62); g.fill();
+        g.save(); g.rotate(a0); g.strokeStyle = '#d2a84f'; g.lineWidth = 4;
+        g.beginPath(); g.moveTo(R_NUM_IN * k, 0); g.lineTo(R_ROTOR * k, 0); g.stroke(); g.restore();
+        g.save(); g.rotate(-th); g.translate(0.935 * k, 0); g.rotate(Math.PI / 2);
+        g.fillStyle = '#f6ecd8'; g.font = `700 ${n.length > 1 ? 76 : 86}px ${FONT}`;
+        g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(n, 0, 6); g.restore();
+      });
+      g.strokeStyle = '#d2a84f'; g.lineWidth = 7;
+      [R_NUM_IN, R_ROTOR - 0.004].forEach(r => { g.beginPath(); g.arc(0, 0, r * k, 0, Math.PI * 2); g.stroke(); });
+      const t = new THREE.CanvasTexture(c); t.encoding = THREE.sRGBEncoding;
+      t.anisotropy = renderer.capabilities.getMaxAnisotropy(); return t;
+    }
+    function ringGeo(rin, rout, a0 = 0, len = Math.PI * 2) {
+      const geo = new THREE.RingGeometry(rin, rout, Math.max(8, Math.round(N * 6 * len / (Math.PI * 2))), 1, a0, len);
+      const p = geo.attributes.position, uv = geo.attributes.uv;
+      for (let i = 0; i < p.count; i++) uv.setXY(i, (p.getX(i) / R_ROTOR + 1) / 2, (p.getY(i) / R_ROTOR + 1) / 2);
+      geo.rotateX(-Math.PI / 2); return geo;
+    }
+
+    const brass = new THREE.MeshStandardMaterial({ color: 0xc9a24a, metalness: 0.9, roughness: 0.28 });
+    const chrome = new THREE.MeshStandardMaterial({ color: 0xdedede, metalness: 1, roughness: 0.16 });
+    const darkWood = new THREE.MeshStandardMaterial({ map: woodTexture('#2e160c', '#0e0502', 10), roughness: 0.3, envMapIntensity: 0.6, side: THREE.DoubleSide });
+    const lightWood = new THREE.MeshStandardMaterial({ map: woodTexture('#5a2a12', '#1e0a03', 14), roughness: 0.38, envMapIntensity: 0.5, side: THREE.DoubleSide });
+    const coneWood = new THREE.MeshStandardMaterial({ map: woodTexture('#55290f', '#1c0902', 8), roughness: 0.34, envMapIntensity: 0.6, side: THREE.DoubleSide });
+
+    // 테이블 펠트
+    const table = new THREE.Mesh(new THREE.CircleGeometry(9, 64), new THREE.MeshStandardMaterial({ color: 0x0c2a1f, roughness: 1, envMapIntensity: 0.15 }));
+    table.rotation.x = -Math.PI / 2; table.position.y = -0.26; table.receiveShadow = true; scene.add(table);
+
+    // 고정 보울 (Bowl): 림, 트랙, 벽
+    const lathe = (pts, mat) => {
+      const m = new THREE.Mesh(new THREE.LatheGeometry(pts.map(([r, y]) => new THREE.Vector2(r, y)), 160), mat);
+      m.receiveShadow = true; m.castShadow = true; scene.add(m); return m;
+    };
+    lathe([[1.02, 0.035], [1.15, 0.15], [1.40, 0.19], [1.42, 0.19]], darkWood);
+    lathe([[1.42, 0.19], [1.425, 0.30], [1.47, 0.345], [1.58, 0.35], [1.64, 0.31], [1.66, 0.2], [1.66, -0.26]], lightWood);
+    const floorDisc = new THREE.Mesh(new THREE.CircleGeometry(1.05, 64), new THREE.MeshStandardMaterial({ color: 0x0b0705 }));
+    floorDisc.rotation.x = -Math.PI / 2; floorDisc.position.y = -0.07; scene.add(floorDisc);
+
+    // 8개 황동 다이아몬드 디플렉터
+    for (let i = 0; i < 8; i++) {
+      const a = i * Math.PI / 4 + Math.PI / 8, r = 1.09;
+      const d = new THREE.Mesh(new THREE.OctahedronGeometry(0.03), brass);
+      d.scale.set(i % 2 ? 0.8 : 2.2, 0.55, i % 2 ? 2.2 : 0.8);
+      d.position.set(r * Math.cos(a), surf(r) + 0.01, -r * Math.sin(a)); d.rotation.y = a; d.castShadow = true; scene.add(d);
+    }
+
+    // 회전 로터 (Rotor)
+    const rotor = new THREE.Group(); scene.add(rotor);
+    const wheelMat = new THREE.MeshStandardMaterial({ roughness: 0.42, metalness: 0.05, envMapIntensity: 0.5 });
+    const numRing = new THREE.Mesh(ringGeo(R_NUM_IN, R_ROTOR), wheelMat); numRing.position.y = 0.04;
+    const floorRing = new THREE.Mesh(ringGeo(R_POCKET_IN, R_NUM_IN), wheelMat);
+    numRing.receiveShadow = floorRing.receiveShadow = true; rotor.add(numRing, floorRing);
+
+    const cyl = (r, h, y, mat) => {
+      const m = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 160, 1, true), mat);
+      m.position.y = y; m.receiveShadow = true; rotor.add(m); return m;
+    };
+    cyl(R_ROTOR, 0.11, -0.015, brass);
+    cyl(R_NUM_IN, 0.04, 0.02, new THREE.MeshStandardMaterial({ color: 0x1a1210, roughness: 0.6, side: THREE.DoubleSide }));
+    cyl(R_POCKET_IN, 0.07, 0.035, chrome);
+
+    // 포켓 프렛 (Fret)
+    const fretGeo = new THREE.BoxGeometry(R_NUM_IN + 0.012 - R_POCKET_IN, 0.05, 0.009);
+    for (let i = 0; i < N; i++) {
+      const a = i * STEP + STEP / 2, r = (R_NUM_IN + 0.012 + R_POCKET_IN) / 2;
+      const f = new THREE.Mesh(fretGeo, chrome);
+      f.position.set(r * Math.cos(a), 0.025, -r * Math.sin(a)); f.rotation.y = a; f.castShadow = true; rotor.add(f);
+    }
+
+    // 중앙 원뿔 콘 및 터렛
+    const cone = new THREE.Mesh(new THREE.LatheGeometry(
+      [[0.66, 0.07], [0.52, 0.1], [0.34, 0.15], [0.16, 0.19], [0.001, 0.2]].map(([r, y]) => new THREE.Vector2(r, y)), 128), coneWood);
+    cone.receiveShadow = true; rotor.add(cone);
+    const coneTrim = new THREE.Mesh(new THREE.TorusGeometry(0.66, 0.008, 8, 160), brass);
+    coneTrim.rotation.x = Math.PI / 2; coneTrim.position.y = 0.07; rotor.add(coneTrim);
+
+    const turret = new THREE.Group(); rotor.add(turret);
+    const post = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.09, 0.16, 48), brass); post.position.y = 0.27;
+    const cap = new THREE.Mesh(new THREE.SphereGeometry(0.045, 32, 16), brass); cap.position.y = 0.39;
+    const stem = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.03, 0.06, 24), brass); stem.position.y = 0.35;
+    turret.add(post, cap, stem);
+    for (let i = 0; i < 2; i++) {
+      const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.011, 0.011, 0.36, 16), brass);
+      arm.rotation.z = Math.PI / 2; arm.rotation.y = i * Math.PI / 2; arm.position.y = 0.335; turret.add(arm);
+      for (const s of [-1, 1]) {
+        const knob = new THREE.Mesh(new THREE.SphereGeometry(0.026, 24, 12), brass);
+        knob.position.set(i ? 0 : s * 0.18, 0.335, i ? s * 0.18 : 0); turret.add(knob);
+      }
+    }
+    turret.traverse(o => { if (o.isMesh) o.castShadow = true; });
+
+    // 포켓 하이라이트 마커
+    const markerMat = new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
+    let marker = null;
+    function setMarker(num) {
+      if (marker) { rotor.remove(marker); marker.geometry.dispose(); }
+      const th = ORDER.indexOf(num) * STEP;
+      marker = new THREE.Mesh(ringGeo(R_POCKET_IN + 0.01, R_ROTOR - 0.01, th - STEP / 2, STEP), markerMat);
+      marker.position.y = 0.047; rotor.add(marker);
+    }
+
+    // 3D 은구슬
+    const ball = new THREE.Mesh(new THREE.SphereGeometry(BR, 40, 28),
+      new THREE.MeshStandardMaterial({ color: 0xf7f5f0, roughness: 0.16, metalness: 0, envMapIntensity: 1.2 }));
+    ball.castShadow = true; scene.add(ball);
+
+    // 폰트 로드 후 휠 텍스처 렌더링
+    const fontReady = document.fonts ? Promise.race([document.fonts.load(`700 80px ${FONT}`), new Promise(r => setTimeout(r, 1500))]) : Promise.resolve();
+    fontReady.catch(() => {}).then(() => { wheelMat.map = wheelTexture(); wheelMat.needsUpdate = true; });
+
+    // ---------- 6. 카메라 시점 컨트롤 ----------
+    const VIEWS = {
+      table: { yaw: 0, pitch: 0.66, dist: 4.6, look: [0, 0.02, 0.1] },
+      close: { yaw: 0.35, pitch: 0.36, dist: 2.35, look: [0.15, 0.05, 0.55] },
+      top:   { yaw: 0, pitch: 1.53, dist: 4.3, look: [0, 0, 0] },
+    };
+    const cam = { yaw: 0, pitch: 0.66, dist: 4.6, look: new THREE.Vector3(0, 0.02, 0.1), t: { ...VIEWS.table } };
+    function setView(v) { cam.t = { ...VIEWS[v] }; }
+
+    let drag = null;
+    renderer.domElement.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY }; renderer.domElement.setPointerCapture(e.pointerId); });
+    renderer.domElement.addEventListener('pointermove', e => {
+      if (!drag) return;
+      cam.t.yaw -= (e.clientX - drag.x) * 0.008;
+      cam.t.pitch = Math.max(0.12, Math.min(1.55, cam.t.pitch + (e.clientY - drag.y) * 0.006));
+      drag = { x: e.clientX, y: e.clientY };
+    });
+    const endDrag = () => { drag = null; };
+    renderer.domElement.addEventListener('pointerup', endDrag);
+    renderer.domElement.addEventListener('pointercancel', endDrag);
+    renderer.domElement.addEventListener('wheel', e => {
+      e.preventDefault(); cam.t.dist = Math.max(1.4, Math.min(8, cam.t.dist * (1 + e.deltaY * 0.001)));
+    }, { passive: false });
+
+    function updateCamera(dt) {
+      const f = 1 - Math.exp(-dt * 5);
+      cam.yaw += (cam.t.yaw - cam.yaw) * f; cam.pitch += (cam.t.pitch - cam.pitch) * f; cam.dist += (cam.t.dist - cam.dist) * f;
+      cam.look.lerp(new THREE.Vector3(...cam.t.look), f);
+      const fit = Math.max(1, 1.05 / camera.aspect);
+      const d = cam.dist * fit;
+      camera.position.set(cam.look.x + d * Math.cos(cam.pitch) * Math.sin(cam.yaw), cam.look.y + d * Math.sin(cam.pitch),
+                          cam.look.z + d * Math.cos(cam.pitch) * Math.cos(cam.yaw));
+      camera.lookAt(cam.look);
+    }
+
+    function resize() {
+      const w = stage.clientWidth, h = stage.clientHeight; if (!w || !h) return;
+      renderer.setSize(w, h, false); camera.aspect = w / h; camera.updateProjectionMatrix();
+    }
+    new ResizeObserver(resize).observe(stage); resize();
+
+    // ---------- 7. UI 제어 및 이벤트 바인딩 ----------
+    const $ = id => document.getElementById(id);
+    const input = $('target-input'), errEl = $('target-err'), startBtn = $('start-btn');
+    const statusEl = $('status'), statusText = $('status-text'), banner = $('banner'), resultEl = $('result');
+    const layoutEl = $('layout');
+
+    function parseTarget(v) {
+      v = String(v).trim();
+      if (v === '00') return '00';
+      if (!/^\d{1,2}$/.test(v)) return null;
+      const n = parseInt(v, 10); return n >= 0 && n <= 36 ? String(n) : null;
+    }
+
+    function addChip(n, col, row, span) {
+      const b = document.createElement('button'); b.type = 'button'; b.textContent = n; b.dataset.n = n; b.dataset.c = colorOf(n);
+      b.style.gridColumn = col; b.style.gridRow = `${row} / span ${span}`; b.setAttribute('aria-pressed', 'false');
+      b.setAttribute('aria-label', `${n} ${KO[colorOf(n)]}`); layoutEl.append(b);
+    }
+    addChip('0', 1, 1, 3); addChip('00', 1, 4, 3);
+    for (let n = 1; n <= 36; n++) addChip(String(n), Math.ceil(n / 3) + 1, n % 3 === 0 ? 1 : n % 3 === 2 ? 3 : 5, 2);
+
+    function syncPick() {
+      const t = parseTarget(input.value);
+      layoutEl.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.n === t)));
+      $('pick-label').textContent = t ? `${t} · ${KO[colorOf(t)]}` : '—';
+      if (t) { input.removeAttribute('aria-invalid'); errEl.textContent = ''; }
+      if (t && !busy()) { setMarker(t); markerMat.opacity = 0.22; pulseOn = false; }
+      return t;
+    }
+
+    layoutEl.addEventListener('click', e => {
+      const b = e.target.closest('button'); if (!b) return;
+      input.value = b.dataset.n; syncPick();
+    });
+    input.addEventListener('input', syncPick);
+    $('random-btn').addEventListener('click', () => {
+      input.value = ORDER[Math.floor(Math.random() * N)]; syncPick();
+    });
+    $('spin-form').addEventListener('submit', e => {
+      e.preventDefault();
+      const t = parseTarget(input.value);
+      if (!t) {
+        input.setAttribute('aria-invalid', 'true');
+        errEl.textContent = '0, 00, 1–36 중 하나를 입력하세요.';
+        input.focus();
+        return;
+      }
+      startSpin(t);
+    });
+
+    function bindSeg(id, attr, fn) {
+      const seg = $(id);
+      seg.addEventListener('click', e => {
+        const b = e.target.closest('button'); if (!b) return;
+        seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); fn(b.dataset[attr]);
+      });
+    }
+    let speed = 1;
+    bindSeg('view-seg', 'v', setView);
+    bindSeg('speed-seg', 's', v => { speed = Number(v); });
+
+    function setPhase(p, text) {
+      if (statusEl.dataset.phase !== p) {
+        statusEl.dataset.phase = p;
+        statusText.textContent = text;
+      }
+    }
+
+    // ---------- 8. 스핀 상태 머신 (Spin State Machine) ----------
+    let mode = 'free', W = 0, omega = ROT_A, omegaStart = ROT_A, relRest = ORDER.indexOf('17') * STEP;
+    let tN = 0, tau = 0, target = null, settled = false, shown = false;
+    let stats = { n: 0, ok: 0 }, auto = null, pulseOn = false;
+    let deflectorPlayed = false, bouncePlayed = false, dropPlayed = false;
+    const busy = () => mode === 'nmb' || (mode === 'spin' && !shown);
+
+    function startSpin(t) {
+      if (busy()) return;
+      initAudio();
+      target = t; omegaStart = mode === 'spin' ? rotorOmega(tau) : omega;
+      if (mode === 'spin') W = rotorW(tau);
+      mode = 'nmb'; tN = 0; settled = shown = false;
+      deflectorPlayed = bouncePlayed = dropPlayed = false;
+
+      ball.visible = false;
+      resultEl.classList.remove('show');
+      banner.classList.add('show');
+      setMarker(t); markerMat.opacity = 0; pulseOn = false;
+      startBtn.disabled = true;
+      setPhase('nmb', '⛔ 베팅 마감 · No More Bets');
+      playSound.bell();
+    }
+
+    function launch() {
+      W0 = W; tau = 0;
+      // [핵심 역계산 알고리즘]: 지정한 target 포켓 홈에 100% 안착하도록 초기 방출 각도 B0 역산출!
+      B0 = ORDER.indexOf(target) * STEP - settleRel(0).final;
+      mode = 'spin'; ball.visible = true;
+      playSound.startRolling();
+    }
+
+    function finish() {
+      playSound.stopRolling();
+      const st = ballState(T3), got = pocketAt(st.a - rotorW(T3));
+      const ok = got.num === target;
+      stats.n++; if (ok) stats.ok++;
+      const c = colorOf(got.num);
+
+      $('result-disc').textContent = got.num;
+      $('result-disc').className = 'disc c-' + c;
+      $('result-title').textContent = `${got.num} · ${c.toUpperCase()}`;
+      $('result-sub').textContent = `목표 ${target} · ${ok ? '100% 일치' : '불일치'} · 오차 ${Math.abs(got.errDeg).toFixed(2)}°`;
+      resultEl.classList.add('show');
+      setMarker(got.num);
+      pulseOn = true;
+
+      const list = $('history');
+      list.querySelector('.empty')?.remove();
+      const li = document.createElement('li');
+      li.innerHTML = `<span class="pill c-${c}"></span><span>목표 <b></b> ➔ 결과 <b></b> <span class="${ok ? 'ok' : 'bad'}">${ok ? '정확히 일치' : '불일치'}</span></span><span class="mono"></span>`;
+      li.querySelector('.pill').textContent = got.num;
+      const bs = li.querySelectorAll('b'); bs[0].textContent = target; bs[1].textContent = got.num;
+      li.querySelector('.mono').textContent = `±${Math.abs(got.errDeg).toFixed(2)}°`;
+      list.prepend(li);
+      while (list.children.length > 12) list.lastChild.remove();
+
+      $('tally').textContent = `${stats.ok}/${stats.n} 일치 (${Math.round((stats.ok / stats.n) * 100)}%)`;
+      startBtn.disabled = false;
+      setPhase('result', `🎯 당첨 결과 #${got.num} ${KO[c]}`);
+
+      if (auto) {
+        auto.done++; if (ok) auto.ok++;
+        $('auto-status').textContent = `${auto.done}/${auto.total} 진행 · ${auto.ok} 일치`;
+        if (auto.done < auto.total) {
+          setTimeout(() => {
+            if (auto) {
+              input.value = ORDER[Math.floor(Math.random() * N)];
+              startSpin(syncPick());
+            }
+          }, 900 / speed);
+        } else {
+          $('auto-status').textContent = `검증 완료: ${auto.ok}/${auto.total} 회 100% 일치`;
+          auto = null;
+          $('auto-btn').textContent = '랜덤 10회 연속 테스트';
+        }
+      }
+    }
+
+    $('auto-btn').addEventListener('click', () => {
+      if (auto) {
+        auto = null;
+        $('auto-btn').textContent = '랜덤 10회 연속 테스트';
+        $('auto-status').textContent = '검증이 중지되었습니다';
+        return;
+      }
+      if (busy()) return;
+      auto = { total: 10, done: 0, ok: 0 };
+      $('auto-btn').textContent = '검증 중지';
+      $('auto-status').textContent = '0/10 진행 중...';
+      input.value = ORDER[Math.floor(Math.random() * N)];
+      startSpin(syncPick());
+    });
+
+    // ---------- 9. 렌더 루프 (Render Loop) ----------
+    let last = performance.now(), pulse = 0;
+    function frame(now) {
+      const real = Math.min(0.05, (now - last) / 1000);
+      last = now;
+      const dt = real * speed;
+      pulse += real;
+      let bs;
+
+      if (mode === 'free') {
+        W += omega * dt;
+        bs = { a: W + relRest, r: R_POCKET, y: BR };
+      } else if (mode === 'nmb') {
+        tN += dt;
+        const s = Math.min(1, tN / NMB), e = s * s * (3 - 2 * s);
+        omega = omegaStart + (ROT_A + ROT_B - omegaStart) * e;
+        W += omega * dt;
+        bs = { a: 0, r: R_TRACK, y: 0 };
+        if (tN >= NMB) launch();
+      }
+
+      if (mode === 'spin') {
+        tau += dt;
+        W = rotorW(tau);
+        bs = ballState(tau);
+
+        if (tau > 0.7) banner.classList.remove('show');
+
+        if (tau < T1) {
+          setPhase('spin', '🔴 볼 고속 스핀 중...');
+        } else if (tau < T2) {
+          setPhase('drop', '🟡 디플렉터 충돌 및 감속 낙하');
+          if (!deflectorPlayed) {
+            deflectorPlayed = true;
+            playSound.deflector();
+          }
+        } else if (tau < T3) {
+          setPhase('bounce', '🟠 번호 포켓 프렛 바운스');
+          if (!bouncePlayed) {
+            bouncePlayed = true;
+            playSound.bounce();
+          }
+        } else {
+          if (!dropPlayed) {
+            dropPlayed = true;
+            playSound.drop();
+          }
+        }
+
+        if (tau >= SHOW && !shown) {
+          shown = true;
+          finish();
+        }
+      }
+
+      rotor.rotation.y = W;
+      ball.position.set(bs.r * Math.cos(bs.a), bs.y, -bs.r * Math.sin(bs.a));
+
+      if (pulseOn) markerMat.opacity = 0.45 + 0.25 * Math.sin(pulse * 4);
+      else if (busy()) markerMat.opacity = 0;
+
+      updateCamera(real);
+      renderer.render(scene, camera);
+      requestAnimationFrame(frame);
+    }
+
+    syncPick();
+    requestAnimationFrame(frame);
+  })();
+  </script>
+</body>
+</html>
