@@ -765,3 +765,24 @@ SNS 간편로그인 삭제 해주고
    - Chrome 헤드리스 렌더링 및 구문 무결성(Braces/Parens 100% 매칭) 확인 완료.
    - index.html 캐시 버스팅 파라미터 ?v=20261030_1535 전면 갱신.
    - GitHub Pages 실서버(https://wisekks-arch.github.io/roulette/index.html) 배포 완료.
+
+
+[59차 사용자 요청 원문 - 2026-10-30]
+"아이디 
+발급된 임시 비밀번호  :    마우스로 복사할수 있게 해줘"
+- 사용자 최종 확인: 승인 (컨펌 완료)
+
+[59차 핵심 구현 및 개선 사항]
+1. 텍스트 마우스 드래그 및 복사 잠금 해제 (css/style.css):
+   - body 전역의 user-select: none 제약으로 인해 막혀 있던 텍스트 복사를 계정 찾기 결과창(.rs-credentials-summary, .selectable-text) 및 임시 비밀번호 변경 모달(.cpw-current-temp-badge .val)에 user-select: text !important; cursor: text; 속성을 부여하여 마우스 드래그 및 우클릭/Ctrl+C로 자유롭게 복사할 수 있도록 완벽 해제.
+2. 아이디 및 발급된 임시 비밀번호 원클릭 [📋 복사] 버튼 탑재 (js/auth.js, css/style.css):
+   - STEP 1 (아이디 찾기 결과): 찾은 아이디(이메일) 옆에 [📋 복사] 버튼 탑재.
+   - STEP 2 (임시비밀번호 발급 결과): 아이디 및 발급된 임시 비밀번호 옆에 각각 [📋 복사] 버튼을 제공하여 원클릭으로 클립보드에 즉시 복사 및 "✓ 복사완료!" 상태 표시.
+   - 입장 후 [보안 안내 모달]: 현재 발급된 임시 비밀번호 옆에도 동일하게 [📋 복사] 버튼 제공.
+   - 클립보드 복사 유틸(copyToClipboard) 구현 (Clipboard API 및 execCommand Fallback 완비).
+3. 자동 입장 대기 시간 3.0초 연장 (js/auth.js):
+   - 임시 비밀번호 발급 후 유저가 여유 있게 마우스로 긁어 복사하거나 [📋 복사] 버튼을 누를 수 있도록 자동 입장 딜레이를 1.5초에서 3.0초(3000ms)로 넉넉하게 연장.
+4. 브라우저 스크립트 에러 0건(ZERO) 검증 및 GitHub Pages 실서버 배포:
+   - Chrome 헤드리스 렌더링 및 구문 무결성(Braces/Parens 100% 매칭) 확인 완료.
+   - index.html 캐시 버스팅 파라미터 ?v=20261030_1545 전면 갱신.
+   - GitHub Pages 실서버(https://wisekks-arch.github.io/roulette/index.html) 배포 완료.

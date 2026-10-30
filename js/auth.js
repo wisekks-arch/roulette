@@ -311,6 +311,53 @@ class RouletteAuth {
     }
 
     /**
+     * [클립보드 복사 헬퍼] 마우스 클릭 또는 텍스트 복사 시 토스트 및 버튼 상태 갱신
+     * @param {string} text 
+     * @param {HTMLElement} btnElement 
+     */
+    copyToClipboard(text, btnElement) {
+        if (!text) return;
+        const fallbackCopy = (val) => {
+            const ta = document.createElement('textarea');
+            ta.value = val;
+            ta.style.position = 'fixed';
+            ta.style.left = '-9999px';
+            document.body.appendChild(ta);
+            ta.select();
+            try {
+                document.execCommand('copy');
+                this.onCopySuccess(btnElement, val);
+            } catch (err) {
+                console.warn('Fallback copy failed', err);
+            }
+            document.body.removeChild(ta);
+        };
+
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text)
+                .then(() => this.onCopySuccess(btnElement, text))
+                .catch(() => fallbackCopy(text));
+        } else {
+            fallbackCopy(text);
+        }
+    }
+
+    onCopySuccess(btnElement, text) {
+        if (btnElement) {
+            const originText = btnElement.innerHTML;
+            btnElement.innerHTML = '✓ 복사완료!';
+            btnElement.classList.add('copied');
+            setTimeout(() => {
+                btnElement.innerHTML = originText;
+                btnElement.classList.remove('copied');
+            }, 1500);
+        }
+        if (window.rouletteApp) {
+            window.rouletteApp.showToast(`📋 클립보드에 복사되었습니다: [${text}]`);
+        }
+    }
+
+    /**
      * 일반 이메일 로그인
      */
     loginEmail(email, password) {
@@ -733,7 +780,10 @@ class RouletteAuth {
                                 <span class="rs-icon">✅</span>
                                 <div class="rs-info">
                                     <div class="rs-text">회원님의 가입 아이디(이메일)</div>
-                                    <div class="rs-email">${res.email}</div>
+                                    <div class="copy-row">
+                                        <span class="rs-email selectable-text">${res.email}</span>
+                                        <button type="button" class="btn-copy-tag" onclick="window.rouletteAuth.copyToClipboard('${res.email}', this)" title="아이디 복사">📋 복사</button>
+                                    </div>
                                 </div>
                                 <button type="button" class="btn-use-found-id" id="btn-use-found-id" data-email="${res.email}">이 아이디로 로그인</button>
                             </div>
@@ -776,7 +826,7 @@ class RouletteAuth {
                 }
 
                 if (res.success) {
-                    // [사용자 요구 반영] 입력한 정보가 맞으면: 임시 비밀번호가 발급되었음을 알리고 입장 후 변경 안내!
+                    // [사용자 요구 반영] 마우스로 자유롭게 복사 가능 및 [📋 복사] 버튼 제공!
                     if (resultBox) {
                         resultBox.innerHTML = `
                             <div class="result-success-box highlight-pulse">
@@ -784,10 +834,18 @@ class RouletteAuth {
                                 <div class="rs-info">
                                     <div class="rs-text">임시 비밀번호 발급 및 로그인 성공!</div>
                                     <div class="rs-credentials-summary">
-                                        • 아이디: <strong>${email}</strong><br>
-                                        • 발급된 임시 비밀번호: <strong>${res.tempPassword}</strong>
+                                        <div class="copy-row">
+                                            <span class="lbl-dim">• 아이디:</span>
+                                            <strong class="selectable-text highlight-email">${email}</strong>
+                                            <button type="button" class="btn-copy-tag" onclick="window.rouletteAuth.copyToClipboard('${email}', this)" title="아이디 복사">📋 복사</button>
+                                        </div>
+                                        <div class="copy-row mt-4">
+                                            <span class="lbl-dim">• 발급된 임시 비밀번호:</span>
+                                            <strong class="selectable-text highlight-pw">${res.tempPassword}</strong>
+                                            <button type="button" class="btn-copy-tag" onclick="window.rouletteAuth.copyToClipboard('${res.tempPassword}', this)" title="임시 비밀번호 복사">📋 복사</button>
+                                        </div>
                                     </div>
-                                    <div class="rs-subtext">입장 후 새 비밀번호 변경 화면이 자동으로 열립니다. (1.5초 후 입장)</div>
+                                    <div class="rs-subtext">💡 마우스로 드래그하거나 [📋 복사] 버튼으로 복사할 수 있습니다. (3초 후 자동 입장)</div>
                                 </div>
                             </div>
                         `;
@@ -796,7 +854,7 @@ class RouletteAuth {
                         window.rouletteApp.showToast(`🎉 [${email}] 임시 비밀번호(${res.tempPassword})로 로그인되었습니다!`);
                         window.rouletteApp.setBalance(res.user.balance);
                     }
-                    // 1.5초 동안 유저에게 로그인된 정보를 명확히 보여준 후 입장
+                    // 여유 있게 복사할 수 있도록 3.0초 대기 후 입장
                     setTimeout(() => {
                         this.renderHeaderProfile();
                         this.isMandatoryEntrance = false;
@@ -804,7 +862,7 @@ class RouletteAuth {
                         if (window.rouletteApp && typeof window.rouletteApp.onUserLoggedIn === 'function') {
                             window.rouletteApp.onUserLoggedIn(res.user);
                         }
-                    }, 1500);
+                    }, 3000);
                 } else {
                     // [사용자 요구 반영] 안 맞으면 안 맞는다고 명확하게 경고 알림 표시!
                     if (resultBox) {
@@ -1050,7 +1108,10 @@ class RouletteAuth {
 
                     <div class="cpw-current-temp-badge">
                         <span class="lbl">현재 발급된 임시 비밀번호</span>
-                        <strong class="val">${this.currentUser.password || '임시 비밀번호'}</strong>
+                        <div class="copy-row inline-copy">
+                            <strong class="val selectable-text highlight-gold">${this.currentUser.password || '임시 비밀번호'}</strong>
+                            <button type="button" class="btn-copy-tag" onclick="window.rouletteAuth.copyToClipboard('${this.currentUser.password}', this)" title="임시 비밀번호 복사">📋 복사</button>
+                        </div>
                     </div>
 
                     <form id="form-change-temp-pw" class="cpw-form">
