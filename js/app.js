@@ -464,8 +464,12 @@ class RouletteApp {
         this.currentPhase = 'BETTING';
         this.timerSeconds = 20;
 
-        // 이번 회차의 당첨 번호를 사전에 단일 확정 (0~36, 100% 동기화 보장)
-        this.currentWinningNumber = Math.floor(Math.random() * 37);
+        // 이번 회차의 당첨 번호를 사전에 단일 확정 (0~36 및 00 포함 총 38개 풀, 100% 동기화 보장)
+        const ROULETTE_NUMBERS = [
+            '0', '28', '9', '26', '30', '11', '7', '20', '32', '17', '5', '22', '34', '15', '3', '24', '36', '13', '1',
+            '00', '27', '10', '25', '29', '12', '8', '19', '31', '18', '6', '21', '33', '16', '4', '23', '35', '14', '2'
+        ];
+        this.currentWinningNumber = ROULETTE_NUMBERS[Math.floor(Math.random() * ROULETTE_NUMBERS.length)];
 
         // 테이블 언락 및 돌리 핀 제거
         if (window.rouletteTable) {
@@ -685,10 +689,10 @@ class RouletteApp {
         const height = viewport.clientHeight || 540;
 
         // ---------- 1. 아메리칸/유러피언 38개 번호판 휠 데이터 ----------
-        const ORDER = ['0','28','9','26','30','11','7','20','32','17','5','22','34','15','3','24','36','13','1',
-                       '00','27','10','25','29','12','8','19','31','18','6','21','33','16','4','23','35','14','2'];
+        const ORDER = ['0', '28', '9', '26', '30', '11', '7', '20', '32', '17', '5', '22', '34', '15', '3', '24', '36', '13', '1',
+            '00', '27', '10', '25', '29', '12', '8', '19', '31', '18', '6', '21', '33', '16', '4', '23', '35', '14', '2'];
         const N = ORDER.length, STEP = (Math.PI * 2) / N;
-        const REDS = new Set(['1','3','5','7','9','12','14','16','18','19','21','23','25','27','30','32','34','36']);
+        const REDS = new Set(['1', '3', '5', '7', '9', '12', '14', '16', '18', '19', '21', '23', '25', '27', '30', '32', '34', '36']);
         const colorOf = n => (n === '0' || n === '00') ? 'green' : REDS.has(n) ? 'red' : 'black';
         const HEX = { red: '#b8262e', black: '#1b1716', green: '#1f6b45' };
         const FONT = '"Bodoni Moda","Outfit","Didot",sans-serif';
@@ -1023,7 +1027,7 @@ class RouletteApp {
     onSpinResult(winningNumber, color) {
         this.currentPhase = 'RESULT';
 
-        const colorName = color === 'red' ? '레드' : (color === 'black' ? '블랙' : '싱글 제로');
+        const colorName = color === 'red' ? '레드' : (color === 'black' ? '블랙' : (String(winningNumber) === '00' ? '더블 제로' : '싱글 제로'));
         this.updatePhaseStatus(`🎯 당첨 번호: ${winningNumber} (${colorName}) - 딜러 배당금 정산`, "result");
 
         // 1. 딜러 세련된 결과 낭독 음성
@@ -1121,165 +1125,165 @@ class RouletteApp {
      * 5단계: 다음 회차 자동 생성 및 무한 순환 시작
      */
     nextRound() {
-    this.purgeLockoutOverlay();
+        this.purgeLockoutOverlay();
 
-    // 승리 팝업 닫기
-    const winModal = document.getElementById('win-celebration-modal');
-    if (winModal) {
-        winModal.classList.add('hidden');
-        winModal.style.display = 'none';
+        // 승리 팝업 닫기
+        const winModal = document.getElementById('win-celebration-modal');
+        if (winModal) {
+            winModal.classList.add('hidden');
+            winModal.style.display = 'none';
+        }
+
+        // 영상 팝업 닫기
+        const liveCamModal = document.getElementById('live-cam-modal');
+        if (liveCamModal) {
+            liveCamModal.classList.add('hidden');
+            liveCamModal.style.display = 'none';
+        }
+
+        // 오토플레이 조건 검사
+        this.checkAutoPlayConditions();
+
+        // 회차 증가
+        this.currentRound++;
+        this.updateRoundDisplay();
+
+        // 1단계 새 배팅 페이즈 시작 (20초 리셋)
+        this.startBettingPhase();
     }
 
-    // 영상 팝업 닫기
-    const liveCamModal = document.getElementById('live-cam-modal');
-    if (liveCamModal) {
-        liveCamModal.classList.add('hidden');
-        liveCamModal.style.display = 'none';
-    }
+    /**
+     * 대형 승리 축하 모달 표시
+     */
+    showWinModal(winningNumber, color, winAmount, winningBets) {
+        const modal = document.getElementById('win-celebration-modal');
+        const numBadge = document.getElementById('win-number-badge');
+        const amountText = document.getElementById('win-amount-text');
+        const detailBox = document.getElementById('win-bets-detail');
 
-    // 오토플레이 조건 검사
-    this.checkAutoPlayConditions();
+        if (!modal) return;
 
-    // 회차 증가
-    this.currentRound++;
-    this.updateRoundDisplay();
+        if (numBadge) {
+            numBadge.textContent = winningNumber;
+            numBadge.className = `win-badge ${color === 'red' ? 'badge-red' : (color === 'black' ? 'badge-black' : 'badge-green')}`;
+        }
 
-    // 1단계 새 배팅 페이즈 시작 (20초 리셋)
-    this.startBettingPhase();
-}
+        if (amountText) {
+            amountText.textContent = `+${winAmount.toLocaleString()} Chip`;
+        }
 
-/**
- * 대형 승리 축하 모달 표시
- */
-showWinModal(winningNumber, color, winAmount, winningBets) {
-    const modal = document.getElementById('win-celebration-modal');
-    const numBadge = document.getElementById('win-number-badge');
-    const amountText = document.getElementById('win-amount-text');
-    const detailBox = document.getElementById('win-bets-detail');
-
-    if (!modal) return;
-
-    if (numBadge) {
-        numBadge.textContent = winningNumber;
-        numBadge.className = `win-badge ${color === 'red' ? 'badge-red' : (color === 'black' ? 'badge-black' : 'badge-green')}`;
-    }
-
-    if (amountText) {
-        amountText.textContent = `+${winAmount.toLocaleString()} Chip`;
-    }
-
-    if (detailBox && winningBets) {
-        detailBox.innerHTML = winningBets.map(b => `
+        if (detailBox && winningBets) {
+            detailBox.innerHTML = winningBets.map(b => `
                 <div class="win-bet-item">
                     <span>${b.type.toUpperCase()} 적중 (${b.payoutRatio}:1)</span>
                     <span class="bet-win-amount">+${b.win.toLocaleString()} Chip</span>
                 </div>
             `).join('');
+        }
+
+        modal.classList.remove('hidden');
     }
 
-    modal.classList.remove('hidden');
-}
+    /**
+     * 상단 상태바 메시지 및 클래스 변경
+     */
+    updatePhaseStatus(message, phaseClass) {
+        const banner = document.getElementById('announcement-banner');
+        const text = document.getElementById('status-message-text');
 
-/**
- * 상단 상태바 메시지 및 클래스 변경
- */
-updatePhaseStatus(message, phaseClass) {
-    const banner = document.getElementById('announcement-banner');
-    const text = document.getElementById('status-message-text');
-
-    if (banner) {
-        banner.className = `announcement-banner banner-${phaseClass}`;
-    }
-    if (text) {
-        text.textContent = message;
-    }
-}
-
-/**
- * 타이머 UI 업데이트 (상단 배너 및 테이블 0번 위 실시간 초록색 게이지 바 동기화)
- */
-updateTimerDisplay(seconds) {
-    const timerEl = document.getElementById('phase-timer');
-    if (timerEl) {
-        timerEl.textContent = `${seconds}s`;
-    }
-
-    // 테이블 0번 바로 위 초록색 배팅 시간 게이지 바 실시간 연동 (20s -> 6s, 4s 줄어듦)
-    const gaugeContainer = document.getElementById('table-bet-timer-gauge-container');
-    const gaugeProgress = document.getElementById('table-bet-timer-progress');
-    const gaugeNum = document.getElementById('table-timer-gauge-num');
-
-    if (gaugeNum) {
-        gaugeNum.textContent = `${seconds}s`;
-    }
-
-    if (gaugeProgress) {
-        const pct = Math.max(0, Math.min(100, (seconds / 20) * 100));
-        gaugeProgress.style.width = `${pct}%`;
-    }
-
-    if (gaugeContainer) {
-        if (seconds <= 5 && seconds > 0) {
-            gaugeContainer.classList.add('gauge-warning');
-        } else {
-            gaugeContainer.classList.remove('gauge-warning');
+        if (banner) {
+            banner.className = `announcement-banner banner-${phaseClass}`;
+        }
+        if (text) {
+            text.textContent = message;
         }
     }
-}
 
-/**
- * 최근 10회 당첨 번호 히스토리 초기화 (앱 실행 시 10개 번호 즉시 표출)
- */
-initHistoryBoard() {
-    const historyList = document.getElementById('table-history-list');
-    if (!historyList) return;
+    /**
+     * 타이머 UI 업데이트 (상단 배너 및 테이블 0번 위 실시간 초록색 게이지 바 동기화)
+     */
+    updateTimerDisplay(seconds) {
+        const timerEl = document.getElementById('phase-timer');
+        if (timerEl) {
+            timerEl.textContent = `${seconds}s`;
+        }
 
-    historyList.innerHTML = '';
-    // 초기 10회 당첨 기록 (가장 최신 순으로 배열)
-    const initialNumbers = [17, 4, 21, 0, 32, 15, 8, 29, 11, 26];
-    initialNumbers.forEach(num => {
-        const color = window.rouletteWheel ? window.rouletteWheel.getNumberColor(num) : (num === 0 ? 'green' : 'red');
+        // 테이블 0번 바로 위 초록색 배팅 시간 게이지 바 실시간 연동 (20s -> 6s, 4s 줄어듦)
+        const gaugeContainer = document.getElementById('table-bet-timer-gauge-container');
+        const gaugeProgress = document.getElementById('table-bet-timer-progress');
+        const gaugeNum = document.getElementById('table-timer-gauge-num');
+
+        if (gaugeNum) {
+            gaugeNum.textContent = `${seconds}s`;
+        }
+
+        if (gaugeProgress) {
+            const pct = Math.max(0, Math.min(100, (seconds / 20) * 100));
+            gaugeProgress.style.width = `${pct}%`;
+        }
+
+        if (gaugeContainer) {
+            if (seconds <= 5 && seconds > 0) {
+                gaugeContainer.classList.add('gauge-warning');
+            } else {
+                gaugeContainer.classList.remove('gauge-warning');
+            }
+        }
+    }
+
+    /**
+     * 최근 10회 당첨 번호 히스토리 초기화 (앱 실행 시 10개 번호 즉시 표출)
+     */
+    initHistoryBoard() {
+        const historyList = document.getElementById('table-history-list');
+        if (!historyList) return;
+
+        historyList.innerHTML = '';
+        // 초기 10회 당첨 기록 (가장 최신 순으로 배열)
+        const initialNumbers = [17, 4, 21, 0, 32, 15, 8, 29, 11, 26];
+        initialNumbers.forEach(num => {
+            const color = window.rouletteWheel ? window.rouletteWheel.getNumberColor(num) : (num === 0 ? 'green' : 'red');
+            const badge = document.createElement('span');
+            badge.className = `history-badge badge-${color}`;
+            badge.textContent = num;
+            historyList.appendChild(badge);
+        });
+    }
+
+    /**
+     * 최근 10회 히스토리 바에 배지 추가 (최신 10개만 유지, 11번째 발생 시 가장 오래된 1번 번호 삭제)
+     */
+    addHistoryBadge(number, color) {
+        const historyList = document.getElementById('table-history-list');
+        if (!historyList) return;
+
         const badge = document.createElement('span');
         badge.className = `history-badge badge-${color}`;
-        badge.textContent = num;
-        historyList.appendChild(badge);
-    });
-}
+        badge.textContent = number;
 
-/**
- * 최근 10회 히스토리 바에 배지 추가 (최신 10개만 유지, 11번째 발생 시 가장 오래된 1번 번호 삭제)
- */
-addHistoryBadge(number, color) {
-    const historyList = document.getElementById('table-history-list');
-    if (!historyList) return;
+        // 최신 당첨 번호를 맨 앞(좌측)에 추가
+        historyList.insertBefore(badge, historyList.firstChild);
 
-    const badge = document.createElement('span');
-    badge.className = `history-badge badge-${color}`;
-    badge.textContent = number;
-
-    // 최신 당첨 번호를 맨 앞(좌측)에 추가
-    historyList.insertBefore(badge, historyList.firstChild);
-
-    // 10개를 초과(11번째)하면 맨 뒤의 가장 오래된 1번 번호를 삭제
-    while (historyList.children.length > 10) {
-        historyList.removeChild(historyList.lastChild);
+        // 10개를 초과(11번째)하면 맨 뒤의 가장 오래된 1번 번호를 삭제
+        while (historyList.children.length > 10) {
+            historyList.removeChild(historyList.lastChild);
+        }
     }
-}
 
-/**
- * 토스트 알림
- */
-showToast(msg) {
-    const toast = document.getElementById('toast-notification');
-    if (!toast) return;
+    /**
+     * 토스트 알림
+     */
+    showToast(msg) {
+        const toast = document.getElementById('toast-notification');
+        if (!toast) return;
 
-    toast.textContent = msg;
-    toast.classList.add('show');
+        toast.textContent = msg;
+        toast.classList.add('show');
 
-    setTimeout(() => {
-        toast.classList.remove('show');
-    }, 2800);
-}
+        setTimeout(() => {
+            toast.classList.remove('show');
+        }, 2800);
+    }
 }
 
 // 브라우저 로드 시 앱 기동

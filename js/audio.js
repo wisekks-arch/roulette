@@ -461,14 +461,17 @@ class RouletteAudio {
      * @param {string} color - 'red', 'black', 'green'
      */
     announceResult(number, color) {
-        let colorEng = color === 'red' ? 'Red' : (color === 'black' ? 'Black' : 'Zero');
+        const numStr = String(number);
+        let colorEng = color === 'red' ? 'Red' : (color === 'black' ? 'Black' : (numStr === '00' ? 'Double Zero' : 'Zero'));
         let parityEng = "";
-        if (number > 0) {
-            parityEng = number % 2 === 0 ? ", Even" : ", Odd";
+        if (numStr !== '0' && numStr !== '00') {
+            const numInt = parseInt(numStr, 10);
+            parityEng = numInt % 2 === 0 ? ", Even" : ", Odd";
         }
 
-        // 정통 카지노 낭독 스타일: "Number 17, Black, Odd."
-        const phrase = `Number ${number}, ${colorEng}${parityEng}.`;
+        // 정통 카지노 낭독 스타일: "Number 17, Black, Odd." 또는 "Double Zero."
+        const numLabel = numStr === '00' ? "Double Zero" : numStr;
+        const phrase = (numStr === '00' || numStr === '0') ? `${colorEng}.` : `Number ${numLabel}, ${colorEng}${parityEng}.`;
         this.speak(phrase);
     }
 

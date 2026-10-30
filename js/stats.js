@@ -253,27 +253,30 @@ class RouletteStats {
         for (let i = 0; i <= 36; i++) {
             freqMap[i] = 0;
         }
+        freqMap['00'] = 0; // 더블 제로 집계 추가
 
         this.history.forEach(item => {
-            freqMap[item.number] = (freqMap[item.number] || 0) + 1;
+            const numKey = String(item.number);
+            freqMap[numKey] = (freqMap[numKey] || 0) + 1;
 
-            if (item.number === 0) {
+            if (numKey === '0' || numKey === '00') {
                 greenCount++;
             } else {
+                const numInt = parseInt(numKey, 10);
                 if (item.color === 'red') redCount++;
                 else blackCount++;
 
-                if (item.number % 2 === 1) oddCount++;
+                if (numInt % 2 === 1) oddCount++;
                 else evenCount++;
 
-                if (item.number <= 12) d1Count++;
-                else if (item.number <= 24) d2Count++;
+                if (numInt <= 12) d1Count++;
+                else if (numInt <= 24) d2Count++;
                 else d3Count++;
             }
         });
 
         const sortedFreq = Object.entries(freqMap).map(([num, count]) => ({
-            number: parseInt(num, 10),
+            number: num,
             count: count
         })).sort((a, b) => b.count - a.count);
 

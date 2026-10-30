@@ -8,14 +8,15 @@ class RouletteWheel {
         this.canvas = document.getElementById(canvasId);
         this.ctx = this.canvas ? this.canvas.getContext('2d') : null;
 
-        // 유러피언 룰렛 37개 번호 공식 배치 순서
+        // 아메리칸 룰렛 38개 번호 공식 배치 순서 (0 및 00 포함 - 3D 라이브 캠과 100% 일치)
         this.numbers = [
-            0, 32, 15, 19, 4, 21, 2, 25, 17, 34, 6, 27, 13, 36, 11, 30, 8, 23, 10, 5, 24, 16, 33, 1, 20, 14, 31, 9, 22, 18, 29, 7, 28, 12, 35, 3, 26
+            '0', '28', '9', '26', '30', '11', '7', '20', '32', '17', '5', '22', '34', '15', '3', '24', '36', '13', '1',
+            '00', '27', '10', '25', '29', '12', '8', '19', '31', '18', '6', '21', '33', '16', '4', '23', '35', '14', '2'
         ];
-        this.totalSlices = 37;
+        this.totalSlices = 38;
         this.sliceAngle = (Math.PI * 2) / this.totalSlices;
 
-        // 번호 색상 정의
+        // 번호 색상 정의 (1~36)
         this.redNumbers = new Set([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36]);
         this.blackNumbers = new Set([2, 4, 6, 8, 10, 11, 13, 15, 17, 20, 22, 24, 26, 28, 29, 31, 33, 35]);
 
@@ -60,8 +61,10 @@ class RouletteWheel {
      * 번호의 색상 반환 ('red', 'black', 'green')
      */
     getNumberColor(num) {
-        if (num === 0) return 'green';
-        return this.redNumbers.has(num) ? 'red' : 'black';
+        const s = String(num);
+        if (s === '0' || s === '00') return 'green';
+        const parsed = parseInt(s, 10);
+        return this.redNumbers.has(parsed) ? 'red' : 'black';
     }
 
     /**
@@ -85,7 +88,7 @@ class RouletteWheel {
             if (this.ballPhase === 'pocketed') {
                 this.wheelSpeed = 0;
                 if (this.targetNumber !== null) {
-                    const targetIndex = this.numbers.indexOf(this.targetNumber);
+                    const targetIndex = this.numbers.findIndex(n => String(n) === String(this.targetNumber));
                     if (targetIndex !== -1) {
                         this.ballAngle = this.wheelAngle + targetIndex * this.sliceAngle + this.sliceAngle / 2;
                     }
@@ -197,7 +200,7 @@ class RouletteWheel {
         } else if (this.ballPhase === 'pocketed') {
             // 안착 후 룰렛판과 구슬이 완전 고정 정지 상태 유지
             this.wheelSpeed = 0;
-            const targetIndex = this.numbers.indexOf(this.targetNumber);
+            const targetIndex = this.numbers.findIndex(n => String(n) === String(this.targetNumber));
             if (targetIndex !== -1) {
                 this.ballAngle = this.wheelAngle + targetIndex * this.sliceAngle + this.sliceAngle / 2;
                 this.ballRadius = pocketRadius;
@@ -207,7 +210,7 @@ class RouletteWheel {
 
     /**
      * 스핀 시작 (6~8초 감속 물리 회전 및 100% 당첨번호 보장)
-     * @param {number} winningNumber - 이번 라운드 당첨 번호 (0~36)
+     * @param {string|number} winningNumber - 이번 라운드 당첨 번호 (0~36 또는 '00')
      * @param {function} onComplete - 회전 완료 시 콜백
      */
     spin(winningNumber, onComplete) {
@@ -216,12 +219,14 @@ class RouletteWheel {
         // 인자 방어 로직: winningNumber가 콜백인 경우 또는 유효하지 않은 경우 처리
         if (typeof winningNumber === 'function') {
             onComplete = winningNumber;
-            winningNumber = Math.floor(Math.random() * 37);
+            const randIdx = Math.floor(Math.random() * this.numbers.length);
+            winningNumber = this.numbers[randIdx];
         } else if (winningNumber === undefined || winningNumber === null) {
-            winningNumber = Math.floor(Math.random() * 37);
+            const randIdx = Math.floor(Math.random() * this.numbers.length);
+            winningNumber = this.numbers[randIdx];
         }
 
-        this.targetNumber = parseInt(winningNumber, 10);
+        this.targetNumber = String(winningNumber);
         this.onCompleteCallback = onComplete;
         this.isSpinning = true;
         this.ballActive = true;
@@ -304,7 +309,7 @@ class RouletteWheel {
             const num = this.numbers[i];
             const colorType = this.getNumberColor(num);
 
-            const isWinner = (this.ballPhase === 'pocketed' && num === this.targetNumber);
+            const isWinner = (this.ballPhase === 'pocketed' && String(num) === String(this.targetNumber));
 
             // 포켓 배경
             ctx.beginPath();

@@ -465,9 +465,46 @@ body {
     min-width: 760px;
 }
 
-/* 0 (싱글 제로) 및 메인 36개 숫자 그리드 */
+/* 0 & 00 (싱글 제로 & 더블 제로) 및 메인 36개 숫자 그리드 */
 .table-zero-area {
     width: 100%;
+    display: flex;
+    gap: 8px;
+    position: relative;
+}
+
+/* 0, 00 구역 공통 */
+.spot-zero {
+    flex: 1;
+    height: 52px;
+    background: linear-gradient(135deg, rgba(15, 140, 68, 0.85), rgba(7, 85, 39, 0.9));
+    border-color: #ffd700;
+    font-size: 1.35rem;
+    letter-spacing: 1px;
+}
+
+.spot-zero-single {
+    border-radius: 6px 4px 4px 6px;
+}
+
+.spot-zero-double {
+    border-radius: 4px 6px 6px 4px;
+}
+
+/* 0과 00 사이 스플릿 핫스팟 */
+.hotspot-split-zero {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 32px;
+    height: 48px;
+    z-index: 19;
+}
+
+.hotspot-split-zero::after {
+    width: 26px;
+    height: 26px;
 }
 
 .table-grid-area {
@@ -517,15 +554,6 @@ body {
 .bet-spot.locked {
     cursor: not-allowed;
     opacity: 0.96;
-}
-
-/* 0 구역 */
-.spot-zero {
-    width: 100%;
-    height: 52px;
-    background: linear-gradient(135deg, rgba(15, 140, 68, 0.85), rgba(7, 85, 39, 0.9));
-    border-color: #ffd700;
-    font-size: 1.35rem;
 }
 
 /* 숫자 1~36 구역 */
@@ -739,75 +767,8 @@ body {
 }
 
 /* ==========================================================================
-   최고급 크리스탈 유리 말머리(Crystal Knight) 돌리 마커 연출
+   최고급 크리스탈 체스 나이트(Crystal Knight) 돌리 마커 연출 (통합 스타일로 관리)
    ========================================================================== */
-.crystal-knight-dolly {
-    position: absolute;
-    width: 38px;
-    height: 64px;
-    pointer-events: none;
-    z-index: 35;
-    /* 밑면 중앙 앵커링: 숫자 바로 위에 완벽하게 일치 */
-    transform: translate(-50%, -92%);
-    filter: drop-shadow(0 8px 12px rgba(0, 0, 0, 0.9));
-}
-
-.knight-glass-figure {
-    width: 34px;
-    height: 44px;
-    margin: 0 auto;
-    filter: drop-shadow(0 0 6px rgba(160, 230, 255, 0.9));
-}
-
-.horse-head-svg {
-    width: 100%;
-    height: 100%;
-    overflow: visible;
-}
-
-.knight-brass-collar {
-    width: 16px;
-    height: 5px;
-    background: linear-gradient(to right, #ffd700, #b8860b, #ffeaa7);
-    margin: -3px auto 0 auto;
-    border-radius: 2px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
-}
-
-.knight-brass-pedestal {
-    width: 28px;
-    height: 14px;
-    background: radial-gradient(ellipse at 50% 30%, #fff 0%, #ffd700 45%, #7a5806 100%);
-    border-radius: 50%;
-    margin: -3px auto 0 auto;
-    border: 1px solid #ffeaa7;
-    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.95), inset 0 2px 4px rgba(255, 255, 255, 0.8);
-}
-
-/* 상단에서 쿵 내려와 테이블에 세워지는 3D 모션 */
-.dolly-drop {
-    animation: knightDropImpact 0.5s cubic-bezier(0.25, 1, 0.5, 1) forwards;
-}
-
-@keyframes knightDropImpact {
-    0% {
-        transform: translate(-50%, -180%) scale(1.8);
-        opacity: 0;
-    }
-
-    70% {
-        transform: translate(-50%, -90%) scale(0.96);
-        opacity: 1;
-    }
-
-    85% {
-        transform: translate(-50%, -96%) scale(1.04);
-    }
-
-    100% {
-        transform: translate(-50%, -92%) scale(1);
-    }
-}
 
 /* ==========================================================================
    최고급 명품 카지노 세라믹 칩 (2톤 엣지 스트라이프 & 골드 엠블럼)
@@ -1521,91 +1482,168 @@ body {
     }
 }
 
-/* 최고급 크리스탈 유리 말머리(Knight) 돌리 마커 */
+/* ==========================================================================
+   최고급 24K 황동 & 입체 크리스탈 체스 나이트(Crystal Knight) 돌리 마커
+   ========================================================================== */
 .crystal-knight-dolly {
     position: absolute;
-    width: 44px;
-    height: 72px;
-    transform: translate(-50%, -92%);
+    top: 50%;
+    left: 50%;
+    /* 받침대 바닥이 당첨 번호 셀 정중앙에 정확히 놓이도록 정밀 앵커링 */
+    transform: translate(-50%, -75%);
+    width: 48px;
+    height: 80px;
     pointer-events: none;
-    z-index: 80;
+    z-index: 90;
     display: flex;
     flex-direction: column;
     align-items: center;
-    filter: drop-shadow(0 12px 14px rgba(0, 0, 0, 0.85));
+    filter: drop-shadow(0 14px 18px rgba(0, 0, 0, 0.95));
 }
 
-.crystal-knight-dolly.dolly-drop {
-    animation: knightDropImpact 0.55s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+/* 착지 충격파 링 (Golden Shockwave Ripple) */
+.dolly-ripple-ring {
+    position: absolute;
+    bottom: 2px;
+    left: 50%;
+    transform: translate(-50%, 50%) scale(0);
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    pointer-events: none;
+    opacity: 0;
 }
 
+.crystal-knight-dolly.dolly-drop .ripple-1 {
+    animation: dollyRippleAnim 0.75s 0.32s ease-out forwards;
+}
+
+.crystal-knight-dolly.dolly-drop .ripple-2 {
+    animation: dollyRippleAnim 0.75s 0.45s ease-out forwards;
+}
+
+@keyframes dollyRippleAnim {
+    0% {
+        transform: translate(-50%, 50%) scale(0.4);
+        border: 3px solid #ffd700;
+        box-shadow: 0 0 15px #ffd700, inset 0 0 10px #ffd700;
+        opacity: 1;
+    }
+    100% {
+        transform: translate(-50%, 50%) scale(3.5);
+        border: 1px solid rgba(255, 215, 0, 0);
+        box-shadow: 0 0 25px rgba(255, 215, 0, 0);
+        opacity: 0;
+    }
+}
+
+/* 상단 골드 크라운 뱃지 */
+.dolly-crown-badge {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    background: linear-gradient(135deg, #ffd700 0%, #ffae00 100%);
+    border: 1.5px solid #ffffff;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.8), 0 0 10px rgba(255, 215, 0, 0.8);
+    border-radius: 12px;
+    padding: 1px 7px;
+    margin-bottom: -5px;
+    z-index: 95;
+    animation: crownFloat 2s ease-in-out infinite alternate;
+}
+
+.dolly-crown-icon {
+    font-size: 0.75rem;
+    line-height: 1;
+}
+
+.dolly-number-badge {
+    font-family: var(--font-heading, 'Cinzel', sans-serif);
+    font-size: 0.85rem;
+    font-weight: 900;
+    color: #111111;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.5);
+    line-height: 1;
+}
+
+@keyframes crownFloat {
+    0% { transform: translateY(0); }
+    100% { transform: translateY(-3px); }
+}
+
+/* 크리스탈 나이트 피규어 */
 .knight-glass-figure {
-    width: 38px;
-    height: 48px;
+    width: 44px;
+    height: 52px;
     display: flex;
     justify-content: center;
     align-items: center;
+    filter: drop-shadow(0 0 8px rgba(120, 220, 255, 0.95));
 }
 
 .horse-head-svg {
     width: 100%;
     height: 100%;
-    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.9));
+    overflow: visible;
 }
 
+/* 황동 접합 칼라 넥 링 */
 .knight-brass-collar {
-    width: 22px;
-    height: 5px;
-    background: linear-gradient(90deg, #b8860b, #ffd700, #fff2a3, #ffd700, #b8860b);
+    width: 20px;
+    height: 6px;
+    background: linear-gradient(90deg, #b8860b 0%, #ffd700 35%, #ffffff 50%, #ffd700 65%, #8b6508 100%);
+    margin: -3px auto 0 auto;
     border-radius: 3px;
-    margin-top: -3px;
-    box-shadow: 0 0 6px rgba(255, 215, 0, 0.8);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.8), inset 0 1px 2px rgba(255, 255, 255, 0.9);
+    z-index: 92;
 }
 
+/* 24K 황동 3단 헤비 페디스탈 받침대 */
 .knight-brass-pedestal {
-    width: 32px;
-    height: 10px;
-    background: radial-gradient(ellipse at center, #fff2a3 0%, #ffd700 45%, #b8860b 80%, #5c4308 100%);
-    border: 1px solid #ffd700;
+    position: relative;
+    width: 36px;
+    height: 16px;
+    background: radial-gradient(ellipse at 50% 25%, #ffffff 0%, #ffd700 40%, #b8860b 75%, #4a3303 100%);
     border-radius: 50%;
-    margin-top: -1px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.7);
+    margin: -3px auto 0 auto;
+    border: 1.5px solid #fff5c0;
+    box-shadow: 0 6px 14px rgba(0, 0, 0, 0.95), inset 0 2px 4px rgba(255, 255, 255, 0.9), 0 0 12px rgba(255, 215, 0, 0.7);
+    z-index: 91;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* 돌리 상단 당첨 번호 미니 뱃지 */
-.dolly-number-badge {
-    position: absolute;
-    top: -18px;
-    background: #ffd700;
-    color: #000000;
-    font-family: var(--font-heading);
-    font-weight: 900;
-    font-size: 0.75rem;
-    padding: 2px 7px;
-    border-radius: 10px;
-    border: 1px solid #ffffff;
-    box-shadow: 0 0 10px rgba(255, 215, 0, 0.9), 0 3px 6px rgba(0, 0, 0, 0.8);
-    white-space: nowrap;
-    letter-spacing: 0.5px;
+.pedestal-core-gem {
+    width: 10px;
+    height: 5px;
+    background: radial-gradient(circle, #00f2fe, #4facfe);
+    border-radius: 50%;
+    opacity: 0.85;
+    box-shadow: 0 0 6px #00f2fe;
+}
+
+/* 3D 착지 드롭 애니메이션 */
+.crystal-knight-dolly.dolly-drop {
+    animation: knightDropImpact 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
 }
 
 @keyframes knightDropImpact {
     0% {
-        transform: translate(-50%, -240%) scale(1.4);
+        transform: translate(-50%, -220%) scale(1.9);
         opacity: 0;
     }
-
-    60% {
-        transform: translate(-50%, -92%) scale(0.92, 1.08);
+    65% {
+        transform: translate(-50%, -70%) scale(0.92);
         opacity: 1;
     }
-
-    80% {
-        transform: translate(-50%, -102%) scale(1.04, 0.96);
+    82% {
+        transform: translate(-50%, -79%) scale(1.05);
     }
-
     100% {
-        transform: translate(-50%, -92%) scale(1, 1);
+        transform: translate(-50%, -75%) scale(1);
         opacity: 1;
     }
 }

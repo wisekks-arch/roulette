@@ -41,11 +41,19 @@ class RouletteTable {
                     </div>
                 </div>
 
-                <!-- 상단 0 (그린 싱글 제로) -->
+                <!-- 상단 0 & 00 (그린 싱글 제로 & 더블 제로) -->
                 <div class="table-zero-area">
-                    <button class="bet-spot spot-zero" data-bet="straight" data-numbers="0" id="spot-0">
+                    <button class="bet-spot spot-zero spot-zero-single" data-bet="straight" data-numbers="0" id="spot-0" title="스트레이트 (35배): #0">
                         <span class="num-text">0</span>
                         <div class="chip-stack" id="chips-0"></div>
+                    </button>
+                    <!-- 0과 00 사이 스플릿 핫스팟 (17배) -->
+                    <button class="bet-spot bet-hotspot hotspot-split-zero" data-bet="split" data-numbers="0,00" id="spot-split-0-00" title="스플릿 (17배): 0, 00">
+                        <div class="chip-stack" id="chips-split-0-00"></div>
+                    </button>
+                    <button class="bet-spot spot-zero spot-zero-double" data-bet="straight" data-numbers="00" id="spot-00" title="스트레이트 (35배): #00">
+                        <span class="num-text">00</span>
+                        <div class="chip-stack" id="chips-00"></div>
                     </button>
                 </div>
 
@@ -192,47 +200,98 @@ class RouletteTable {
                     </button>
                 </div>
 
-                <!-- 당첨 번호에 꽂히는 최고급 크리스탈 유리 말머리(Knight) 돌리 마커 -->
+                <!-- 당첨 번호에 꽂히는 최고급 24K 황동 & 입체 크리스탈 체스 나이트(Knight) 돌리 마커 -->
                 <div class="crystal-knight-dolly" id="brass-dolly" style="display: none;">
-                    <div class="dolly-number-badge" id="dolly-num-label">0</div>
+                    <!-- 1. 착지 시 바닥으로 촤라락 퍼지는 황금빛 충격파 링 -->
+                    <div class="dolly-ripple-ring ripple-1"></div>
+                    <div class="dolly-ripple-ring ripple-2"></div>
+
+                    <!-- 2. 상단 당첨 번호 골드 크라운 뱃지 -->
+                    <div class="dolly-crown-badge">
+                        <span class="dolly-crown-icon">👑</span>
+                        <span class="dolly-number-badge" id="dolly-num-label">0</span>
+                    </div>
+
+                    <!-- 3. 최고급 크리스탈 글래스 체스 나이트 조각상 -->
                     <div class="knight-glass-figure">
-                        <svg class="horse-head-svg" viewBox="0 0 100 130" xmlns="http://www.w3.org/2000/svg">
+                        <svg class="horse-head-svg" viewBox="0 0 120 140" xmlns="http://www.w3.org/2000/svg">
                             <defs>
-                                <linearGradient id="glassLightGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                                    <stop offset="0%" stop-color="#ffffff" stop-opacity="0.95" />
-                                    <stop offset="35%" stop-color="#e0f4ff" stop-opacity="0.75" />
-                                    <stop offset="70%" stop-color="#a6d8f5" stop-opacity="0.5" />
-                                    <stop offset="100%" stop-color="#ffffff" stop-opacity="0.9" />
+                                <!-- 크리스탈 빛 굴절 그라데이션 -->
+                                <linearGradient id="crystalLightGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                                    <stop offset="0%" stop-color="#ffffff" stop-opacity="0.98" />
+                                    <stop offset="25%" stop-color="#d4f1ff" stop-opacity="0.88" />
+                                    <stop offset="55%" stop-color="#80d0ff" stop-opacity="0.7" />
+                                    <stop offset="80%" stop-color="#bde5ff" stop-opacity="0.85" />
+                                    <stop offset="100%" stop-color="#ffffff" stop-opacity="0.98" />
                                 </linearGradient>
-                                <linearGradient id="glassPrismGrad" x1="100%" y1="0%" x2="0%" y2="100%">
-                                    <stop offset="0%" stop-color="#ffd700" stop-opacity="0.5" />
-                                    <stop offset="50%" stop-color="#70c4ff" stop-opacity="0.4" />
-                                    <stop offset="100%" stop-color="#ff7eb3" stop-opacity="0.3" />
+                                <!-- 내부 프리즘 다이아몬드 광채 -->
+                                <linearGradient id="prismFlareGrad" x1="100%" y1="0%" x2="0%" y2="100%">
+                                    <stop offset="0%" stop-color="#ffd700" stop-opacity="0.85" />
+                                    <stop offset="35%" stop-color="#00f2fe" stop-opacity="0.65" />
+                                    <stop offset="70%" stop-color="#4facfe" stop-opacity="0.55" />
+                                    <stop offset="100%" stop-color="#ff0844" stop-opacity="0.45" />
                                 </linearGradient>
-                                <filter id="glassGlow" x="-20%" y="-20%" width="140%" height="140%">
-                                    <feGaussianBlur stdDeviation="2" result="blur" />
+                                <!-- 24K 황동 금속 그라데이션 -->
+                                <linearGradient id="brassMetallicGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                                    <stop offset="0%" stop-color="#ffd700" />
+                                    <stop offset="25%" stop-color="#fff5c0" />
+                                    <stop offset="50%" stop-color="#d4af37" />
+                                    <stop offset="75%" stop-color="#996515" />
+                                    <stop offset="100%" stop-color="#ffd700" />
+                                </linearGradient>
+                                <!-- 크리스탈 입체 글로우 필터 -->
+                                <filter id="crystalGlow" x="-20%" y="-20%" width="140%" height="140%">
+                                    <feGaussianBlur stdDeviation="2.5" result="blur" />
                                     <feComposite in="SourceGraphic" in2="blur" operator="over" />
                                 </filter>
                             </defs>
-                            <!-- 정교한 크리스탈 말머리 조각 실루엣 -->
-                            <path d="M 28 115 C 25 95 20 70 30 50 C 35 40 45 35 48 20 C 50 12 55 5 62 8 C 65 10 65 18 64 22 C 72 23 85 30 88 42 C 90 50 85 58 75 62 C 68 65 62 68 60 75 C 57 85 62 105 68 115 Z" 
-                                  fill="url(#glassLightGrad)" stroke="rgba(255,255,255,0.9)" stroke-width="2.5" filter="url(#glassGlow)" />
-                            <!-- 말 갈기 크리스탈 프리즘 각인 -->
-                            <path d="M 45 22 Q 40 40 32 60 Q 25 80 27 100" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="2" />
-                            <path d="M 40 32 L 30 38 M 36 48 L 26 54 M 32 64 L 22 70 M 30 78 L 20 84" stroke="rgba(255,255,255,0.7)" stroke-width="1.8" />
-                            <!-- 말 주둥이 & 콧날 -->
-                            <circle cx="82" cy="46" r="2.5" fill="#ffffff" />
-                            <!-- 말 눈빛 보석 하이라이트 -->
-                            <circle cx="68" cy="38" r="3" fill="#ffffff" />
-                            <circle cx="68" cy="38" r="1.5" fill="#00e5ff" />
-                            <!-- 내부 프리즘 굴절면 -->
-                            <path d="M 46 38 C 55 42 65 48 58 72 Z" fill="url(#glassPrismGrad)" />
+
+                            <!-- 체스 나이트 말머리 메인 바디 (정교하고 당당한 조각 실루엣) -->
+                            <path d="M 32 125 
+                                     C 28 105, 20 82, 32 58 
+                                     C 36 46, 44 40, 46 22 
+                                     C 48 12, 54 4, 63 6 
+                                     C 67 8, 68 16, 66 22 
+                                     C 76 22, 92 30, 98 44 
+                                     C 102 54, 95 64, 84 68 
+                                     C 74 72, 68 76, 65 84 
+                                     C 62 96, 68 116, 75 125 Z"
+                                  fill="url(#crystalLightGrad)"
+                                  stroke="rgba(255, 255, 255, 0.95)"
+                                  stroke-width="2.5"
+                                  filter="url(#crystalGlow)" />
+
+                            <!-- 말 갈기(Mane) 5단 레이어 입체 조각면 -->
+                            <path d="M 46 22 Q 38 42 28 62 Q 22 84 25 106 Q 28 120 32 125" fill="none" stroke="rgba(255, 255, 255, 0.92)" stroke-width="2.2" />
+                            <path d="M 40 34 L 28 42" stroke="rgba(255, 255, 255, 0.85)" stroke-width="2" stroke-linecap="round" />
+                            <path d="M 36 50 L 22 58" stroke="rgba(255, 255, 255, 0.85)" stroke-width="2" stroke-linecap="round" />
+                            <path d="M 32 68 L 18 76" stroke="rgba(255, 255, 255, 0.85)" stroke-width="2" stroke-linecap="round" />
+                            <path d="M 29 86 L 16 94" stroke="rgba(255, 255, 255, 0.85)" stroke-width="2" stroke-linecap="round" />
+                            <path d="M 28 104 L 18 112" stroke="rgba(255, 255, 255, 0.85)" stroke-width="2" stroke-linecap="round" />
+
+                            <!-- 말 콧날 & 주둥이 볼륨 각인 -->
+                            <path d="M 78 40 C 86 44, 94 48, 92 56 C 88 62, 80 64, 76 60" fill="none" stroke="rgba(255, 255, 255, 0.8)" stroke-width="1.8" />
+                            <circle cx="91" cy="50" r="2.8" fill="#ffffff" />
+
+                            <!-- 내부 다이아몬드 프리즘 굴절 패싯 -->
+                            <path d="M 48 42 C 60 46, 74 52, 66 78 C 58 74, 52 64, 48 42 Z" fill="url(#prismFlareGrad)" opacity="0.85" />
+                            <polygon points="56,48 70,54 62,70 52,60" fill="rgba(255, 255, 255, 0.45)" />
+
+                            <!-- 보석 눈동자 (에메랄드/사파이어 카지노 젬스톤) -->
+                            <circle cx="72" cy="38" r="4.2" fill="#00e5ff" />
+                            <circle cx="72" cy="38" r="2.5" fill="#0b3866" />
+                            <circle cx="73.5" cy="36.5" r="1.3" fill="#ffffff" />
+                            <path d="M 66 34 Q 72 32 78 35" fill="none" stroke="#ffffff" stroke-width="1.6" stroke-linecap="round" />
                         </svg>
                     </div>
-                    <!-- 황동 크리스탈 접합 넥 링 -->
+
+                    <!-- 4. 24K 황동 접합 칼라 넥 링 -->
                     <div class="knight-brass-collar"></div>
-                    <!-- 24K 순금 황동 원형 받침대 -->
-                    <div class="knight-brass-pedestal"></div>
+
+                    <!-- 5. 24K 황동 3단 헤비 페디스탈 받침대 -->
+                    <div class="knight-brass-pedestal">
+                        <div class="pedestal-core-gem"></div>
+                    </div>
                 </div>
             </div>
         `;
@@ -364,14 +423,23 @@ class RouletteTable {
             return;
         }
 
-        // 현재 룸의 최대 베팅 한도 체크
+        // 현재 룸의 베팅 한도 체크 (1인당 1판 총 배팅 한도 & 개별 스팟 최대 한도)
         if (window.rouletteLobby) {
             const currentRoom = window.rouletteLobby.getCurrentRoom();
             if (currentRoom) {
+                // 1. [기획 추가] 플레이어 1인당 한 판(회차) 총 배팅 한도 체크
+                if (currentRoom.roundMaxBet && (this.totalBetAmount + this.selectedChip > currentRoom.roundMaxBet)) {
+                    if (window.rouletteApp && window.rouletteApp.showToast) {
+                        window.rouletteApp.showToast(`⚠️ 1판 총 배팅 한도(${currentRoom.roundMaxBet.toLocaleString()} Chip)를 초과할 수 없습니다. (현재 배팅: ${this.totalBetAmount.toLocaleString()} Chip)`);
+                    }
+                    return;
+                }
+
+                // 2. 단일 구역(스팟) 최대 베팅 한도 체크
                 const currentSpotTotal = this.bets[spotId] ? this.bets[spotId].amount : 0;
                 if (currentSpotTotal + this.selectedChip > currentRoom.maxBet) {
-                    if (window.rouletteApp.showToast) {
-                        window.rouletteApp.showToast(`테이블 최대 베팅 한도(${currentRoom.maxBet.toLocaleString()}원)를 초과할 수 없습니다.`);
+                    if (window.rouletteApp && window.rouletteApp.showToast) {
+                        window.rouletteApp.showToast(`⚠️ 해당 구역 최대 배팅 한도(${currentRoom.maxBet.toLocaleString()} Chip)를 초과할 수 없습니다.`);
                     }
                     return;
                 }
@@ -574,6 +642,17 @@ class RouletteTable {
         let neededTotal = 0;
         Object.values(this.lastBets).forEach(b => neededTotal += b.amount);
 
+        // 1판 총 배팅 한도 사전 확인
+        if (window.rouletteLobby) {
+            const room = window.rouletteLobby.getCurrentRoom();
+            if (room && room.roundMaxBet && neededTotal > room.roundMaxBet) {
+                if (window.rouletteApp && window.rouletteApp.showToast) {
+                    window.rouletteApp.showToast(`⚠️ 직전 배팅 총액(${neededTotal.toLocaleString()} Chip)이 1판 한도(${room.roundMaxBet.toLocaleString()} Chip)를 초과합니다.`);
+                }
+                return;
+            }
+        }
+
         if (window.rouletteApp && window.rouletteApp.balance < neededTotal) {
             if (window.rouletteApp.showToast) {
                 window.rouletteApp.showToast("재베팅에 필요한 잔고가 부족합니다.");
@@ -597,6 +676,17 @@ class RouletteTable {
     doubleBets() {
         const isBettingTime = (window.rouletteApp && window.rouletteApp.currentPhase === 'BETTING');
         if (this.isLocked || !isBettingTime || this.totalBetAmount === 0) return;
+
+        // 1판 총 배팅 한도 사전 확인
+        if (window.rouletteLobby) {
+            const room = window.rouletteLobby.getCurrentRoom();
+            if (room && room.roundMaxBet && (this.totalBetAmount * 2 > room.roundMaxBet)) {
+                if (window.rouletteApp && window.rouletteApp.showToast) {
+                    window.rouletteApp.showToast(`⚠️ 2배 배팅 시 1판 총 배팅 한도(${room.roundMaxBet.toLocaleString()} Chip)를 초과하게 됩니다.`);
+                }
+                return;
+            }
+        }
 
         if (window.rouletteApp && window.rouletteApp.balance < this.totalBetAmount) {
             if (window.rouletteApp.showToast) {
@@ -637,8 +727,8 @@ class RouletteTable {
     }
 
     /**
-     * 당첨 번호 위에 최고급 크리스탈 유리 말머리(Knight) 돌리 마커 세우기 애니메이션
-     * @param {number} winningNumber - 당첨 번호 (0~36)
+     * 당첨 번호 위에 최고급 24K 황동 & 입체 크리스탈 체스 나이트 말머리 돌리 마커 세우기 애니메이션
+     * @param {string|number} winningNumber - 당첨 번호 (0~36 또는 '00')
      */
     placeDolly(winningNumber) {
         const spot = this.container.querySelector(`#spot-${winningNumber}`);
@@ -647,27 +737,15 @@ class RouletteTable {
         // 기존 하이라이트 초기화
         this.clearHighlights();
 
-        const tableRect = this.container.querySelector('.roulette-felt-table').getBoundingClientRect();
-        const spotRect = spot.getBoundingClientRect();
-        const numText = spot.querySelector('.num-text');
-
-        // 셀 내부 숫자의 정확한 위치 파악
-        let targetX = 0;
-        let targetY = 0;
-
-        if (numText) {
-            const numRect = numText.getBoundingClientRect();
-            // 숫자 텍스트의 중심 X좌표와 하단선 바로 위에 돌리 베이스가 안착하도록 보정
-            targetX = (numRect.left - tableRect.left) + (numRect.width / 2);
-            targetY = (numRect.top - tableRect.top) + (numRect.height / 2) + 12;
-        } else {
-            targetX = (spotRect.left - tableRect.left) + (spotRect.width / 2);
-            targetY = (spotRect.top - tableRect.top) + (spotRect.height / 2) + 12;
-        }
-
-        this.dollyElement.style.display = 'block';
-        this.dollyElement.style.left = `${targetX}px`;
-        this.dollyElement.style.top = `${targetY}px`;
+        // [핵심 개선: 당첨 번호 셀에 직접 안착 (Direct Child Mounting)]
+        // 셀 내부 정중앙(50%, 50%)에 100% 영구 고정되어 테이블 스크롤/크기 변화에도 오차 0% 보장
+        spot.appendChild(this.dollyElement);
+        this.dollyElement.style.display = 'flex';
+        this.dollyElement.style.left = '50%';
+        this.dollyElement.style.top = '50%';
+        this.dollyElement.classList.remove('dolly-drop');
+        // 애니메이션 강제 리플로우
+        void this.dollyElement.offsetWidth;
         this.dollyElement.classList.add('dolly-drop');
 
         // 돌리 상단 번호 뱃지 동기화
@@ -691,25 +769,29 @@ class RouletteTable {
      * @param {number} winningNumber - 당첨 번호 (0~36)
      */
     sweepLosingBets(winningNumber) {
+        const winStr = String(winningNumber);
+        const isGreenZero = (winStr === '0' || winStr === '00');
+
         // 당첨된 스팟 ID 목록 구성
         const winningSpotIds = new Set();
-        winningSpotIds.add(`spot-${winningNumber}`);
+        winningSpotIds.add(`spot-${winStr}`);
 
-        if (winningNumber !== 0) {
+        if (!isGreenZero) {
+            const numInt = parseInt(winStr, 10);
             // 색상
-            winningSpotIds.add(this.redNumbers.includes(winningNumber) ? 'spot-red' : 'spot-black');
+            winningSpotIds.add(this.redNumbers.includes(numInt) ? 'spot-red' : 'spot-black');
             // 홀짝
-            winningSpotIds.add(winningNumber % 2 === 0 ? 'spot-even' : 'spot-odd');
+            winningSpotIds.add(numInt % 2 === 0 ? 'spot-even' : 'spot-odd');
             // 하이로우
-            winningSpotIds.add(winningNumber <= 18 ? 'spot-low' : 'spot-high');
+            winningSpotIds.add(numInt <= 18 ? 'spot-low' : 'spot-high');
             // 다즌
-            if (winningNumber <= 12) winningSpotIds.add('spot-dozen1');
-            else if (winningNumber <= 24) winningSpotIds.add('spot-dozen2');
+            if (numInt <= 12) winningSpotIds.add('spot-dozen1');
+            else if (numInt <= 24) winningSpotIds.add('spot-dozen2');
             else winningSpotIds.add('spot-dozen3');
             // 컬럼
-            if (winningNumber % 3 === 1) winningSpotIds.add('spot-col1');
-            else if (winningNumber % 3 === 2) winningSpotIds.add('spot-col2');
-            else if (winningNumber % 3 === 0) winningSpotIds.add('spot-col3');
+            if (numInt % 3 === 1) winningSpotIds.add('spot-col1');
+            else if (numInt % 3 === 2) winningSpotIds.add('spot-col2');
+            else if (numInt % 3 === 0) winningSpotIds.add('spot-col3');
         }
 
         let sweptAny = false;
@@ -725,8 +807,8 @@ class RouletteTable {
             const betType = spot.getAttribute('data-bet');
             const numbersStr = spot.getAttribute('data-numbers');
             if (!isWinner && (betType === 'split' || betType === 'street' || betType === 'corner' || betType === 'sixline') && numbersStr) {
-                const nums = numbersStr.split(',').map(n => parseInt(n.trim(), 10));
-                if (nums.includes(winningNumber)) {
+                const nums = numbersStr.split(',').map(n => n.trim());
+                if (nums.includes(winStr)) {
                     isWinner = true;
                 }
             }
@@ -780,6 +862,10 @@ class RouletteTable {
         if (this.dollyElement) {
             this.dollyElement.style.display = 'none';
             this.dollyElement.classList.remove('dolly-drop');
+            const feltTable = this.container ? this.container.querySelector('.roulette-felt-table') : null;
+            if (feltTable && this.dollyElement.parentElement !== feltTable) {
+                feltTable.appendChild(this.dollyElement);
+            }
         }
         this.clearHighlights();
         this.clearAllChips();
@@ -789,34 +875,38 @@ class RouletteTable {
      * 당첨된 외부 배팅 구역 하이라이트
      */
     highlightWinningOutsideBets(winningNumber) {
-        if (winningNumber === 0) return; // 0은 외부 배팅 모두 낙첨
+        const winStr = String(winningNumber);
+        const isGreen = (winStr === '0' || winStr === '00');
+        if (isGreen) return; // 0과 00은 외부 배팅 모두 낙첨
+
+        const numInt = parseInt(winStr, 10);
 
         // 1. 색상
-        const isRed = this.redNumbers.includes(winningNumber);
+        const isRed = this.redNumbers.includes(numInt);
         const colorSpot = this.container.querySelector(isRed ? '#spot-red' : '#spot-black');
         if (colorSpot) colorSpot.classList.add('winning-spot');
 
         // 2. 홀수 / 짝수
-        const isEven = winningNumber % 2 === 0;
+        const isEven = numInt % 2 === 0;
         const paritySpot = this.container.querySelector(isEven ? '#spot-even' : '#spot-odd');
         if (paritySpot) paritySpot.classList.add('winning-spot');
 
         // 3. 하이 / 로우 (1-18 / 19-36)
-        const isLow = winningNumber >= 1 && winningNumber <= 18;
+        const isLow = numInt >= 1 && numInt <= 18;
         const rangeSpot = this.container.querySelector(isLow ? '#spot-low' : '#spot-high');
         if (rangeSpot) rangeSpot.classList.add('winning-spot');
 
         // 4. 다즌 (1st 12, 2nd 12, 3rd 12)
         let dozenId = '#spot-dozen1';
-        if (winningNumber >= 13 && winningNumber <= 24) dozenId = '#spot-dozen2';
-        else if (winningNumber >= 25 && winningNumber <= 36) dozenId = '#spot-dozen3';
+        if (numInt >= 13 && numInt <= 24) dozenId = '#spot-dozen2';
+        else if (numInt >= 25 && numInt <= 36) dozenId = '#spot-dozen3';
         const dozenSpot = this.container.querySelector(dozenId);
         if (dozenSpot) dozenSpot.classList.add('winning-spot');
 
         // 5. 컬럼 (col1: 1,4,7... / col2: 2,5,8... / col3: 3,6,9...)
         let colId = '#spot-col1';
-        if (winningNumber % 3 === 2) colId = '#spot-col2';
-        else if (winningNumber % 3 === 0) colId = '#spot-col3';
+        if (numInt % 3 === 2) colId = '#spot-col2';
+        else if (numInt % 3 === 0) colId = '#spot-col3';
         const colSpot = this.container.querySelector(colId);
         if (colSpot) colSpot.classList.add('winning-spot');
     }
@@ -847,62 +937,71 @@ class RouletteTable {
             let won = false;
             let multiplier = 0;
 
+            const winStr = String(winningNumber);
+            const isGreen = (winStr === '0' || winStr === '00');
+            const numInt = parseInt(winStr, 10);
+
             if (bet.type === 'straight') {
-                if (parseInt(bet.numbers, 10) === winningNumber) {
+                if (String(bet.numbers) === winStr) {
                     won = true;
                     multiplier = (p.straight || 35) + 1; // 배당 + 본인 원금
                 }
-            } else if (winningNumber !== 0) {
-                // 0이 아닌 경우에만 외부 배팅 인정
-                if (bet.type === 'red' && this.redNumbers.includes(winningNumber)) {
+            } else if (!isGreen) {
+                // 0, 00이 아닌 경우에만 외부 배팅(1:1, 2:1) 인정
+                if (bet.type === 'red' && this.redNumbers.includes(numInt)) {
                     won = true;
                     multiplier = (p.redblack || 1) + 1;
-                } else if (bet.type === 'black' && this.blackNumbers.includes(winningNumber)) {
+                } else if (bet.type === 'black' && this.blackNumbers.includes(numInt)) {
                     won = true;
                     multiplier = (p.redblack || 1) + 1;
-                } else if (bet.type === 'even' && winningNumber % 2 === 0) {
+                } else if (bet.type === 'even' && numInt % 2 === 0) {
                     won = true;
                     multiplier = (p.evenodd || 1) + 1;
-                } else if (bet.type === 'odd' && winningNumber % 2 !== 0) {
+                } else if (bet.type === 'odd' && numInt % 2 !== 0) {
                     won = true;
                     multiplier = (p.evenodd || 1) + 1;
-                } else if (bet.type === 'low' && winningNumber >= 1 && winningNumber <= 18) {
+                } else if (bet.type === 'low' && numInt >= 1 && numInt <= 18) {
                     won = true;
                     multiplier = (p.highlow || 1) + 1;
-                } else if (bet.type === 'high' && winningNumber >= 19 && winningNumber <= 36) {
+                } else if (bet.type === 'high' && numInt >= 19 && numInt <= 36) {
                     won = true;
                     multiplier = (p.highlow || 1) + 1;
                 } else if (bet.type === 'dozen') {
-                    if (bet.numbers === '1-12' && winningNumber >= 1 && winningNumber <= 12) won = true;
-                    else if (bet.numbers === '13-24' && winningNumber >= 13 && winningNumber <= 24) won = true;
-                    else if (bet.numbers === '25-36' && winningNumber >= 25 && winningNumber <= 36) won = true;
+                    if (bet.numbers === '1-12' && numInt >= 1 && numInt <= 12) won = true;
+                    else if (bet.numbers === '13-24' && numInt >= 13 && numInt <= 24) won = true;
+                    else if (bet.numbers === '25-36' && numInt >= 25 && numInt <= 36) won = true;
                     if (won) multiplier = (p.dozen || 2) + 1;
                 } else if (bet.type === 'column') {
-                    if (bet.numbers === 'col1' && winningNumber % 3 === 1) won = true;
-                    else if (bet.numbers === 'col2' && winningNumber % 3 === 2) won = true;
-                    else if (bet.numbers === 'col3' && winningNumber % 3 === 0) won = true;
+                    if (bet.numbers === 'col1' && numInt % 3 === 1) won = true;
+                    else if (bet.numbers === 'col2' && numInt % 3 === 2) won = true;
+                    else if (bet.numbers === 'col3' && numInt % 3 === 0) won = true;
                     if (won) multiplier = (p.column || 2) + 1;
-                } else if (bet.type === 'split') {
-                    const nums = bet.numbers.split(',').map(n => parseInt(n.trim(), 10));
-                    if (nums.includes(winningNumber)) {
+                }
+            }
+
+            // 인사이드 복합 배팅 (스플릿, 스트리트, 코너, 식스라인 - 0 및 00 스플릿 포함)
+            if (!won) {
+                if (bet.type === 'split') {
+                    const nums = bet.numbers.split(',').map(n => n.trim());
+                    if (nums.includes(winStr)) {
                         won = true;
                         multiplier = (p.split || 17) + 1;
                     }
                 } else if (bet.type === 'street') {
-                    const nums = bet.numbers.split(',').map(n => parseInt(n.trim(), 10));
-                    if (nums.includes(winningNumber)) {
+                    const nums = bet.numbers.split(',').map(n => n.trim());
+                    if (nums.includes(winStr)) {
                         won = true;
                         multiplier = (p.street || 11) + 1;
                     }
                 } else if (bet.type === 'corner') {
-                    const nums = bet.numbers.split(',').map(n => parseInt(n.trim(), 10));
-                    if (nums.includes(winningNumber)) {
+                    const nums = bet.numbers.split(',').map(n => n.trim());
+                    if (nums.includes(winStr)) {
                         won = true;
                         multiplier = (p.corner || 8) + 1;
                     }
                 } else if (bet.type === 'sixline') {
-                    const nums = bet.numbers.split(',').map(n => parseInt(n.trim(), 10));
-                    if (nums.includes(winningNumber)) {
+                    const nums = bet.numbers.split(',').map(n => n.trim());
+                    if (nums.includes(winStr)) {
                         won = true;
                         multiplier = (p.sixline || 5) + 1;
                     }
@@ -947,14 +1046,17 @@ class RouletteTable {
         if (!modal || !mount) return;
 
         // 색상 및 속성
-        const isRed = this.redNumbers.includes(winningNumber);
-        const colorName = winningNumber === 0 ? 'GREEN (ZERO)' : (isRed ? 'RED' : 'BLACK');
-        const parity = winningNumber === 0 ? '' : (winningNumber % 2 === 0 ? 'EVEN' : 'ODD');
+        const winStr = String(winningNumber);
+        const isGreen = (winStr === '0' || winStr === '00');
+        const numInt = parseInt(winStr, 10);
+        const isRed = !isGreen && this.redNumbers.includes(numInt);
+        const colorName = winStr === '00' ? 'GREEN (DOUBLE ZERO)' : (isGreen ? 'GREEN (ZERO)' : (isRed ? 'RED' : 'BLACK'));
+        const parity = isGreen ? '' : (numInt % 2 === 0 ? 'EVEN' : 'ODD');
         const descText = parity ? `${colorName} / ${parity}` : colorName;
 
         if (numBadge) {
-            numBadge.textContent = winningNumber;
-            numBadge.className = `badge-number ${winningNumber === 0 ? 'text-green' : (isRed ? 'text-red' : 'text-black')}`;
+            numBadge.textContent = winStr;
+            numBadge.className = `badge-number ${isGreen ? 'text-green' : (isRed ? 'text-red' : 'text-black')}`;
         }
         if (descEl) descEl.textContent = descText;
         if (payoutVal) {
@@ -964,22 +1066,26 @@ class RouletteTable {
 
         // 당첨 번호 주변 3개 번호 선별 (예: 17번이면 16, 17, 18 등)
         let displayNumbers = [];
-        if (winningNumber === 0) {
-            displayNumbers = [1, 0, 2];
-        } else if (winningNumber === 1) {
-            displayNumbers = [0, 1, 2];
-        } else if (winningNumber === 36) {
+        if (winStr === '00') {
+            displayNumbers = ['0', '00', 2];
+        } else if (winStr === '0') {
+            displayNumbers = [1, '0', '00'];
+        } else if (numInt === 1) {
+            displayNumbers = ['0', 1, 2];
+        } else if (numInt === 36) {
             displayNumbers = [35, 36, 34];
         } else {
-            displayNumbers = [winningNumber - 1, winningNumber, winningNumber + 1];
+            displayNumbers = [numInt - 1, numInt, numInt + 1];
         }
 
         // 대형 셀 HTML 조립 (각 번호에 실제 놓여 있던 칩 정보 포함)
         let html = '';
         displayNumbers.forEach(n => {
-            const isWin = n === winningNumber;
-            const nIsRed = this.redNumbers.includes(n);
-            const bgClass = n === 0 ? 'spot-zero' : (nIsRed ? 'spot-red' : 'spot-black');
+            const isWin = String(n) === winStr;
+            const nStr = String(n);
+            const nIsGreen = (nStr === '0' || nStr === '00');
+            const nIsRed = !nIsGreen && this.redNumbers.includes(parseInt(nStr, 10));
+            const bgClass = nIsGreen ? 'spot-zero' : (nIsRed ? 'spot-red' : 'spot-black');
 
             // 직전 저장된 배팅 데이터에서 해당 번호에 걸린 칩 확인
             const savedBet = this.lastBets ? this.lastBets[`spot-${n}`] : null;

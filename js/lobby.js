@@ -16,6 +16,7 @@ class RouletteLobby {
                 subName: "Monaco Classic",
                 minBet: 100,
                 maxBet: 10000,
+                roundMaxBet: 50000, // 1인당 1판 총 배팅 한도: 50,000 Chip
                 currentPlayers: 3, // 나(1) + 봇(2) = 3/5명
                 accentColor: "#10b981",
                 badgeClass: "badge-green",
@@ -57,6 +58,7 @@ class RouletteLobby {
                 subName: "Bellagio Suite",
                 minBet: 1000,
                 maxBet: 100000,
+                roundMaxBet: 500000, // 1인당 1판 총 배팅 한도: 500,000 Chip
                 currentPlayers: 4, // 나(1) + 봇(3) = 4/5명
                 accentColor: "#3b82f6",
                 badgeClass: "badge-blue",
@@ -109,6 +111,7 @@ class RouletteLobby {
                 subName: "Galaxy VIP Club",
                 minBet: 5000,
                 maxBet: 500000,
+                roundMaxBet: 3000000, // 1인당 1판 총 배팅 한도: 3,000,000 Chip
                 currentPlayers: 5, // 나(1) + 봇(4) = 5/5명 만석!
                 accentColor: "#f59e0b",
                 badgeClass: "badge-gold",
@@ -172,6 +175,7 @@ class RouletteLobby {
                 subName: "Penthouse Suite",
                 minBet: 10000,
                 maxBet: 10000000,
+                roundMaxBet: 50000000, // 1인당 1판 총 배팅 한도: 50,000,000 Chip
                 currentPlayers: 4, // 나(1) + 봇(3) = 4/5명
                 accentColor: "#ef4444",
                 badgeClass: "badge-red",
@@ -261,8 +265,12 @@ class RouletteLobby {
                     <div class="card-body">
                         <p class="room-desc">${room.description}</p>
                         <div class="room-limits">
-                            <span class="limit-label">베팅 한도</span>
+                            <span class="limit-label">스팟 한도:</span>
                             <span class="limit-val">${room.minBet.toLocaleString()} ~ ${room.maxBet.toLocaleString()} Chip</span>
+                        </div>
+                        <div class="room-limits" style="margin-top: 2px;">
+                            <span class="limit-label">1판 총 한도:</span>
+                            <span class="limit-val" style="color: #ffd700; font-weight: 700;">최대 ${room.roundMaxBet ? room.roundMaxBet.toLocaleString() : (room.maxBet * 5).toLocaleString()} Chip</span>
                         </div>
 
                         <!-- 최근 10회 히스토리 바 -->
@@ -299,12 +307,13 @@ class RouletteLobby {
     }
 
     /**
-     * 번호 색상 반환
+     * 번호 색상 반환 (0, 00 녹색, 1~36 빨강/검정)
      */
     getNumberColor(num) {
-        if (num === 0) return 'green';
+        const s = String(num);
+        if (s === '0' || s === '00') return 'green';
         const reds = [1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36];
-        return reds.includes(num) ? 'red' : 'black';
+        return reds.includes(parseInt(s, 10)) ? 'red' : 'black';
     }
 
     /**
@@ -346,7 +355,8 @@ class RouletteLobby {
             roomNameEl.textContent = `${room.name} (${room.currentPlayers}/${this.maxPlayers}명)`;
         }
         if (roomLimitEl) {
-            roomLimitEl.textContent = `한도: ${room.minBet.toLocaleString()} ~ ${room.maxBet.toLocaleString()} Chip`;
+            const roundMaxStr = room.roundMaxBet ? room.roundMaxBet.toLocaleString() : (room.maxBet * 5).toLocaleString();
+            roomLimitEl.textContent = `한도: 스팟 ${room.minBet.toLocaleString()}~${room.maxBet.toLocaleString()} | 판당 최대 ${roundMaxStr} Chip`;
         }
 
         // [핵심] 상단 딜러 배너의 전담 딜러 프로필 업데이트
@@ -494,10 +504,17 @@ class RouletteLobby {
                     const rawNumbers = chosenSpotEl.dataset.numbers || '';
                     const spotTitle = chosenSpotEl.title || chosenSpotEl.textContent.trim() || spotId;
 
+                    // 1인당 1판 총 배팅 한도 초과 시 봇 배팅 중단
+                    if (room.roundMaxBet && bot.currentBetsAmount >= room.roundMaxBet) return;
+
                     // 칩 배팅 금액 (룸 한도 내 합리적 단위)
                     const chipUnit = room.minBet >= 5000 ? 5000 : (room.minBet >= 1000 ? 1000 : (room.minBet >= 500 ? 500 : 100));
                     const multiplier = Math.floor(Math.random() * 3) + 1;
-                    const amount = Math.min(room.maxBet, Math.max(room.minBet, chipUnit * multiplier));
+                    let amount = Math.min(room.maxBet, Math.max(room.minBet, chipUnit * multiplier));
+                    if (room.roundMaxBet && (bot.currentBetsAmount + amount > room.roundMaxBet)) {
+                        amount = room.roundMaxBet - bot.currentBetsAmount;
+                        if (amount < room.minBet) return;
+                    }
 
                     // 테이블에 봇 칩 렌더링
                     window.rouletteTable.placeBotBet(bot, spotId, amount);
