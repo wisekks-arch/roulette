@@ -191,48 +191,51 @@ class RouletteAuth {
     }
 
     /**
-     * SNS 간편 가입 및 로그인 (카카오, 구글, 네이버)
+     * [초간편 아이디 찾기] 닉네임으로 등록된 아이디(이메일) 조회
+     * @param {string} nickname 
      */
-    loginWithSNS(provider) {
-        const providerNames = {
-            'KAKAO': { name: '카카오', icon: '🟡', domain: '@kakao.com' },
-            'GOOGLE': { name: '구글', icon: '🔴', domain: '@gmail.com' },
-            'NAVER': { name: '네이버', icon: '🟢', domain: '@naver.com' }
-        };
-
-        const info = providerNames[provider] || { name: provider, icon: '🌐', domain: '@sns.com' };
-        const randId = Math.floor(1000 + Math.random() * 9000);
-        const email = `${provider.toLowerCase()}_user${randId}${info.domain}`;
-
-        // 이미 존재하는지 확인, 없으면 자동 생성
-        let user = this.users.find(u => u.email === email);
+    findIdByNickname(nickname) {
+        if (!nickname || !nickname.trim()) {
+            return { success: false, message: '가입 시 설정한 닉네임을 입력해 주세요.' };
+        }
+        const user = this.users.find(u => u.nickname && u.nickname.trim().toLowerCase() === nickname.trim().toLowerCase());
         if (!user) {
-            user = {
-                id: 'user_sns_' + Date.now(),
-                email: email,
-                nickname: `${info.name}_VIP${randId}`,
-                avatar: provider === 'KAKAO' ? '🦁' : (provider === 'GOOGLE' ? '💎' : '🐉'),
-                balance: 10000000,
-                status: 'ACTIVE',
-                type: provider,
-                totalGames: 0,
-                totalWins: 0,
-                netProfit: 0,
-                createdAt: new Date().toISOString()
-            };
-            this.users.unshift(user);
-            this.saveUsers();
+            return { success: false, message: `입력하신 닉네임("${nickname}")으로 등록된 계정을 찾을 수 없습니다.` };
+        }
+        return { success: true, email: user.email, nickname: user.nickname, message: '아이디를 성공적으로 찾았습니다!' };
+    }
+
+    /**
+     * [초간편 비밀번호 재설정] 아이디(이메일) + 닉네임 일치 확인 후 즉시 새 비밀번호 갱신
+     * @param {string} email 
+     * @param {string} nickname 
+     * @param {string} newPassword 
+     */
+    resetPassword(email, nickname, newPassword) {
+        if (!email || !nickname || !newPassword) {
+            return { success: false, message: '모든 항목(아이디, 닉네임, 새 비밀번호)을 입력해 주세요.' };
+        }
+        const user = this.users.find(u =>
+            u.email && u.email.trim().toLowerCase() === email.trim().toLowerCase() &&
+            u.nickname && u.nickname.trim().toLowerCase() === nickname.trim().toLowerCase()
+        );
+        if (!user) {
+            return { success: false, message: '아이디와 닉네임 정보가 일치하는 회원을 찾을 수 없습니다. 정보를 다시 확인해 주세요.' };
         }
 
-        if (user.status === 'BANNED') {
-            return { success: false, message: '해당 계정은 관리자에 의해 이용 정지되었습니다.' };
+        user.password = newPassword.trim();
+        const idx = this.users.findIndex(u => u.id === user.id);
+        if (idx !== -1) {
+            this.users[idx] = { ...user };
         }
+        this.saveUsers();
 
+        // 새 비밀번호로 즉시 로그인 처리
         this.currentUser = user;
         this.saveCurrentUser();
-        this.addLoginLog(user, provider);
+        this.addLoginLog(user, 'PW_RESET');
 
-        return { success: true, user: user, message: `${info.name} 계정으로 로그인되었습니다.` };
+        return { success: true, user: user, message: '비밀번호가 성공적으로 변경되었습니다! VIP 카지노 룸에 입장합니다.' };
     }
 
     /**
@@ -351,16 +354,16 @@ class RouletteAuth {
                     <button class="auth-tab-btn ${activeTab === 'profile' ? 'active' : ''}" data-tab="profile">내 프로필</button>
                 ` : `
                     <button class="auth-tab-btn ${activeTab === 'login' ? 'active' : ''}" data-tab="login">일반 로그인</button>
-                    <button class="auth-tab-btn ${activeTab === 'register' ? 'active' : ''}" data-tab="register">회원가입</button>
+                    <button class="auth-tab-btn ${activeTab === 'register' ? 'active' : ''}" data-tab="register">무료 회원가입</button>
+                    <button class="auth-tab-btn ${activeTab === 'find' ? 'active' : ''}" data-tab="find">ID/PW 찾기</button>
                 `}
-                <button class="auth-tab-btn ${activeTab === 'sns' ? 'active' : ''}" data-tab="sns">SNS 간편로그인</button>
             </div>
 
             <div class="auth-tab-content">
                 ${activeTab === 'login' ? this.getLoginTemplate() : ''}
                 ${activeTab === 'register' ? this.getRegisterTemplate() : ''}
                 ${activeTab === 'profile' ? this.getProfileTemplate() : ''}
-                ${activeTab === 'sns' ? this.getSnsTemplate() : ''}
+                ${activeTab === 'find' ? this.getFindAccountTemplate() : ''}
             </div>
         `;
 
@@ -371,7 +374,7 @@ class RouletteAuth {
         return `
             <form id="form-login" class="auth-form">
                 <div class="auth-input-group">
-                    <label>이메일 주소</label>
+                    <label>이메일 주소 (아이디)</label>
                     <input type="email" id="login-email" placeholder="example@casino.com" value="vip_player@casino.com" required>
                 </div>
                 <div class="auth-input-group">
@@ -379,8 +382,25 @@ class RouletteAuth {
                     <input type="password" id="login-password" placeholder="비밀번호를 입력하세요" value="1234" required>
                 </div>
                 <button type="submit" class="auth-submit-btn">🔐 카지노 입장 (로그인)</button>
-                <div class="auth-switch-note">
-                    계정이 없으신가요? <a href="#" id="link-to-register">회원가입하기</a>
+                <div class="auth-switch-note auth-links-row">
+                    <div class="auth-find-group">
+                        <a href="#" id="link-to-find">아이디/비밀번호 찾기</a>
+                        <button type="button" class="btn-guide-help" id="btn-quick-guide-help" title="계정 찾기 가이드 보기">❓</button>
+                    </div>
+                    <span class="auth-sep">|</span>
+                    <a href="#" id="link-to-register">무료 회원가입</a>
+                </div>
+
+                <!-- ❓ 바로 보는 팝오버 가이드 (원클릭 토글) -->
+                <div id="quick-guide-popover" class="quick-guide-popover hidden">
+                    <div class="qg-header">
+                        <span class="qg-title">💡 계정 찾기 초간편 가이드</span>
+                        <button type="button" class="qg-close" id="btn-close-qg">✕</button>
+                    </div>
+                    <ul class="qg-list">
+                        <li><strong>아이디 찾기:</strong> 가입 시 등록한 <em>[닉네임]</em>만 입력하면 즉시 아이디를 확인하실 수 있습니다.</li>
+                        <li><strong>비밀번호 재설정:</strong> <em>[아이디]</em>와 <em>[닉네임]</em>을 입력하시면 본인 확인 즉시 새 비밀번호로 변경되어 바로 카지노에 입장됩니다.</li>
+                    </ul>
                 </div>
             </form>
         `;
@@ -477,26 +497,71 @@ class RouletteAuth {
         `;
     }
 
-    getSnsTemplate() {
+    /**
+     * [초간편] 아이디/비밀번호 찾기 화면 템플릿 (상시 가이드 박스 및 ❓ 바로 볼 수 있는 도움말 포함)
+     */
+    getFindAccountTemplate() {
         return `
-            <div class="sns-login-box">
-                <p class="sns-desc">별도의 복잡한 회원가입 없이 클릭 한 번으로 바로 카지노에 입장하세요!</p>
-                <div class="sns-btn-list">
-                    <button type="button" class="sns-btn sns-kakao" data-provider="KAKAO">
-                        <span class="sns-icon">🟡</span>
-                        <span class="sns-text">카카오 계정으로 간편 로그인</span>
-                    </button>
-                    <button type="button" class="sns-btn sns-google" data-provider="GOOGLE">
-                        <span class="sns-icon">🔴</span>
-                        <span class="sns-text">Google 계정으로 계속하기</span>
-                    </button>
-                    <button type="button" class="sns-btn sns-naver" data-provider="NAVER">
-                        <span class="sns-icon">🟢</span>
-                        <span class="sns-text">네이버 계정으로 간편 로그인</span>
-                    </button>
+            <div class="find-account-container">
+                <!-- 상단 헤더 및 ❓ 바로 볼 수 있는 가이드 버튼 -->
+                <div class="find-header-row">
+                    <div class="find-title-group">
+                        <span class="find-title">🔍 계정 정보 찾기</span>
+                        <button type="button" class="btn-guide-help btn-guide-prominent" id="btn-find-tab-guide" title="도움말 가이드 열기">❓ [가이드]</button>
+                    </div>
+                    <span class="find-subtitle">아이디 확인 또는 새 비밀번호를 3초 만에 재설정하세요.</span>
                 </div>
-                <div class="sns-chip-bonus">
-                    🎁 SNS 로그인 시 <strong>₩ 10,000,000</strong> 환영 칩 즉시 지급
+
+                <!-- ❓ 바로 볼 수 있는 사용자 가이드 안내 박스 -->
+                <div id="find-guide-box" class="find-guide-box">
+                    <div class="fgb-title">💡 플레이어 계정 찾기 사용자 가이드</div>
+                    <div class="fgb-desc">
+                        • <strong>아이디(이메일)를 잊으셨나요?</strong> 가입 시 설정한 <u>닉네임</u>만 입력하시면 화면에서 3초 만에 즉시 확인됩니다.<br>
+                        • <strong>비밀번호를 잊으셨나요?</strong> 등록된 <u>아이디</u>와 <u>닉네임</u>을 입력하시면 본인 확인 즉시 <u>새 비밀번호</u>로 변경되어 바로 입장됩니다.
+                    </div>
+                </div>
+
+                <!-- 1. 초간편 아이디 찾기 폼 -->
+                <div class="find-section-card">
+                    <div class="fsc-header">
+                        <span class="fsc-badge">STEP 1</span>
+                        <span class="fsc-title">닉네임으로 아이디 찾기</span>
+                    </div>
+                    <form id="form-find-id" class="find-mini-form">
+                        <div class="auth-input-group">
+                            <label>가입 시 닉네임</label>
+                            <input type="text" id="find-id-nickname" placeholder="가입 닉네임 입력 (예: 로열_플레이어)" required>
+                        </div>
+                        <button type="submit" class="auth-submit-btn btn-find-action">🔎 아이디 즉시 확인</button>
+                    </form>
+                    <div id="find-id-result" class="find-result-box hidden"></div>
+                </div>
+
+                <!-- 2. 초간편 비밀번호 재설정 폼 -->
+                <div class="find-section-card">
+                    <div class="fsc-header">
+                        <span class="fsc-badge">STEP 2</span>
+                        <span class="fsc-title">비밀번호 재설정 및 즉시 입장</span>
+                    </div>
+                    <form id="form-reset-pw" class="find-mini-form">
+                        <div class="auth-input-group">
+                            <label>가입 아이디 (이메일 주소)</label>
+                            <input type="email" id="reset-pw-email" placeholder="example@casino.com" required>
+                        </div>
+                        <div class="auth-input-group">
+                            <label>가입 시 닉네임</label>
+                            <input type="text" id="reset-pw-nickname" placeholder="본인 닉네임 입력" required>
+                        </div>
+                        <div class="auth-input-group">
+                            <label>새로 사용할 비밀번호</label>
+                            <input type="password" id="reset-pw-newpass" placeholder="새 비밀번호 입력" required>
+                        </div>
+                        <button type="submit" class="auth-submit-btn btn-reset-gold">🔑 비밀번호 변경 및 즉시 입장</button>
+                    </form>
+                </div>
+
+                <div class="auth-switch-note text-center">
+                    이미 계정을 기억하고 계신가요? <a href="#" id="link-back-to-login">로그인 화면으로 돌아가기</a>
                 </div>
             </div>
         `;
@@ -520,6 +585,120 @@ class RouletteAuth {
             linkReg.addEventListener('click', (e) => {
                 e.preventDefault();
                 this.renderAuthModal('register');
+            });
+        }
+
+        // 아이디/비밀번호 찾기 링크
+        const linkFind = document.getElementById('link-to-find');
+        if (linkFind) {
+            linkFind.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.renderAuthModal('find');
+            });
+        }
+
+        // 로그인 화면으로 돌아가기 링크
+        const linkBackToLogin = document.getElementById('link-back-to-login');
+        if (linkBackToLogin) {
+            linkBackToLogin.addEventListener('click', (e) => {
+                e.preventDefault();
+                this.renderAuthModal('login');
+            });
+        }
+
+        // ❓ 로그인 폼 내 원클릭 계정 찾기 가이드 팝오버 토글
+        const btnQuickGuide = document.getElementById('btn-quick-guide-help');
+        const popover = document.getElementById('quick-guide-popover');
+        if (btnQuickGuide && popover) {
+            btnQuickGuide.addEventListener('click', (e) => {
+                e.stopPropagation();
+                popover.classList.toggle('hidden');
+            });
+        }
+        const btnCloseQg = document.getElementById('btn-close-qg');
+        if (btnCloseQg && popover) {
+            btnCloseQg.addEventListener('click', () => {
+                popover.classList.add('hidden');
+            });
+        }
+
+        // ❓ 계정 찾기 탭 내 가이드 토글 및 하이라이트
+        const btnFindTabGuide = document.getElementById('btn-find-tab-guide');
+        const findGuideBox = document.getElementById('find-guide-box');
+        if (btnFindTabGuide && findGuideBox) {
+            btnFindTabGuide.addEventListener('click', () => {
+                findGuideBox.classList.toggle('highlight-guide');
+                setTimeout(() => findGuideBox.classList.remove('highlight-guide'), 1500);
+            });
+        }
+
+        // ① 닉네임으로 아이디 찾기 폼 제출
+        const formFindId = document.getElementById('form-find-id');
+        if (formFindId) {
+            formFindId.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const nick = document.getElementById('find-id-nickname').value;
+                const res = this.findIdByNickname(nick);
+                const resultBox = document.getElementById('find-id-result');
+                if (resultBox) {
+                    resultBox.classList.remove('hidden');
+                    if (res.success) {
+                        resultBox.innerHTML = `
+                            <div class="result-success-box">
+                                <span class="rs-icon">✅</span>
+                                <div class="rs-info">
+                                    <div class="rs-text">회원님의 가입 아이디(이메일)</div>
+                                    <div class="rs-email">${res.email}</div>
+                                </div>
+                                <button type="button" class="btn-use-found-id" id="btn-use-found-id" data-email="${res.email}">이 아이디로 로그인</button>
+                            </div>
+                        `;
+                        const btnUse = document.getElementById('btn-use-found-id');
+                        if (btnUse) {
+                            btnUse.addEventListener('click', () => {
+                                this.renderAuthModal('login');
+                                const emailInput = document.getElementById('login-email');
+                                if (emailInput) {
+                                    emailInput.value = res.email;
+                                    emailInput.focus();
+                                }
+                            });
+                        }
+                    } else {
+                        resultBox.innerHTML = `
+                            <div class="result-fail-box">
+                                <span class="rs-icon">❌</span>
+                                <span>${res.message}</span>
+                            </div>
+                        `;
+                    }
+                }
+            });
+        }
+
+        // ② 비밀번호 재설정 폼 제출
+        const formResetPw = document.getElementById('form-reset-pw');
+        if (formResetPw) {
+            formResetPw.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('reset-pw-email').value;
+                const nick = document.getElementById('reset-pw-nickname').value;
+                const newpass = document.getElementById('reset-pw-newpass').value;
+                const res = this.resetPassword(email, nick, newpass);
+                if (res.success) {
+                    if (window.rouletteApp) {
+                        window.rouletteApp.showToast(res.message);
+                        window.rouletteApp.setBalance(res.user.balance);
+                    }
+                    this.renderHeaderProfile();
+                    this.isMandatoryEntrance = false;
+                    this.closeAuthModal();
+                    if (window.rouletteApp && typeof window.rouletteApp.onUserLoggedIn === 'function') {
+                        window.rouletteApp.onUserLoggedIn(res.user);
+                    }
+                } else {
+                    alert(res.message);
+                }
             });
         }
 
@@ -574,27 +753,7 @@ class RouletteAuth {
             });
         }
 
-        // SNS 로그인 클릭
-        document.querySelectorAll('.sns-btn').forEach(btn => {
-            btn.addEventListener('click', (e) => {
-                const provider = e.currentTarget.getAttribute('data-provider');
-                const res = this.loginWithSNS(provider);
-                if (res.success) {
-                    if (window.rouletteApp) {
-                        window.rouletteApp.showToast(res.message);
-                        window.rouletteApp.setBalance(res.user.balance);
-                    }
-                    this.renderHeaderProfile();
-                    this.isMandatoryEntrance = false;
-                    this.closeAuthModal();
-                    if (window.rouletteApp && typeof window.rouletteApp.onUserLoggedIn === 'function') {
-                        window.rouletteApp.onUserLoggedIn(res.user);
-                    }
-                } else {
-                    alert(res.message);
-                }
-            });
-        });
+
 
         // 아바타 선택
         document.querySelectorAll('.avatar-choice-btn').forEach(btn => {

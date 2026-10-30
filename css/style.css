@@ -2777,67 +2777,300 @@ body {
     text-decoration: underline;
 }
 
-/* SNS 간편 가입 버튼 */
-.sns-login-box {
+/* ========================================================
+   초간편 아이디 / 비밀번호 찾기 & ❓ 사용자 가이드 스타일
+   ======================================================== */
+.auth-links-row {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.sns-desc {
-    font-size: 0.85rem;
-    color: #cbd5e1;
-    line-height: 1.4;
-    text-align: center;
-}
-
-.sns-btn-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.sns-btn {
-    display: flex;
+    justify-content: center;
     align-items: center;
     gap: 12px;
-    padding: 12px 18px;
-    border-radius: 8px;
-    font-size: 0.9rem;
-    font-weight: 700;
+    margin-top: 14px;
+    font-size: 0.8rem;
+    position: relative;
+}
+
+.auth-find-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.auth-sep {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+/* ❓ 바로 볼 수 있는 도움말 물음표 버튼 */
+.btn-guide-help {
+    background: rgba(234, 179, 8, 0.15);
+    border: 1px solid #eab308;
+    color: #ffd700;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    font-size: 0.72rem;
+    font-weight: 900;
     cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    box-shadow: 0 0 8px rgba(234, 179, 8, 0.3);
+}
+
+.btn-guide-help:hover {
+    background: #eab308;
+    color: #000;
+    transform: scale(1.15);
+    box-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+}
+
+.btn-guide-prominent {
+    width: auto;
+    height: auto;
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 0.72rem;
+}
+
+/* ❓ 원클릭 팝오버 가이드 카드 (로그인 폼 내부) */
+.quick-guide-popover {
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translateX(-50%);
+    width: 95%;
+    max-width: 420px;
+    background: #181105;
+    border: 1.5px solid #eab308;
+    border-radius: 10px;
+    padding: 12px 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.9), 0 0 20px rgba(234, 179, 8, 0.35);
+    z-index: 50;
+    animation: modalPop 0.25s ease-out;
+}
+
+.qg-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(234, 179, 8, 0.3);
+    padding-bottom: 6px;
+    margin-bottom: 8px;
+}
+
+.qg-title {
+    font-size: 0.82rem;
+    font-weight: 800;
+    color: #ffd700;
+}
+
+.qg-close {
+    background: none;
     border: none;
-    transition: filter 0.2s, transform 0.2s;
+    color: #94a3b8;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 0 4px;
 }
 
-.sns-btn:hover {
-    filter: brightness(1.1);
-    transform: translateY(-1px);
-}
-
-.sns-kakao {
-    background: #fee500;
-    color: #191919;
-}
-
-.sns-google {
-    background: #ffffff;
-    color: #1f2937;
-    border: 1px solid #e5e7eb;
-}
-
-.sns-naver {
-    background: #03c75a;
+.qg-close:hover {
     color: #ffffff;
 }
 
-.sns-chip-bonus {
-    text-align: center;
+.qg-list {
+    margin: 0;
+    padding-left: 18px;
+    font-size: 0.78rem;
+    color: #e2e8f0;
+    line-height: 1.5;
+}
+
+.qg-list em {
+    color: #ffd700;
+    font-style: normal;
+    font-weight: 700;
+}
+
+/* 계정 찾기 탭 메인 컨테이너 */
+.find-account-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.find-header-row {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    padding-bottom: 8px;
+}
+
+.find-title-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.find-title {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #ffd700;
+}
+
+.find-subtitle {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    display: block;
+    margin-top: 2px;
+}
+
+/* 상시 노출 사용자 가이드 박스 */
+.find-guide-box {
+    background: rgba(234, 179, 8, 0.08);
+    border: 1px solid rgba(234, 179, 8, 0.35);
+    border-radius: 8px;
+    padding: 10px 14px;
+    transition: all 0.3s ease;
+}
+
+.find-guide-box.highlight-guide {
+    background: rgba(234, 179, 8, 0.22);
+    border-color: #ffd700;
+    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+    transform: scale(1.02);
+}
+
+.fgb-title {
     font-size: 0.8rem;
+    font-weight: 800;
     color: #fef08a;
-    background: rgba(254, 240, 138, 0.08);
-    padding: 8px;
+    margin-bottom: 4px;
+}
+
+.fgb-desc {
+    font-size: 0.75rem;
+    color: #cbd5e1;
+    line-height: 1.5;
+}
+
+.fgb-desc u {
+    color: #ffd700;
+    text-underline-offset: 2px;
+}
+
+/* 찾기 폼 섹션 카드 */
+.find-section-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    padding: 12px 14px;
+}
+
+.fsc-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 10px;
+}
+
+.fsc-badge {
+    background: #eab308;
+    color: #000;
+    font-size: 0.65rem;
+    font-weight: 900;
+    padding: 1px 6px;
+    border-radius: 4px;
+}
+
+.fsc-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.find-mini-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.btn-find-action {
+    background: linear-gradient(135deg, #0284c7, #0369a1);
+    color: #fff;
+    margin-top: 4px;
+}
+
+.btn-reset-gold {
+    background: linear-gradient(135deg, #eab308, #ca8a04);
+    color: #000;
+    font-weight: 900;
+    margin-top: 4px;
+}
+
+/* 아이디 찾기 성공/실패 결과 박스 */
+.find-result-box {
+    margin-top: 10px;
+    padding: 10px 12px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    animation: fadeIn 0.25s ease-out;
+}
+
+.result-success-box {
+    background: rgba(34, 197, 94, 0.12);
+    border: 1px solid #22c55e;
     border-radius: 6px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    color: #f0fdf4;
+}
+
+.rs-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.rs-text {
+    font-size: 0.72rem;
+    color: #86efac;
+}
+
+.rs-email {
+    font-size: 1rem;
+    font-weight: 900;
+    color: #ffd700;
+    letter-spacing: 0.5px;
+}
+
+.btn-use-found-id {
+    background: #22c55e;
+    color: #000;
+    border: none;
+    border-radius: 6px;
+    padding: 6px 12px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    cursor: pointer;
+    align-self: flex-start;
+    transition: filter 0.2s;
+}
+
+.btn-use-found-id:hover {
+    filter: brightness(1.15);
+}
+
+.result-fail-box {
+    background: rgba(239, 68, 68, 0.12);
+    border: 1px solid #ef4444;
+    color: #fca5a5;
+    border-radius: 6px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 /* 프로필 화면 */
