@@ -879,3 +879,22 @@ SNS 간편로그인 삭제 해주고
    - Chrome Headless 구문 검사 및 콘솔 에러 0건(ZERO) 확인 완료.
    - index.html 캐시 버스팅 파라미터(?v=20261030_1700) 갱신.
    - GitHub Pages 실서버(https://wisekks-arch.github.io/roulette/index.html) 배포 완료.
+
+
+[64차 사용자 작업요청사항 - 2026-10-30]
+"딜러가 룰렛 휠을 회전시키고 구슬을 투구합니다!    
+ 한줄로 표시해줘  다! 가 다음줄로 갔서 보기 안좋음.
+자물쇠 그림 삭제  해줘"
+- 사용자 승인 확인: 승인 (작업 완료)
+
+[64차 마스터 작업 내역 및 개선 결과]
+1. 배팅 마감(NO MORE BETS) 모달 자물쇠 그림(🔒) 완전 삭제 (index.html, css/style.css):
+   - index.html 내 <div class="nmb-lock-icon">🔒</div> 마크업 삭제 및 관련 바운스 키프레임 스타일 정리.
+   - 불필요한 자물쇠 아이콘을 제거하여 깔끔하고 세련된 카지노 배팅 마감 알림 형태로 개선 완료.
+2. 딜러 투구 멘트 "다!" 줄바꿈 문제 해결 및 완벽한 한 줄(Single Line) 표시 (css/style.css):
+   - 배팅 마감 카드(.no-more-bets-card)의 가로 폭을 기존 308px에서 380px(max-width: 95%)로 확장.
+   - .nmb-message에 white-space: nowrap; word-break: keep-all; font-size: 0.85rem; line-height: 1.4;를 적용하여 "딜러가 룰렛 휠을 회전시키고 구슬을 투구합니다!" 문구가 단 한 줄로 시원하고 선명하게 출력되도록 교정 완료.
+3. 무결성 검증 및 GitHub Pages 실서버 배포:
+   - Chrome Headless 구문 검사 및 콘솔 에러 0건(ZERO) 확인 완료.
+   - index.html 캐시 버스팅 파라미터(?v=20261030_1715) 갱신.
+   - GitHub Pages 실서버(https://wisekks-arch.github.io/roulette/index.html) 배포 완료.
