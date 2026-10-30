@@ -360,7 +360,13 @@ class RouletteApp {
         if (autoBtn) {
             autoBtn.addEventListener('click', () => {
                 const modal = document.getElementById('autoplay-modal');
-                if (modal) modal.classList.remove('hidden');
+                if (modal) {
+                    const balEl = document.getElementById('auto-current-balance');
+                    if (balEl) {
+                        balEl.textContent = (this.balance || 0).toLocaleString() + ' Chip';
+                    }
+                    modal.classList.remove('hidden');
+                }
             });
         }
         const closeAutoBtn = document.getElementById('btn-close-autoplay');
@@ -368,6 +374,33 @@ class RouletteApp {
             closeAutoBtn.addEventListener('click', () => {
                 const modal = document.getElementById('autoplay-modal');
                 if (modal) modal.classList.add('hidden');
+            });
+        }
+
+        // 오토플레이 횟수 퀵 프리셋 버튼 이벤트 연동
+        const presetBtns = document.querySelectorAll('.btn-auto-preset');
+        const roundsInput = document.getElementById('auto-rounds-input');
+        if (presetBtns.length > 0 && roundsInput) {
+            presetBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const rounds = btn.getAttribute('data-rounds');
+                    if (rounds) {
+                        roundsInput.value = rounds;
+                        presetBtns.forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                    }
+                });
+            });
+
+            roundsInput.addEventListener('input', () => {
+                const val = roundsInput.value;
+                presetBtns.forEach(btn => {
+                    if (btn.getAttribute('data-rounds') === val) {
+                        btn.classList.add('active');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
             });
         }
 

@@ -16,7 +16,7 @@
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
-    <link rel="stylesheet" href="css/style.css?v=20261030_1620">
+    <link rel="stylesheet" href="css/style.css?v=20261030_1650">
 </head>
 
 <body>
@@ -211,30 +211,62 @@
             <div class="autoplay-modal-content">
                 <div class="autoplay-modal-header">
                     <div class="autoplay-modal-title">
-                        <h2>🤖 자동 배팅 설정 (AUTO PLAY)</h2>
-                        <p>테이블에 배팅 후 횟수와 목표 수익/손절가를 지정하여 자동으로 반복 플레이합니다.</p>
+                        <h2>🤖 VIP 자동 배팅 콘솔 (AUTO PLAY)</h2>
+                        <p>테이블 배팅 후 횟수와 목표 수익/손절가를 지정하여 스마트하게 자동 반복 플레이합니다.</p>
                     </div>
                     <button id="btn-close-autoplay" class="btn-close-modal">✕ 닫기</button>
                 </div>
                 <div class="autoplay-modal-body">
-                    <div class="auto-input-group">
-                        <label>현재 보유 칩</label>
-                        <span id="auto-current-balance" class="auto-val-text">1,250,000 Chip</span>
+                    <div class="auto-balance-card">
+                        <div class="abc-info">
+                            <span class="abc-label">💰 현재 보유 칩</span>
+                            <span id="auto-current-balance" class="abc-value">1,250,000 Chip</span>
+                        </div>
+                        <div class="abc-status">
+                            <span class="status-badge ready">배팅 준비완료</span>
+                        </div>
                     </div>
+
                     <div class="auto-input-group">
-                        <label for="auto-rounds-input">자동 진행 횟수 (회)</label>
-                        <input type="number" id="auto-rounds-input" value="10" min="1" max="100">
+                        <label for="auto-rounds-input">
+                            <span>🔄 자동 진행 횟수</span>
+                            <span class="sub-hint">1회 ~ 100회</span>
+                        </label>
+                        <div class="auto-rounds-wrapper">
+                            <input type="number" id="auto-rounds-input" value="10" min="1" max="100">
+                            <div class="auto-preset-buttons">
+                                <button type="button" class="btn-auto-preset active" data-rounds="10">10회</button>
+                                <button type="button" class="btn-auto-preset" data-rounds="20">20회</button>
+                                <button type="button" class="btn-auto-preset" data-rounds="50">50회</button>
+                                <button type="button" class="btn-auto-preset" data-rounds="100">100회</button>
+                            </div>
+                        </div>
                     </div>
+
                     <div class="auto-input-group">
-                        <label for="auto-profit-input">목표 수익 달성 시 자동 정지 (Chip, 0=미사용)</label>
-                        <input type="number" id="auto-profit-input" value="500000" step="10000">
+                        <label for="auto-profit-input">
+                            <span>🎯 목표 수익 달성 시 자동 정지</span>
+                            <span class="sub-hint">Chip (0 입력 시 미사용)</span>
+                        </label>
+                        <div class="auto-input-box">
+                            <input type="number" id="auto-profit-input" value="500000" step="10000">
+                            <span class="input-unit">Chip</span>
+                        </div>
                     </div>
+
                     <div class="auto-input-group">
-                        <label for="auto-stoploss-input">손절 한도 도달 시 자동 정지 (Chip, 0=미사용)</label>
-                        <input type="number" id="auto-stoploss-input" value="300000" step="10000">
+                        <label for="auto-stoploss-input">
+                            <span>🛑 손절 한도 도달 시 자동 정지</span>
+                            <span class="sub-hint">Chip (0 입력 시 미사용)</span>
+                        </label>
+                        <div class="auto-input-box">
+                            <input type="number" id="auto-stoploss-input" value="300000" step="10000">
+                            <span class="input-unit">Chip</span>
+                        </div>
                     </div>
+
                     <div class="autoplay-actions">
-                        <button id="btn-start-autoplay" class="btn-auto-start">▶ 자동 배팅 시작</button>
+                        <button id="btn-start-autoplay" class="btn-auto-start">▶ VIP 자동 배팅 시작</button>
                         <button id="btn-stop-autoplay" class="btn-auto-stop">⏹ 자동 배팅 중지</button>
                     </div>
                 </div>
@@ -361,13 +393,13 @@
 
     <!-- 스크립트 모듈 로드 (강력한 캐시 방지 쿼리스트링 적용) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="js/audio.js?v=20261030_1620"></script>
-    <script src="js/wheel.js?v=20261030_1620"></script>
-    <script src="js/table.js?v=20261030_1620"></script>
-    <script src="js/auth.js?v=20261030_1620"></script>
-    <script src="js/stats.js?v=20261030_1620"></script>
-    <script src="js/lobby.js?v=20261030_1620"></script>
-    <script src="js/app.js?v=20261030_1620"></script>
+    <script src="js/audio.js?v=20261030_1650"></script>
+    <script src="js/wheel.js?v=20261030_1650"></script>
+    <script src="js/table.js?v=20261030_1650"></script>
+    <script src="js/auth.js?v=20261030_1650"></script>
+    <script src="js/stats.js?v=20261030_1650"></script>
+    <script src="js/lobby.js?v=20261030_1650"></script>
+    <script src="js/app.js?v=20261030_1650"></script>
 </body>
 
 </html>

@@ -434,7 +434,10 @@ class RouletteStats {
                             <span class="hc-title hot-text">🔥 HOT NUMBERS (최다 출현)</span>
                             <div class="hc-badges">
                                 ${analysis.hotNumbers.map(n => `
-                                    <span class="hc-badge hot-badge">${n.number} <small>(${n.count}회)</small></span>
+                                    <div class="hc-badge hot-badge">
+                                        <span class="chip-num">${n.number}</span>
+                                        <span class="chip-cnt">${n.count}회 출현</span>
+                                    </div>
                                 `).join('')}
                             </div>
                         </div>
@@ -442,7 +445,10 @@ class RouletteStats {
                             <span class="hc-title cold-text">❄️ COLD NUMBERS (최소 출현)</span>
                             <div class="hc-badges">
                                 ${analysis.coldNumbers.map(n => `
-                                    <span class="hc-badge cold-badge">${n.number} <small>(${n.count}회)</small></span>
+                                    <div class="hc-badge cold-badge">
+                                        <span class="chip-num">${n.number}</span>
+                                        <span class="chip-cnt">${n.count}회 출현</span>
+                                    </div>
                                 `).join('')}
                             </div>
                         </div>
