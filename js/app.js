@@ -1107,7 +1107,7 @@ class RouletteApp {
                     myBarBet.style.color = '#ffd700';
                     myBarBet.style.fontWeight = 'bold';
                     myBarBet.classList.add('pop-animation');
-                    setTimeout(() => myBarBet.classList.remove('pop-animation'), 1000);
+                    setTimeout(() => myBarBet.classList.remove('pop-animation'), 2500);
                 } else if (totalBet > 0) {
                     myBarBet.textContent = `낙첨 (-${totalBet.toLocaleString()})`;
                     myBarBet.style.color = '#94a3b8';
@@ -1148,11 +1148,11 @@ class RouletteApp {
         } catch (err) {
             console.error("Error in onSpinResult:", err);
         } finally {
-            // [사용자 요청] 정산 후 배팅 금액을 보여준 후 정확히 1.5초(1,500ms) 뒤 다음 단계로 자동 전환
+            // [사용자 요청] 정산 후 배팅 금액을 보여준 후 정확히 3초(3,000ms) 뒤 다음 단계로 자동 전환
             if (this.nextRoundTimeout) clearTimeout(this.nextRoundTimeout);
             this.nextRoundTimeout = setTimeout(() => {
                 this.nextRound();
-            }, 1500);
+            }, 3000);
         }
     }
 

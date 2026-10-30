@@ -654,7 +654,7 @@ class RouletteLobby {
                     badgeBet.style.color = '#ffd700';
                     badgeBet.style.fontWeight = 'bold';
                     badgeBet.classList.add('pop-animation');
-                    setTimeout(() => badgeBet.classList.remove('pop-animation'), 1000);
+                    setTimeout(() => badgeBet.classList.remove('pop-animation'), 2500);
                 } else if (res.totalBet > 0) {
                     badgeBet.textContent = `낙첨 (-${res.totalBet.toLocaleString()})`;
                     badgeBet.style.color = '#94a3b8';

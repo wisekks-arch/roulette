@@ -16,7 +16,7 @@
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
-    <link rel="stylesheet" href="css/style.css?v=20261030_1415">
+    <link rel="stylesheet" href="css/style.css?v=20261030_1445">
 </head>
 
 <body>
@@ -118,18 +118,12 @@
                     </div>
                 </div>
 
-                <!-- 가상 AI 플레이어 착석 현황 -->
-                <div class="ai-players-section">
-                    <div class="ai-section-title">TABLE VIP PLAYERS (참가자)</div>
-                    <div id="table-ai-players" class="ai-players-list"></div>
-                </div>
+                <!-- 좌측 하단: TABLE SEATS (참가자 5인 좌석 바 세로 배치) -->
+                <div id="table-players-bar" class="table-players-bar"></div>
             </section>
 
-            <!-- 우측/하단: 전통 펠트 룰렛 다이 테이블 -->
+            <!-- 우측: 전통 펠트 룰렛 다이 테이블 -->
             <section class="table-section">
-                <!-- 테이블 상단 다중 참석자 바 (나 + 봇 3명, 최대 8명) -->
-                <div id="table-players-bar" class="table-players-bar"></div>
-
                 <div class="table-scroll-wrapper">
                     <div id="roulette-table-mount"></div>
                 </div>
@@ -392,7 +386,7 @@
                     <!-- JS 동적 렌더링 -->
                 </div>
                 <div class="wl-footer">
-                    <span id="wl-timer-notice" class="wl-timer-text">다음 라운드 자동 진행 (1.5초)</span>
+                    <span id="wl-timer-notice" class="wl-timer-text">다음 라운드 자동 진행 (3초)</span>
                     <button id="btn-close-winner-list" class="wl-close-btn">닫기</button>
                 </div>
             </div>
@@ -418,13 +412,13 @@
 
     <!-- 스크립트 모듈 로드 (강력한 캐시 방지 쿼리스트링 적용) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="js/audio.js?v=20261030_1415"></script>
-    <script src="js/wheel.js?v=20261030_1415"></script>
-    <script src="js/table.js?v=20261030_1415"></script>
-    <script src="js/auth.js?v=20261030_1415"></script>
-    <script src="js/stats.js?v=20261030_1415"></script>
-    <script src="js/lobby.js?v=20261030_1415"></script>
-    <script src="js/app.js?v=20261030_1415"></script>
+    <script src="js/audio.js?v=20261030_1445"></script>
+    <script src="js/wheel.js?v=20261030_1445"></script>
+    <script src="js/table.js?v=20261030_1445"></script>
+    <script src="js/auth.js?v=20261030_1445"></script>
+    <script src="js/stats.js?v=20261030_1445"></script>
+    <script src="js/lobby.js?v=20261030_1445"></script>
+    <script src="js/app.js?v=20261030_1445"></script>
 </body>
 
 </html>
