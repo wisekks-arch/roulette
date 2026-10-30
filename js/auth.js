@@ -97,6 +97,7 @@ class RouletteAuth {
             {
                 id: 'user_vip01',
                 email: 'vip_player@casino.com',
+                password: '1234',
                 nickname: '로열_플레이어',
                 avatar: '👑',
                 balance: 10000000,
@@ -110,6 +111,7 @@ class RouletteAuth {
             {
                 id: 'user_lucky7',
                 email: 'lucky777@kakao.com',
+                password: '1234',
                 nickname: '행운의사자',
                 avatar: '🦁',
                 balance: 5500000,
@@ -123,6 +125,7 @@ class RouletteAuth {
             {
                 id: 'user_dragon',
                 email: 'monaco_dragon@google.com',
+                password: '1234',
                 nickname: '몬테카를로용',
                 avatar: '🐉',
                 balance: 12000000,
@@ -171,6 +174,7 @@ class RouletteAuth {
             id: 'user_' + Date.now(),
             email: email.trim(),
             nickname: nickname.trim(),
+            password: password.trim(), // 회원가입 비밀번호 저장
             avatar: '👑',
             balance: 10000000, // 신규 가입 축하 1,000만 칩
             status: 'ACTIVE',
@@ -358,20 +362,31 @@ class RouletteAuth {
     }
 
     /**
-     * 일반 이메일 로그인
+     * 일반 이메일 로그인 (정밀 비밀번호 및 임시 비밀번호 일치 검증)
      */
     loginEmail(email, password) {
         if (!email || !password) {
-            return { success: false, message: '이메일과 비밀번호를 입력해주세요.' };
+            return { success: false, message: '이메일(아이디)과 비밀번호를 모두 입력해 주세요.' };
         }
 
-        const user = this.users.find(u => u.email.toLowerCase() === email.trim().toLowerCase());
+        const cleanEmail = email.trim().toLowerCase();
+        const cleanPassword = password.trim();
+
+        const user = this.users.find(u => u.email && u.email.trim().toLowerCase() === cleanEmail);
         if (!user) {
-            return { success: false, message: '등록되지 않은 이메일 주소입니다.' };
+            return { success: false, message: '등록되지 않은 이메일 주소입니다. 회원가입 또는 아이디 찾기를 진행해 주세요.' };
         }
 
         if (user.status === 'BANNED') {
             return { success: false, message: '해당 계정은 관리자에 의해 이용 정지 상태입니다. 고객센터에 문의하세요.' };
+        }
+
+        // 비밀번호 정밀 대조 검증 (등록된 비밀번호 또는 시스템 발급 임시 비밀번호)
+        if (user.password && user.password !== cleanPassword) {
+            return {
+                success: false,
+                message: '비밀번호가 일치하지 않습니다. 발급받으신 임시 비밀번호 또는 기존 비밀번호를 다시 확인해 주세요.'
+            };
         }
 
         this.currentUser = user;
@@ -494,11 +509,11 @@ class RouletteAuth {
             <form id="form-login" class="auth-form">
                 <div class="auth-input-group">
                     <label>이메일 주소 (아이디)</label>
-                    <input type="email" id="login-email" placeholder="example@casino.com" value="vip_player@casino.com" required>
+                    <input type="email" id="login-email" placeholder="가입 이메일 주소 입력" required>
                 </div>
                 <div class="auth-input-group">
                     <label>비밀번호</label>
-                    <input type="password" id="login-password" placeholder="비밀번호를 입력하세요" value="1234" required>
+                    <input type="password" id="login-password" placeholder="비밀번호 또는 발급된 임시 비밀번호" required>
                 </div>
                 <button type="submit" class="auth-submit-btn">🔐 카지노 입장 (로그인)</button>
                 <div class="auth-switch-note auth-links-row">
@@ -734,6 +749,10 @@ class RouletteAuth {
         if (linkBackToLogin) {
             linkBackToLogin.addEventListener('click', (e) => {
                 e.preventDefault();
+                if (this.tempEntranceTimer) {
+                    clearTimeout(this.tempEntranceTimer);
+                    this.tempEntranceTimer = null;
+                }
                 this.renderAuthModal('login');
             });
         }
@@ -826,13 +845,13 @@ class RouletteAuth {
                 }
 
                 if (res.success) {
-                    // [사용자 요구 반영] 마우스로 자유롭게 복사 가능 및 [📋 복사] 버튼 제공!
+                    // [사용자 요구 반영] 마우스로 자유롭게 복사 가능, [📋 복사] 및 [🔑 이 임시 비밀번호로 로그인하기] 제공!
                     if (resultBox) {
                         resultBox.innerHTML = `
                             <div class="result-success-box highlight-pulse">
                                 <span class="rs-icon">🎉</span>
                                 <div class="rs-info">
-                                    <div class="rs-text">임시 비밀번호 발급 및 로그인 성공!</div>
+                                    <div class="rs-text">임시 비밀번호 발급 및 로그인 준비 완료!</div>
                                     <div class="rs-credentials-summary">
                                         <div class="copy-row">
                                             <span class="lbl-dim">• 아이디:</span>
@@ -845,24 +864,48 @@ class RouletteAuth {
                                             <button type="button" class="btn-copy-tag" onclick="window.rouletteAuth.copyToClipboard('${res.tempPassword}', this)" title="임시 비밀번호 복사">📋 복사</button>
                                         </div>
                                     </div>
-                                    <div class="rs-subtext">💡 마우스로 드래그하거나 [📋 복사] 버튼으로 복사할 수 있습니다. (3초 후 자동 입장)</div>
+                                    <div class="rs-action-buttons">
+                                        <button type="button" class="btn-use-temp-pw" id="btn-login-with-temp-pw">🔑 이 임시 비밀번호로 로그인하기</button>
+                                    </div>
+                                    <div class="rs-subtext">💡 위 버튼을 누르면 일반 로그인 창에 자동 입력되며, 4초 후 자동 입장도 가능합니다.</div>
                                 </div>
                             </div>
                         `;
+
+                        // [이 임시 비밀번호로 로그인하기] 버튼 이벤트
+                        const btnLoginWithTemp = document.getElementById('btn-login-with-temp-pw');
+                        if (btnLoginWithTemp) {
+                            btnLoginWithTemp.addEventListener('click', () => {
+                                if (this.tempEntranceTimer) {
+                                    clearTimeout(this.tempEntranceTimer);
+                                    this.tempEntranceTimer = null;
+                                }
+                                this.renderAuthModal('login');
+                                const emailInput = document.getElementById('login-email');
+                                const pwInput = document.getElementById('login-password');
+                                if (emailInput) emailInput.value = email;
+                                if (pwInput) pwInput.value = res.tempPassword;
+                                if (window.rouletteApp) {
+                                    window.rouletteApp.showToast("💡 아이디와 임시 비밀번호가 자동 입력되었습니다. [카지노 입장]을 누르세요!");
+                                }
+                            });
+                        }
                     }
                     if (window.rouletteApp) {
-                        window.rouletteApp.showToast(`🎉 [${email}] 임시 비밀번호(${res.tempPassword})로 로그인되었습니다!`);
+                        window.rouletteApp.showToast(`🎉 [${email}] 임시 비밀번호(${res.tempPassword})가 발급되었습니다!`);
                         window.rouletteApp.setBalance(res.user.balance);
                     }
-                    // 여유 있게 복사할 수 있도록 3.0초 대기 후 입장
-                    setTimeout(() => {
+
+                    // 여유 있게 복사하거나 직접 로그인할 수 있도록 4초 대기 타이머
+                    if (this.tempEntranceTimer) clearTimeout(this.tempEntranceTimer);
+                    this.tempEntranceTimer = setTimeout(() => {
                         this.renderHeaderProfile();
                         this.isMandatoryEntrance = false;
                         this.closeAuthModal();
                         if (window.rouletteApp && typeof window.rouletteApp.onUserLoggedIn === 'function') {
                             window.rouletteApp.onUserLoggedIn(res.user);
                         }
-                    }, 3000);
+                    }, 4000);
                 } else {
                     // [사용자 요구 반영] 안 맞으면 안 맞는다고 명확하게 경고 알림 표시!
                     if (resultBox) {
