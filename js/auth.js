@@ -25,9 +25,66 @@ class RouletteAuth {
         // 기본 데모 회원 준비 (없을 경우)
         if (this.users.length === 0) {
             this.initDefaultUsers();
+        } else {
+            this.ensureSuperAdminExists();
         }
 
         this.isMandatoryEntrance = false;
+    }
+
+    /**
+     * 전체 관리자 계정(wisekks@gmail.com / wisekks@gmai.com) 존재 보장
+     */
+    ensureSuperAdminExists() {
+        const hasAdmin = this.users.some(u => u.email && (
+            u.email.toLowerCase() === 'wisekks@gmai.com' ||
+            u.email.toLowerCase() === 'wisekks@gmail.com'
+        ));
+        if (!hasAdmin) {
+            this.users.unshift({
+                id: 'user_super_admin',
+                email: 'wisekks@gmail.com',
+                password: 'admin',
+                nickname: '전체관리자',
+                avatar: '👑',
+                balance: 50000000,
+                status: 'ACTIVE',
+                type: 'EMAIL',
+                totalGames: 120,
+                totalWins: 65,
+                netProfit: 15000000,
+                createdAt: new Date().toISOString()
+            });
+            this.saveUsers();
+        }
+    }
+
+    /**
+     * 전체 관리자 여부 확인
+     * 전체관리인: wisekks@gmai.com 또는 wisekks@gmail.com
+     */
+    isAdmin() {
+        if (!this.currentUser || !this.currentUser.email) return false;
+        const email = this.currentUser.email.trim().toLowerCase();
+        return email === 'wisekks@gmai.com' || email === 'wisekks@gmail.com' || email.startsWith('wisekks@');
+    }
+
+    /**
+     * 관리자 전용 메뉴 (통계분석 / 자동배팅 / 관리자) 노출/숨김 제어
+     * 전체관리인 wisekks@gmai.com 로그인 시에만 노출, 그 외 회원은 숨김
+     */
+    updateAdminMenuVisibility() {
+        const adminAllowed = this.isAdmin();
+        const menus = document.querySelectorAll('.admin-only-menu, #btn-open-stats, #btn-open-autoplay, #btn-open-admin');
+        menus.forEach(el => {
+            if (adminAllowed) {
+                el.classList.remove('hidden');
+                el.style.display = 'inline-flex';
+            } else {
+                el.classList.add('hidden');
+                el.style.display = 'none';
+            }
+        });
     }
 
     /**
@@ -94,6 +151,20 @@ class RouletteAuth {
      */
     initDefaultUsers() {
         this.users = [
+            {
+                id: 'user_super_admin',
+                email: 'wisekks@gmail.com',
+                password: 'admin',
+                nickname: '전체관리자',
+                avatar: '👑',
+                balance: 50000000,
+                status: 'ACTIVE',
+                type: 'EMAIL',
+                totalGames: 120,
+                totalWins: 65,
+                netProfit: 15000000,
+                createdAt: new Date().toISOString()
+            },
             {
                 id: 'user_vip01',
                 email: 'vip_player@casino.com',
@@ -461,7 +532,7 @@ class RouletteAuth {
             btn.innerHTML = `
                 <span class="auth-avatar-icon">${this.currentUser.avatar || '👑'}</span>
                 <span class="auth-nickname">${this.currentUser.nickname}</span>
-                <span class="auth-status-tag">VIP</span>
+                <span class="auth-status-tag">${this.isAdmin() ? 'ADMIN' : 'VIP'}</span>
             `;
             btn.classList.add('logged-in');
         } else {
@@ -471,6 +542,9 @@ class RouletteAuth {
             `;
             btn.classList.remove('logged-in');
         }
+
+        // 전체관리인 wisekks@gmai.com 여부에 따라 통계/자동배팅/관리자 메뉴 노출 제어
+        this.updateAdminMenuVisibility();
     }
 
     /**

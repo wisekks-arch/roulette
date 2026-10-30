@@ -340,6 +340,10 @@ class RouletteApp {
         const statsBtn = document.getElementById('btn-open-stats');
         if (statsBtn) {
             statsBtn.addEventListener('click', () => {
+                if (!window.rouletteAuth || !window.rouletteAuth.isAdmin()) {
+                    this.showToast("전체 관리인(wisekks@gmai.com)만 이용할 수 있는 메뉴입니다.");
+                    return;
+                }
                 if (window.rouletteStats) {
                     window.rouletteStats.renderStatsModal();
                 }
@@ -359,6 +363,10 @@ class RouletteApp {
         const autoBtn = document.getElementById('btn-open-autoplay');
         if (autoBtn) {
             autoBtn.addEventListener('click', () => {
+                if (!window.rouletteAuth || !window.rouletteAuth.isAdmin()) {
+                    this.showToast("전체 관리인(wisekks@gmai.com)만 이용할 수 있는 메뉴입니다.");
+                    return;
+                }
                 const modal = document.getElementById('autoplay-modal');
                 if (modal) {
                     const balEl = document.getElementById('auto-current-balance');
@@ -407,6 +415,10 @@ class RouletteApp {
         const startAutoBtn = document.getElementById('btn-start-autoplay');
         if (startAutoBtn) {
             startAutoBtn.addEventListener('click', () => {
+                if (!window.rouletteAuth || !window.rouletteAuth.isAdmin()) {
+                    this.showToast("전체 관리인(wisekks@gmai.com)만 이용할 수 있는 메뉴입니다.");
+                    return;
+                }
                 this.startAutoPlay();
             });
         }
@@ -422,6 +434,10 @@ class RouletteApp {
         const adminBtn = document.getElementById('btn-open-admin');
         if (adminBtn) {
             adminBtn.addEventListener('click', () => {
+                if (!window.rouletteAuth || !window.rouletteAuth.isAdmin()) {
+                    this.showToast("전체 관리인(wisekks@gmai.com)만 이용할 수 있는 메뉴입니다.");
+                    return;
+                }
                 if (window.rouletteStats) {
                     window.rouletteStats.renderAdminModal();
                 }

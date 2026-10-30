@@ -857,3 +857,25 @@ SNS 간편로그인 삭제 해주고
    - Chrome Headless 구문 검사 및 브라켓 카운트 검사 (콘솔 에러 0건 확인).
    - index.html 캐시 버스팅 파라미터(?v=20261030_1650) 갱신.
    - GitHub Pages 실서버(https://wisekks-arch.github.io/roulette/index.html) 배포 완료.
+
+
+[63차 사용자 작업요청사항 - 2026-10-30]
+"닫기버튼이 우측 상단으로 이동시켜줘
+통계분석/ 자동배팅/관리자 메뉴는 전체관리인 wisekks@gmai.com 로그인시에만 메뉴가 노출되는거야
+이외의 회원들은 메뉴가 보이지 않음 개선 반영해줘"
+- 사용자 승인 확인: 승인 (작업 완료)
+
+[63차 마스터 작업 내역 및 개선 결과]
+1. 모달 닫기 버튼 우측 상단 완벽 고정 (css/style.css):
+   - .admin-modal-header 스타일 추가: display: flex, justify-content: space-between, padding-right: 80px을 부여하여 타이틀과 닫기 버튼 겹침 및 줄바꿈 현상 원천 차단.
+   - .admin-modal-content, .stats-modal-content, .autoplay-modal-content, .lobby-modal-content 내 .btn-close-modal을 position: absolute; top: 20px; right: 20px; z-index: 50; 으로 배치하여 어떤 상황에서도 모달 우측 최상단에 안정적으로 고정.
+2. 전체관리인(wisekks@gmai.com) 전용 메뉴 권한 제어 (index.html, js/auth.js, js/app.js):
+   - 상단 헤더의 3개 메뉴(통계분석, 자동배팅, 관리자)에 .admin-only-menu 클래스를 부여하고 기본 숨김 처리(display: none;).
+   - js/auth.js에 isAdmin() 판별 메서드 구현: currentUser의 이메일이 wisekks@gmai.com 또는 wisekks@gmail.com (대소문자 무시)인지 엄격히 검증.
+   - updateAdminMenuVisibility() 함수를 통해 전체관리인 로그인 시에만 3개 메뉴가 노출되고, 비로그인 상태 및 일반 회원(카카오 회원, 일반 이메일 회원) 로그인 시에는 메뉴가 완전히 숨겨지도록 실시간 동기화.
+   - js/app.js의 메뉴 클릭 리스너에 권한 가드 로직을 추가하여 비인가 접근 시도시 토스트 알림 및 차단 처리.
+   - initDefaultUsers() 및 ensureSuperAdminExists()를 통해 최고관리자(wisekks@gmail.com) 계정 사전 준비 완료.
+3. 무결성 검증 및 GitHub Pages 실서버 배포:
+   - Chrome Headless 구문 검사 및 콘솔 에러 0건(ZERO) 확인 완료.
+   - index.html 캐시 버스팅 파라미터(?v=20261030_1700) 갱신.
+   - GitHub Pages 실서버(https://wisekks-arch.github.io/roulette/index.html) 배포 완료.
