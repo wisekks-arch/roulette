@@ -987,11 +987,19 @@ class RouletteApp {
             arm.rotation.z = Math.PI / 2; arm.rotation.y = i * Math.PI / 2; arm.position.y = 0.335; turret.add(arm);
         }
 
-        // 당첨 포켓 하이라이트 마커
-        const markerMat = new THREE.MeshBasicMaterial({ color: 0xffd27a, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false });
+        // [사용자 요구 반영]: 구슬이 떨어진 포켓 홈(R_POCKET_IN ~ R_NUM_IN)만 순백색으로 깜빡이고 바깥쪽 숫자영역은 원본 보존
+        const markerMat = new THREE.MeshBasicMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0,
+            blending: THREE.AdditiveBlending,
+            depthWrite: false
+        });
         const markerTh = targetIdx * STEP;
-        const marker = new THREE.Mesh(ringGeo(R_POCKET_IN + 0.01, R_ROTOR - 0.01, markerTh - STEP / 2, STEP), markerMat);
-        marker.position.y = 0.047; rotor.add(marker);
+        // 외경을 R_NUM_IN - 0.005로 제한하여 숫자 영역 침범 완전 차단
+        const marker = new THREE.Mesh(ringGeo(R_POCKET_IN + 0.008, R_NUM_IN - 0.005, markerTh - STEP / 2, STEP), markerMat);
+        marker.position.y = 0.012; 
+        rotor.add(marker);
 
         // [대형화된 순백색 세라믹 3D 물리 룰렛 볼 (Pure Ceramic White, BR = 0.052)]
         const ball = new THREE.Mesh(new THREE.SphereGeometry(BR, 36, 28),
@@ -1097,8 +1105,8 @@ class RouletteApp {
                     statusText.textContent = `🎯 당첨 번호 #${targetNum} 포켓 안착 확정! (${remainSec}초 후 배당 정산)`;
                 }
 
-                // 당첨 포켓 황금빛 네온 링 마커 화려한 점멸
-                markerMat.opacity = 0.75 + 0.25 * Math.sin((elapsed - T3) * 8);
+                // [사용자 요구 반영]: 구슬이 떨어진 포켓 홈만 선명한 순백색으로 리드미컬하게 깜빡임
+                markerMat.opacity = 0.65 + 0.35 * Math.sin((elapsed - T3) * 10);
             }
 
             rotor.rotation.y = W;

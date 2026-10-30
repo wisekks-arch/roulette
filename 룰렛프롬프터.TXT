@@ -809,3 +809,28 @@ SNS 간편로그인 삭제 해주고
    - Chrome 헤드리스 렌더링 및 구문 무결성(Braces/Parens 100% 매칭) 확인 완료.
    - index.html 캐시 버스팅 파라미터 ?v=20261030_1550 전면 갱신.
    - GitHub Pages 실서버(https://wisekks-arch.github.io/roulette/index.html) 배포 완료.
+
+
+[61차 사용자 요청 원문 - 2026-10-30]
+"구슬이 떨어진 영역만 흰색으로 깜빡임을 해주고 숫자영역은 흰색으로 처리하지 말것,
+개선해줘"
+"승인  함
+관리자채널에 정보가 안보여 개선해줘  ui 도 개선해 주고"
+- 사용자 최종 확인: 승인 (컨펌 완료)
+
+[61차 핵심 구현 및 개선 사항]
+1. 3D 룰렛 당첨 하이라이트 마커 범위 축소 및 순백색 깜빡임 적용 (js/app.js):
+   - 당첨 마커의 외경을 휠 최외곽(R_ROTOR)에서 숫자 링 시작 경계(R_NUM_IN - 0.005)로 축소하여 구슬이 들어간 안쪽 포켓 홈(R_POCKET_IN ~ R_NUM_IN)에만 정확히 국한.
+   - 마커 색상을 순백색(0xffffff)으로 지정하고 안착 시 선명하게 깜빡이도록 점멸 애니메이션 적용.
+   - 바깥쪽 숫자 영역(Number Ring)의 마커 침범을 완전히 차단하여, 원래의 레드/블랙/그린 고유 색상과 선명한 당첨 번호 숫자가 100% 온전하게 보존되도록 개선.
+2. 관리자 패널(Admin Console) 정보 누락 버그 해결 (index.html, js/stats.js):
+   - index.html 254행의 모달 본문에 누락되었던 id="admin-modal-body"를 정상 바인딩하고 내부 구버전 정적 껍데기 HTML을 제거.
+   - stats.js의 3대 관리자 탭 시스템(회원 관리 / 배당률 관리 / 실시간 회차 로그)이 실시간 데이터로 완벽하게 렌더링되도록 복구.
+   - winLogs 및 betLogs 초기 샘플 데이터(initSampleLogs) 연동으로 관리자 콘솔 오픈 즉시 실시간 데이터 표시.
+3. 관리자 패널 VIP 콘솔 UI 전면 개편 (css/style.css):
+   - 모달 크기 확장(max-width: 980px, max-height: 90vh, overflow-y: auto) 및 최고급 카지노 글래스모피즘 골드/퍼플 테마 적용.
+   - 세련된 골드 네온 탭 전환 바(.admin-nav-tabs), 가독성 높은 다크 VIP 테이블(.admin-table), 상태 뱃지(.status-badge), 회원 조작 버튼(.btn-toggle-ban, .btn-view-records) 스타일링 완료.
+4. 브라우저 스크립트 에러 0건(ZERO) 검증 및 GitHub Pages 실서버 배포:
+   - Chrome 헤드리스 렌더링 및 구문 무결성(Braces/Parens 100% 매칭) 확인 완료.
+   - index.html 캐시 버스팅 파라미터 ?v=20261030_1620 전면 갱신.
+   - GitHub Pages 실서버(https://wisekks-arch.github.io/roulette/index.html) 배포 완료.

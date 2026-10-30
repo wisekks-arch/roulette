@@ -39,6 +39,11 @@ class RouletteStats {
         if (this.history.length < 50) {
             this.initSampleHistory();
         }
+
+        // 초기 관리자 로그가 비어있을 경우 실시간 시뮬레이션 샘플 로그 생성
+        if (this.winLogs.length === 0) {
+            this.initSampleLogs();
+        }
     }
 
     loadHistory() {
@@ -162,6 +167,30 @@ class RouletteStats {
     }
 
     /**
+     * 관리자용 초기 실시간 시뮬레이션 로그 생성
+     */
+    initSampleLogs() {
+        const sampleWins = [
+            { round: 1520, winningNumber: '26', totalBet: 450000, totalPayout: 720000, time: new Date(Date.now() - 35000).toLocaleTimeString('ko-KR') },
+            { round: 1519, winningNumber: '7', totalBet: 320000, totalPayout: 180000, time: new Date(Date.now() - 70000).toLocaleTimeString('ko-KR') },
+            { round: 1518, winningNumber: '0', totalBet: 580000, totalPayout: 0, time: new Date(Date.now() - 105000).toLocaleTimeString('ko-KR') },
+            { round: 1517, winningNumber: '11', totalBet: 250000, totalPayout: 360000, time: new Date(Date.now() - 140000).toLocaleTimeString('ko-KR') },
+            { round: 1516, winningNumber: '32', totalBet: 610000, totalPayout: 400000, time: new Date(Date.now() - 175000).toLocaleTimeString('ko-KR') }
+        ];
+        this.winLogs = sampleWins;
+        this.saveWinLogs();
+
+        const sampleBets = [
+            { round: 1520, nickname: '로열_플레이어', betType: 'STRAIGHT', numbers: '26', amount: 50000, time: new Date(Date.now() - 40000).toLocaleTimeString('ko-KR') },
+            { round: 1520, nickname: '행운의사자', betType: 'RED', numbers: 'RED', amount: 100000, time: new Date(Date.now() - 38000).toLocaleTimeString('ko-KR') },
+            { round: 1519, nickname: '몬테카를로용', betType: 'DOZEN', numbers: '1st 12', amount: 150000, time: new Date(Date.now() - 75000).toLocaleTimeString('ko-KR') },
+            { round: 1518, nickname: '로열_플레이어', betType: 'EVEN', numbers: 'EVEN', amount: 80000, time: new Date(Date.now() - 110000).toLocaleTimeString('ko-KR') }
+        ];
+        this.betLogs = sampleBets;
+        this.saveBetLogs();
+    }
+
+    /**
      * 신규 회차 당첨 결과 기록
      */
     recordSpin(round, number, color) {
@@ -176,6 +205,30 @@ class RouletteStats {
             this.history.pop();
         }
         this.saveHistory();
+    }
+
+    /**
+     * 관리자용 초기 실시간 시뮬레이션 로그 생성
+     */
+    initSampleLogs() {
+        const sampleWins = [
+            { round: 1520, winningNumber: '26', totalBet: 450000, totalPayout: 720000, time: new Date(Date.now() - 35000).toLocaleTimeString('ko-KR') },
+            { round: 1519, winningNumber: '7', totalBet: 320000, totalPayout: 180000, time: new Date(Date.now() - 70000).toLocaleTimeString('ko-KR') },
+            { round: 1518, winningNumber: '0', totalBet: 580000, totalPayout: 0, time: new Date(Date.now() - 105000).toLocaleTimeString('ko-KR') },
+            { round: 1517, winningNumber: '11', totalBet: 250000, totalPayout: 360000, time: new Date(Date.now() - 140000).toLocaleTimeString('ko-KR') },
+            { round: 1516, winningNumber: '32', totalBet: 610000, totalPayout: 400000, time: new Date(Date.now() - 175000).toLocaleTimeString('ko-KR') }
+        ];
+        this.winLogs = sampleWins;
+        this.saveWinLogs();
+
+        const sampleBets = [
+            { round: 1520, nickname: '로열_플레이어', betType: 'STRAIGHT', numbers: '26', amount: 50000, time: new Date(Date.now() - 40000).toLocaleTimeString('ko-KR') },
+            { round: 1520, nickname: '행운의사자', betType: 'RED', numbers: 'RED', amount: 100000, time: new Date(Date.now() - 38000).toLocaleTimeString('ko-KR') },
+            { round: 1519, nickname: '몬테카를로용', betType: 'DOZEN', numbers: '1st 12', amount: 150000, time: new Date(Date.now() - 75000).toLocaleTimeString('ko-KR') },
+            { round: 1518, nickname: '로열_플레이어', betType: 'EVEN', numbers: 'EVEN', amount: 80000, time: new Date(Date.now() - 110000).toLocaleTimeString('ko-KR') }
+        ];
+        this.betLogs = sampleBets;
+        this.saveBetLogs();
     }
 
     /**

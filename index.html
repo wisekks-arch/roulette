@@ -16,7 +16,7 @@
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
-    <link rel="stylesheet" href="css/style.css?v=20261030_1550">
+    <link rel="stylesheet" href="css/style.css?v=20261030_1620">
 </head>
 
 <body>
@@ -251,59 +251,8 @@
                     </div>
                     <button id="btn-close-admin" class="btn-close-modal">✕ 닫기</button>
                 </div>
-                <div class="admin-modal-body">
-                    <!-- 탭 1: 회원 관리 -->
-                    <div class="admin-section">
-                        <h3>👥 회원 관리 현황</h3>
-                        <div class="admin-table-wrapper">
-                            <table class="admin-table">
-                                <thead>
-                                    <tr>
-                                        <th>회원 닉네임</th>
-                                        <th>보유 칩</th>
-                                        <th>플레이 횟수</th>
-                                        <th>상태</th>
-                                        <th>관리</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="admin-member-table-body"></tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <!-- 탭 2: 정통 배당률 테이블 -->
-                    <div class="admin-section">
-                        <h3>💰 정통 유럽식 룰렛 공식 배당률</h3>
-                        <div class="payout-grid">
-                            <div class="p-item"><span>스트레이트 (1개)</span><strong>38 : 1</strong></div>
-                            <div class="p-item"><span>스플릿 (2개)</span><strong>17 : 1</strong></div>
-                            <div class="p-item"><span>스트리트 (3개)</span><strong>11 : 1</strong></div>
-                            <div class="p-item"><span>코너 (4개)</span><strong>8 : 1</strong></div>
-                            <div class="p-item"><span>식스 라인 (6개)</span><strong>5 : 1</strong></div>
-                            <div class="p-item"><span>다즌 / 컬럼 (12개)</span><strong>2 : 1</strong></div>
-                            <div class="p-item"><span>빨강 / 검정 / 홀짝 / 하이로우</span><strong>1 : 1</strong></div>
-                        </div>
-                    </div>
-
-                    <!-- 탭 3: 최근 회차별 로그 -->
-                    <div class="admin-section">
-                        <h3>📜 실시간 회차별 배팅 및 당첨 로그</h3>
-                        <div class="admin-table-wrapper">
-                            <table class="admin-table">
-                                <thead>
-                                    <tr>
-                                        <th>회차</th>
-                                        <th>당첨 번호</th>
-                                        <th>총 배팅액</th>
-                                        <th>정산 지급금</th>
-                                        <th>시간</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="admin-logs-table-body"></tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+                <!-- 관리자 패널 동적 렌더링 컨테이너 (3대 탭: 회원 관리 / 배당률 관리 / 실시간 로그) -->
+                <div id="admin-modal-body" class="admin-modal-body"></div>
             </div>
         </div>
 
@@ -412,13 +361,13 @@
 
     <!-- 스크립트 모듈 로드 (강력한 캐시 방지 쿼리스트링 적용) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="js/audio.js?v=20261030_1550"></script>
-    <script src="js/wheel.js?v=20261030_1550"></script>
-    <script src="js/table.js?v=20261030_1550"></script>
-    <script src="js/auth.js?v=20261030_1550"></script>
-    <script src="js/stats.js?v=20261030_1550"></script>
-    <script src="js/lobby.js?v=20261030_1550"></script>
-    <script src="js/app.js?v=20261030_1550"></script>
+    <script src="js/audio.js?v=20261030_1620"></script>
+    <script src="js/wheel.js?v=20261030_1620"></script>
+    <script src="js/table.js?v=20261030_1620"></script>
+    <script src="js/auth.js?v=20261030_1620"></script>
+    <script src="js/stats.js?v=20261030_1620"></script>
+    <script src="js/lobby.js?v=20261030_1620"></script>
+    <script src="js/app.js?v=20261030_1620"></script>
 </body>
 
 </html>
