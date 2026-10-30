@@ -27,11 +27,14 @@ class RouletteAuth {
             this.initDefaultUsers();
         }
 
-        // 로그인된 회원이 없으면 첫 번째 데모 회원을 기본 로그인
-        if (!this.currentUser && this.users.length > 0) {
-            this.currentUser = this.users[0];
-            this.saveCurrentUser();
-        }
+        this.isMandatoryEntrance = false;
+    }
+
+    /**
+     * 현재 정식 로그인 여부 판정 (회원 인증 게이트웨이용)
+     */
+    isLoggedIn() {
+        return !!this.currentUser;
     }
 
     /**
@@ -534,7 +537,11 @@ class RouletteAuth {
                         window.rouletteApp.setBalance(res.user.balance);
                     }
                     this.renderHeaderProfile();
+                    this.isMandatoryEntrance = false;
                     this.closeAuthModal();
+                    if (window.rouletteApp && typeof window.rouletteApp.onUserLoggedIn === 'function') {
+                        window.rouletteApp.onUserLoggedIn(res.user);
+                    }
                 } else {
                     alert(res.message);
                 }
@@ -556,7 +563,11 @@ class RouletteAuth {
                         window.rouletteApp.setBalance(res.user.balance);
                     }
                     this.renderHeaderProfile();
+                    this.isMandatoryEntrance = false;
                     this.closeAuthModal();
+                    if (window.rouletteApp && typeof window.rouletteApp.onUserLoggedIn === 'function') {
+                        window.rouletteApp.onUserLoggedIn(res.user);
+                    }
                 } else {
                     alert(res.message);
                 }
@@ -574,7 +585,11 @@ class RouletteAuth {
                         window.rouletteApp.setBalance(res.user.balance);
                     }
                     this.renderHeaderProfile();
+                    this.isMandatoryEntrance = false;
                     this.closeAuthModal();
+                    if (window.rouletteApp && typeof window.rouletteApp.onUserLoggedIn === 'function') {
+                        window.rouletteApp.onUserLoggedIn(res.user);
+                    }
                 } else {
                     alert(res.message);
                 }
@@ -616,24 +631,51 @@ class RouletteAuth {
         if (btnLogout) {
             btnLogout.addEventListener('click', () => {
                 this.logout();
-                if (window.rouletteApp) {
-                    window.rouletteApp.showToast("성공적으로 로그아웃되었습니다.");
-                }
                 this.renderHeaderProfile();
-                this.renderAuthModal('login');
+                if (window.rouletteApp) {
+                    window.rouletteApp.showToast("성공적으로 로그아웃되었습니다. 카지노 게이트웨이로 전환합니다.");
+                    if (typeof window.rouletteApp.onUserLoggedOut === 'function') {
+                        window.rouletteApp.onUserLoggedOut();
+                    }
+                }
+                this.openAuthModal('login', true);
             });
         }
     }
 
-    openAuthModal(tab = 'auto') {
+    openAuthModal(tab = 'auto', isMandatory = false) {
+        this.isMandatoryEntrance = !!isMandatory;
         const modal = document.getElementById('auth-modal');
+        const closeBtn = document.getElementById('btn-close-auth');
+        const titleH2 = document.querySelector('.auth-modal-title h2');
+        const titleP = document.querySelector('.auth-modal-title p');
+
         if (modal) {
+            if (this.isMandatoryEntrance) {
+                modal.classList.add('mandatory-entrance');
+                if (closeBtn) closeBtn.style.display = 'none';
+                if (titleH2) titleH2.textContent = '👑 VIP CASINO ENTRANCE (입장 게이트웨이)';
+                if (titleP) titleP.textContent = '카지노 입장 및 게임 플레이를 위해 로그인해 주세요. 미가입자는 무료 회원가입 후 1,000만 칩을 지급받아 플레이하세요!';
+            } else {
+                modal.classList.remove('mandatory-entrance');
+                if (closeBtn) closeBtn.style.display = 'block';
+                if (titleH2) titleH2.textContent = '👤 VIP CASINO MEMBERSHIP';
+                if (titleP) titleP.textContent = '무료 회원가입 및 로그인하여 1,000만 칩 혜택과 전적을 관리하세요.';
+            }
+
             this.renderAuthModal(tab);
             modal.classList.remove('hidden');
         }
     }
 
     closeAuthModal() {
+        if (this.isMandatoryEntrance && !this.currentUser) {
+            if (window.rouletteApp) {
+                window.rouletteApp.showToast("카지노 입장 및 게임 플레이를 위해 먼저 로그인해 주세요.");
+            }
+            return;
+        }
+        this.isMandatoryEntrance = false;
         const modal = document.getElementById('auth-modal');
         if (modal) modal.classList.add('hidden');
     }

@@ -2630,6 +2630,25 @@ body {
     color: #fff;
 }
 
+/* 카지노 필수 입장 게이트웨이 모달 스타일 */
+#auth-modal.mandatory-entrance {
+    backdrop-filter: blur(12px) !important;
+    background: rgba(5, 5, 8, 0.94) !important;
+    z-index: 100002 !important;
+}
+
+#auth-modal.mandatory-entrance .auth-modal-content {
+    border: 2px solid #ffd700 !important;
+    box-shadow: 0 0 50px rgba(255, 215, 0, 0.4), 0 20px 60px rgba(0, 0, 0, 0.95) !important;
+    background: radial-gradient(circle at 50% 0%, #201705 0%, #110d03 50%, #060501 100%) !important;
+    animation: modalPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+#auth-modal.mandatory-entrance .auth-modal-title h2 {
+    color: #ffd700 !important;
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.6);
+}
+
 .auth-modal-header {
     display: flex;
     justify-content: space-between;

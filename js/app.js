@@ -58,8 +58,82 @@ class RouletteApp {
             window.rouletteLobby.enterRoom(2);
         }
 
+        // [사용자 요청] 카지노 입장 전 로그인 및 회원가입 여부 검증
+        if (!this.checkCasinoEntrance()) {
+            return; // 미로그인 시 게임 시작을 보류하고 입장 게이트웨이 표출 대기
+        }
+
         // 첫 라운드 시작
         this.startBettingPhase();
+    }
+
+    /**
+     * 카지노 입장 전 로그인 및 회원가입 여부 검증
+     * @returns {boolean} 정식 로그인 입장 허용 여부
+     */
+    checkCasinoEntrance() {
+        if (!window.rouletteAuth || !window.rouletteAuth.isLoggedIn()) {
+            this.showEntranceGatewayModal();
+            return false;
+        }
+        return true;
+    }
+
+    /**
+     * 카지노 입장 게이트웨이 모달 강제 팝업 (게임 보류 상태)
+     */
+    showEntranceGatewayModal() {
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        if (this.nextRoundTimeout) clearTimeout(this.nextRoundTimeout);
+
+        if (window.rouletteTable) {
+            window.rouletteTable.setLocked(true);
+        }
+
+        // 상단 안내 배너
+        this.updatePhaseStatus("🔒 카지노 입장 게이트웨이: 로그인 또는 회원가입 후 게임을 시작하세요", "locked");
+
+        if (window.rouletteAuth) {
+            window.rouletteAuth.openAuthModal('login', true);
+        }
+    }
+
+    /**
+     * 유저 로그인/회원가입 완료 시 훅 (카지노 정식 입장)
+     */
+    onUserLoggedIn(user) {
+        if (!user) return;
+        this.balance = user.balance !== undefined ? user.balance : 10000000;
+        this.updateBalanceDisplay();
+
+        if (window.rouletteAuth) {
+            window.rouletteAuth.renderHeaderProfile();
+        }
+
+        this.showToast(`🎉 환영합니다, ${user.nickname}님! VIP 카지노 룸에 입장하셨습니다.`);
+
+        if (window.rouletteTable) {
+            window.rouletteTable.setLocked(false);
+        }
+
+        // 첫 배팅 라운드 경쾌하게 시작
+        this.startBettingPhase();
+    }
+
+    /**
+     * 유저 로그아웃 시 훅 (카지노 퇴장 및 게이트웨이 복귀)
+     */
+    onUserLoggedOut() {
+        if (this.timerInterval) clearInterval(this.timerInterval);
+        if (this.nextRoundTimeout) clearTimeout(this.nextRoundTimeout);
+
+        if (window.rouletteTable) {
+            window.rouletteTable.clearBets();
+            window.rouletteTable.setLocked(true);
+        }
+
+        this.updateBetDisplay();
+        this.updatePhaseStatus("🔒 로그아웃되었습니다. 다시 로그인하여 입장하세요", "locked");
     }
 
     /**
@@ -372,11 +446,14 @@ class RouletteApp {
             });
         }
 
-        // 14. 모달 배경 클릭 시 닫기 (라이브 캠 및 승리 모달 제외)
+        // 14. 모달 배경 클릭 시 닫기 (라이브 캠, 승리 모달, 필수 입장 게이트웨이 모달 제외)
         window.addEventListener('click', (e) => {
-            if (e.target.classList.contains('modal-overlay') &&
-                e.target.id !== 'live-cam-modal' &&
-                e.target.id !== 'win-celebration-modal') {
+            if (e.target.classList.contains('modal-overlay')) {
+                if (e.target.id === 'live-cam-modal' || e.target.id === 'win-celebration-modal') return;
+                if (e.target.id === 'auth-modal' && window.rouletteAuth && window.rouletteAuth.isMandatoryEntrance) {
+                    this.showToast("카지노 입장 및 게임 플레이를 위해 먼저 로그인해 주세요.");
+                    return;
+                }
                 e.target.classList.add('hidden');
             }
         });

@@ -407,6 +407,17 @@ class RouletteTable {
      * 칩 배팅 수행
      */
     placeBet(spotId, betType, numbersStr) {
+        // 0. 카지노 로그인 여부 확인 (미로그인 시 배팅 차단 및 입장 게이트웨이 호출)
+        if (window.rouletteAuth && !window.rouletteAuth.isLoggedIn()) {
+            if (window.rouletteApp) {
+                window.rouletteApp.showToast("🔒 카지노 회원 전용 테이블입니다. 먼저 로그인해 주세요.");
+                if (typeof window.rouletteApp.showEntranceGatewayModal === 'function') {
+                    window.rouletteApp.showEntranceGatewayModal();
+                }
+            }
+            return;
+        }
+
         const isBettingTime = (window.rouletteApp && window.rouletteApp.currentPhase === 'BETTING');
         if (this.isLocked || !isBettingTime) {
             if (window.rouletteApp && window.rouletteApp.showToast) {
