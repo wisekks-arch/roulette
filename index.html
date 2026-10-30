@@ -16,7 +16,7 @@
         href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800;900&family=Montserrat:wght@400;500;600;700;800;900&family=Outfit:wght@400;500;600;700&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
-    <link rel="stylesheet" href="css/style.css?v=20261030_1345">
+    <link rel="stylesheet" href="css/style.css?v=20261030_1415">
 </head>
 
 <body>
@@ -368,6 +368,36 @@
             </div>
         </div>
 
+        <!-- 5-1. 당첨자 배팅결과 LIST 팝업 모달 -->
+        <div id="winner-list-modal" class="modal-overlay hidden">
+            <div class="winner-list-card">
+                <div class="wl-header">
+                    <div class="wl-title-area">
+                        <span class="wl-icon">🏆</span>
+                        <div>
+                            <h3 class="wl-title">ROUND WINNERS</h3>
+                            <span id="wl-round-label" class="wl-round-badge">ROUND #1</span>
+                        </div>
+                    </div>
+                    <div class="wl-winning-number">
+                        <span class="wl-num-label">당첨 번호:</span>
+                        <span id="wl-win-badge" class="wl-badge badge-red">00</span>
+                    </div>
+                </div>
+                <div class="wl-subheading">
+                    <span>플레이어 및 적중 내역</span>
+                    <span>당첨 상금</span>
+                </div>
+                <div id="winner-items-list" class="winner-items-container">
+                    <!-- JS 동적 렌더링 -->
+                </div>
+                <div class="wl-footer">
+                    <span id="wl-timer-notice" class="wl-timer-text">다음 라운드 자동 진행 (1.5초)</span>
+                    <button id="btn-close-winner-list" class="wl-close-btn">닫기</button>
+                </div>
+            </div>
+        </div>
+
         <!-- 6. VIP 회원가입 / 로그인 / 프로필 관리 모달 -->
         <div id="auth-modal" class="modal-overlay hidden">
             <div class="auth-modal-content">
@@ -388,13 +418,13 @@
 
     <!-- 스크립트 모듈 로드 (강력한 캐시 방지 쿼리스트링 적용) -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
-    <script src="js/audio.js?v=20261030_1345"></script>
-    <script src="js/wheel.js?v=20261030_1345"></script>
-    <script src="js/table.js?v=20261030_1345"></script>
-    <script src="js/auth.js?v=20261030_1345"></script>
-    <script src="js/stats.js?v=20261030_1345"></script>
-    <script src="js/lobby.js?v=20261030_1345"></script>
-    <script src="js/app.js?v=20261030_1345"></script>
+    <script src="js/audio.js?v=20261030_1415"></script>
+    <script src="js/wheel.js?v=20261030_1415"></script>
+    <script src="js/table.js?v=20261030_1415"></script>
+    <script src="js/auth.js?v=20261030_1415"></script>
+    <script src="js/stats.js?v=20261030_1415"></script>
+    <script src="js/lobby.js?v=20261030_1415"></script>
+    <script src="js/app.js?v=20261030_1415"></script>
 </body>
 
 </html>

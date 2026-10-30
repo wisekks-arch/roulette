@@ -585,7 +585,8 @@ class RouletteLobby {
                 bot: bot,
                 totalWon: 0,
                 totalBet: bot.currentBetsAmount || 0,
-                winHits: 0
+                winHits: 0,
+                winningBetsDetail: []
             };
         });
 
@@ -631,6 +632,13 @@ class RouletteLobby {
                 if (botResults[bet.bot.id]) {
                     botResults[bet.bot.id].totalWon += winAmount;
                     botResults[bet.bot.id].winHits++;
+                    botResults[bet.bot.id].winningBetsDetail.push({
+                        type: bet.betType || '배팅',
+                        numbers: bet.numbersStr,
+                        amount: bet.amount,
+                        win: winAmount,
+                        payoutRatio: payoutRatio - 1
+                    });
                 }
             }
         });
@@ -653,6 +661,9 @@ class RouletteLobby {
                 }
             }
         });
+
+        this.latestBotResults = botResults;
+        return botResults;
     }
 }
 

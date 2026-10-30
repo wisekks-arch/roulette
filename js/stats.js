@@ -53,7 +53,7 @@ class RouletteStats {
     saveHistory() {
         try {
             localStorage.setItem(this.STORAGE_KEY_HISTORY, JSON.stringify(this.history.slice(0, 100)));
-        } catch (e) {}
+        } catch (e) { }
     }
 
     loadPayouts() {
@@ -64,7 +64,7 @@ class RouletteStats {
                 if (parsed && parsed.straight === 35) parsed.straight = 38;
                 return parsed;
             }
-        } catch (e) {}
+        } catch (e) { }
 
         return {
             straight: 38,  // 38:1
@@ -84,7 +84,7 @@ class RouletteStats {
         this.payouts = { ...this.payouts, ...newPayouts };
         try {
             localStorage.setItem(this.STORAGE_KEY_PAYOUTS, JSON.stringify(this.payouts));
-        } catch (e) {}
+        } catch (e) { }
     }
 
     loadNotice() {
@@ -101,7 +101,7 @@ class RouletteStats {
         this.notice = noticeText;
         try {
             localStorage.setItem(this.STORAGE_KEY_NOTICE, noticeText);
-        } catch (e) {}
+        } catch (e) { }
     }
 
     loadBetLogs() {
@@ -116,7 +116,7 @@ class RouletteStats {
     saveBetLogs() {
         try {
             localStorage.setItem(this.STORAGE_KEY_BET_LOGS, JSON.stringify(this.betLogs.slice(0, 100)));
-        } catch (e) {}
+        } catch (e) { }
     }
 
     loadWinLogs() {
@@ -131,7 +131,7 @@ class RouletteStats {
     saveWinLogs() {
         try {
             localStorage.setItem(this.STORAGE_KEY_WIN_LOGS, JSON.stringify(this.winLogs.slice(0, 100)));
-        } catch (e) {}
+        } catch (e) { }
     }
 
     /**
@@ -426,14 +426,14 @@ class RouletteStats {
                     <h3 class="stats-card-title">📜 최근 100회 당첨 번호 기록 (최신순)</h3>
                     <div class="stats-history-grid">
                         ${this.history.map(h => {
-                            const badgeColor = h.number === 0 ? 'badge-green' : (h.color === 'red' ? 'badge-red' : 'badge-black');
-                            return `
+            const badgeColor = h.number === 0 ? 'badge-green' : (h.color === 'red' ? 'badge-red' : 'badge-black');
+            return `
                                 <div class="stat-hist-item ${badgeColor}" title="ROUND #${h.round} (${new Date(h.timestamp).toLocaleTimeString()})">
                                     <span class="num">${h.number}</span>
                                     <span class="rnd">#${h.round}</span>
                                 </div>
                             `;
-                        }).join('')}
+        }).join('')}
                     </div>
                 </div>
             </div>
@@ -724,8 +724,8 @@ class RouletteStats {
                             </thead>
                             <tbody>
                                 ${winLogs.length === 0 ? '<tr><td colspan="6" class="text-center">기록된 당첨 정산 이력이 없습니다.</td></tr>' : winLogs.map(w => {
-                                    const houseProfit = w.totalBet - w.totalPayout;
-                                    return `
+            const houseProfit = w.totalBet - w.totalPayout;
+            return `
                                         <tr>
                                             <td>ROUND #${w.round}</td>
                                             <td><span class="admin-num-badge">${w.winningNumber}</span></td>
@@ -737,7 +737,7 @@ class RouletteStats {
                                             <td>${w.time}</td>
                                         </tr>
                                     `;
-                                }).join('')}
+        }).join('')}
                             </tbody>
                         </table>
                     </div>

@@ -360,6 +360,18 @@ class RouletteApp {
             });
         }
 
+        // 13-1. 당첨자 배팅결과 LIST 팝업 닫기 버튼
+        const closeWinnerListBtn = document.getElementById('btn-close-winner-list');
+        if (closeWinnerListBtn) {
+            closeWinnerListBtn.addEventListener('click', () => {
+                const wlModal = document.getElementById('winner-list-modal');
+                if (wlModal) {
+                    wlModal.classList.add('hidden');
+                    wlModal.style.display = 'none';
+                }
+            });
+        }
+
         // 14. 모달 배경 클릭 시 닫기 (라이브 캠 및 승리 모달 제외)
         window.addEventListener('click', (e) => {
             if (e.target.classList.contains('modal-overlay') &&
@@ -685,8 +697,8 @@ class RouletteApp {
         stage.innerHTML = '';
         if (this.liveCamAnimId) cancelAnimationFrame(this.liveCamAnimId);
 
-        const width = viewport.clientWidth || 760;
-        const height = viewport.clientHeight || 540;
+        const width = viewport.clientWidth || 610;
+        const height = viewport.clientHeight || 432;
 
         // ---------- 1. 아메리칸/유러피언 38개 번호판 휠 데이터 ----------
         const ORDER = ['0', '28', '9', '26', '30', '11', '7', '20', '32', '17', '5', '22', '34', '15', '3', '24', '36', '13', '1',
@@ -1082,8 +1094,9 @@ class RouletteApp {
             }
 
             // AI 플레이어 정산 연동
+            let botResults = null;
             if (window.rouletteLobby) {
-                window.rouletteLobby.onSpinResult(winningNumber);
+                botResults = window.rouletteLobby.onSpinResult(winningNumber);
             }
 
             // 플레이어(나) 테이블 상단 바 정산 및 배팅 금액 표출
@@ -1123,6 +1136,13 @@ class RouletteApp {
                 this.showWinModal(winningNumber, color, totalWin, winningBets);
             }
 
+            // [사용자 요청 신규 기능] 당첨자 배팅결과 LIST 팝업 표출 (나 + AI 봇 결과 통합)
+            this.showWinnerListModal(winningNumber, color, {
+                totalBet: totalBet,
+                totalWin: totalWin,
+                winningBets: winningBets
+            }, botResults);
+
             // 오토플레이 조건 체크
             this.checkAutoPlayConditions();
         } catch (err) {
@@ -1147,6 +1167,13 @@ class RouletteApp {
         if (winModal) {
             winModal.classList.add('hidden');
             winModal.style.display = 'none';
+        }
+
+        // [사용자 요청] 당첨자 배팅결과 LIST 팝업 닫기
+        const wlModal = document.getElementById('winner-list-modal');
+        if (wlModal) {
+            wlModal.classList.add('hidden');
+            wlModal.style.display = 'none';
         }
 
         // 영상 팝업 닫기
@@ -1197,6 +1224,97 @@ class RouletteApp {
         }
 
         modal.classList.remove('hidden');
+    }
+
+    /**
+     * [신규] 당첨자 배팅결과 LIST 팝업 표시 (유저 및 AI 봇 당첨 결과 종합)
+     */
+    showWinnerListModal(winningNumber, color, userResult, botResults) {
+        const modal = document.getElementById('winner-list-modal');
+        const roundBadge = document.getElementById('wl-round-label');
+        const winBadge = document.getElementById('wl-win-badge');
+        const container = document.getElementById('winner-items-list');
+
+        if (!modal || !container) return;
+
+        if (roundBadge) {
+            roundBadge.textContent = `ROUND #${this.currentRound}`;
+        }
+
+        if (winBadge) {
+            winBadge.textContent = winningNumber;
+            winBadge.className = `wl-badge ${color === 'red' ? 'badge-red' : (color === 'black' ? 'badge-black' : 'badge-green')}`;
+        }
+
+        const items = [];
+
+        // 1. 유저 본인 당첨 여부
+        if (userResult && userResult.totalWin > 0) {
+            const userName = (window.rouletteAuth && window.rouletteAuth.currentUser && window.rouletteAuth.currentUser.name)
+                ? window.rouletteAuth.currentUser.name
+                : '플레이어 (나)';
+            const betTypes = userResult.winningBets && userResult.winningBets.length > 0
+                ? userResult.winningBets.map(b => `${(b.type || '배팅').toUpperCase()} (${b.payoutRatio}:1)`).join(', ')
+                : '적중 배팅';
+
+            items.push(`
+                <div class="wl-item is-me">
+                    <div class="wl-user-info">
+                        <div class="wl-p-name-row">
+                            <span class="wl-p-avatar">👑</span>
+                            <span class="wl-p-name">${userName}</span>
+                            <span class="wl-me-tag">ME</span>
+                        </div>
+                        <div class="wl-bets-summary">${betTypes}</div>
+                    </div>
+                    <div class="wl-amount-box">
+                        <span class="wl-win-amt">+${userResult.totalWin.toLocaleString()} Chip</span>
+                        <span class="wl-bet-amt">배팅 ${userResult.totalBet.toLocaleString()} Chip</span>
+                    </div>
+                </div>
+            `);
+        }
+
+        // 2. AI 봇 당첨자 목록
+        if (botResults) {
+            Object.values(botResults).forEach(res => {
+                if (res.totalWon > 0) {
+                    const betTypes = res.winningBetsDetail && res.winningBetsDetail.length > 0
+                        ? res.winningBetsDetail.map(d => `${d.type.toUpperCase()}`).slice(0, 2).join(', ') + (res.winningBetsDetail.length > 2 ? ` 외 ${res.winningBetsDetail.length - 2}건` : '')
+                        : '적중 배팅';
+
+                    items.push(`
+                        <div class="wl-item">
+                            <div class="wl-user-info">
+                                <div class="wl-p-name-row">
+                                    <span class="wl-p-avatar">${res.bot.avatar || '🤖'}</span>
+                                    <span class="wl-p-name">${res.bot.name}</span>
+                                </div>
+                                <div class="wl-bets-summary">${betTypes}</div>
+                            </div>
+                            <div class="wl-amount-box">
+                                <span class="wl-win-amt">+${res.totalWon.toLocaleString()} Chip</span>
+                                <span class="wl-bet-amt">배팅 ${(res.totalBet || 0).toLocaleString()} Chip</span>
+                            </div>
+                        </div>
+                    `);
+                }
+            });
+        }
+
+        if (items.length > 0) {
+            container.innerHTML = items.join('');
+        } else {
+            container.innerHTML = `
+                <div class="wl-no-winners">
+                    이번 회차에는 당첨자가 없습니다.<br>
+                    <small style="color:#94a3b8; font-size: 0.75rem; margin-top: 4px; display:inline-block;">다음 라운드에 다시 도전하세요!</small>
+                </div>
+            `;
+        }
+
+        modal.classList.remove('hidden');
+        modal.style.display = 'flex';
     }
 
     /**

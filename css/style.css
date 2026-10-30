@@ -2494,26 +2494,26 @@ body {
 }
 
 .live-cam-modal-content {
-    max-width: 840px !important;
+    max-width: 672px !important;
     width: 95% !important;
     background: #180326 !important;
     border: 2px solid #a855f7 !important;
-    box-shadow: 0 0 50px rgba(168, 85, 247, 0.4), 0 20px 60px rgba(0, 0, 0, 0.9) !important;
+    box-shadow: 0 0 40px rgba(168, 85, 247, 0.4), 0 15px 45px rgba(0, 0, 0, 0.9) !important;
 }
 
 .live-cam-viewport {
     position: relative;
     width: 100%;
-    height: 540px !important;
-    /* 대형 화면 확대 */
+    height: 432px !important;
+    /* 20% 축소 밸런스 조정 */
     background: #230638 !important;
-    /* 요청하신 고급스러운 보라색 단색 */
+    /* 고급스러운 보라색 단색 */
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
     border-radius: 8px;
-    box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.6);
+    box-shadow: inset 0 0 25px rgba(0, 0, 0, 0.6);
 }
 
 #live-cam-canvas {
@@ -3931,20 +3931,20 @@ body {
 
 .no-more-bets-card {
     background: radial-gradient(circle at center, #2b0707 0%, #150202 70%, #080000 100%);
-    border: 3px solid #ef4444;
-    border-radius: 20px;
-    padding: 16px 36px;
+    border: 2px solid #ef4444;
+    border-radius: 16px;
+    padding: 12px 24px;
     text-align: center;
-    box-shadow: 0 0 50px rgba(239, 68, 68, 0.95), 0 10px 30px rgba(0, 0, 0, 0.9);
+    box-shadow: 0 0 35px rgba(239, 68, 68, 0.95), 0 10px 25px rgba(0, 0, 0, 0.9);
     animation: nmbSlideDown 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
     max-width: 90%;
-    width: 440px;
+    width: 308px;
     pointer-events: none;
 }
 
 @keyframes nmbSlideDown {
     0% {
-        transform: translateY(-80px) scale(0.85);
+        transform: translateY(-50px) scale(0.85);
         opacity: 0;
     }
 
@@ -3955,8 +3955,8 @@ body {
 }
 
 .nmb-lock-icon {
-    font-size: 3.5rem;
-    margin-bottom: 8px;
+    font-size: 2.45rem;
+    margin-bottom: 6px;
     animation: lockIconBounce 0.8s infinite alternate ease-in-out;
 }
 
@@ -3966,48 +3966,316 @@ body {
     }
 
     to {
-        transform: translateY(-8px) scale(1.1);
-        filter: drop-shadow(0 0 15px #ef4444);
+        transform: translateY(-6px) scale(1.08);
+        filter: drop-shadow(0 0 12px #ef4444);
     }
 }
 
 .nmb-title {
     font-family: var(--font-heading);
-    font-size: 2.2rem;
+    font-size: 1.54rem;
     font-weight: 900;
     color: #ef4444;
-    text-shadow: 0 0 20px rgba(239, 68, 68, 0.9), 0 2px 4px #000;
-    letter-spacing: 2px;
+    text-shadow: 0 0 15px rgba(239, 68, 68, 0.9), 0 2px 4px #000;
+    letter-spacing: 1.5px;
     margin: 0;
 }
 
 .nmb-subtitle {
-    font-size: 1.15rem;
+    font-size: 0.82rem;
     font-weight: 700;
     color: #fca5a5;
-    margin: 8px 0 18px 0;
-    letter-spacing: 1px;
+    margin: 6px 0 12px 0;
+    letter-spacing: 0.8px;
 }
 
 .nmb-desc-box {
     background: rgba(0, 0, 0, 0.65);
     border: 1px solid rgba(239, 68, 68, 0.4);
-    border-radius: 12px;
-    padding: 12px 18px;
+    border-radius: 10px;
+    padding: 8px 14px;
 }
 
 .nmb-dealer-tag {
-    font-size: 0.82rem;
+    font-size: 0.72rem;
     color: #ffd700;
     font-weight: 700;
     display: block;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 
 .nmb-message {
-    font-size: 0.95rem;
+    font-size: 0.78rem;
     color: #ffffff;
     font-weight: 600;
     margin: 0;
-    line-height: 1.4;
+    line-height: 1.35;
+}
+
+/* ========================================================
+   당첨자 배팅결과 LIST 팝업 (WINNER LIST MODAL)
+   ======================================================== */
+#winner-list-modal {
+    z-index: 100000 !important;
+}
+
+.winner-list-card {
+    background: radial-gradient(circle at 50% 0%, #1c1508 0%, #0d0a04 55%, #050401 100%);
+    border: 2px solid #eab308;
+    border-radius: 18px;
+    padding: 18px 24px;
+    box-shadow: 0 0 45px rgba(234, 179, 8, 0.4), 0 15px 50px rgba(0, 0, 0, 0.95);
+    animation: wlPop 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+    width: 92%;
+    max-width: 520px;
+    color: #ffffff;
+}
+
+@keyframes wlPop {
+    0% {
+        transform: scale(0.85) translateY(20px);
+        opacity: 0;
+    }
+    100% {
+        transform: scale(1) translateY(0);
+        opacity: 1;
+    }
+}
+
+.wl-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid rgba(234, 179, 8, 0.3);
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+}
+
+.wl-title-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wl-icon {
+    font-size: 1.6rem;
+    filter: drop-shadow(0 0 8px #eab308);
+}
+
+.wl-title {
+    font-family: var(--font-heading);
+    font-size: 1.3rem;
+    font-weight: 900;
+    color: #ffd700;
+    letter-spacing: 1px;
+    margin: 0;
+    text-shadow: 0 0 12px rgba(255, 215, 0, 0.5);
+}
+
+.wl-round-badge {
+    background: rgba(234, 179, 8, 0.2);
+    border: 1px solid rgba(234, 179, 8, 0.6);
+    color: #fef08a;
+    font-size: 0.72rem;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 10px;
+}
+
+.wl-winning-number {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.wl-num-label {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-weight: 600;
+}
+
+.wl-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 38px;
+    height: 38px;
+    padding: 0 8px;
+    border-radius: 50%;
+    font-weight: 900;
+    font-size: 1.15rem;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.6);
+}
+
+.wl-badge.badge-red {
+    background: radial-gradient(circle at 35% 35%, #ef4444, #7f1d1d);
+    border: 2px solid #fca5a5;
+    color: #ffffff;
+}
+
+.wl-badge.badge-black {
+    background: radial-gradient(circle at 35% 35%, #334155, #0f172a);
+    border: 2px solid #94a3b8;
+    color: #ffffff;
+}
+
+.wl-badge.badge-green {
+    background: radial-gradient(circle at 35% 35%, #22c55e, #14532d);
+    border: 2px solid #86efac;
+    color: #ffffff;
+}
+
+.wl-subheading {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #ca8a04;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 0 6px 6px 6px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    margin-bottom: 8px;
+}
+
+.winner-items-container {
+    max-height: 250px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding-right: 4px;
+}
+
+.winner-items-container::-webkit-scrollbar {
+    width: 5px;
+}
+.winner-items-container::-webkit-scrollbar-thumb {
+    background: rgba(234, 179, 8, 0.4);
+    border-radius: 4px;
+}
+
+.wl-item {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 10px;
+    padding: 9px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.wl-item.is-me {
+    background: linear-gradient(90deg, rgba(234, 179, 8, 0.18), rgba(234, 179, 8, 0.05));
+    border: 1.5px solid rgba(234, 179, 8, 0.8);
+    box-shadow: 0 0 15px rgba(234, 179, 8, 0.25);
+}
+
+.wl-user-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.wl-p-name-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.wl-p-avatar {
+    font-size: 1rem;
+}
+
+.wl-p-name {
+    font-weight: 800;
+    font-size: 0.88rem;
+    color: #ffffff;
+}
+
+.wl-item.is-me .wl-p-name {
+    color: #fef08a;
+}
+
+.wl-me-tag {
+    background: #eab308;
+    color: #000000;
+    font-size: 0.65rem;
+    font-weight: 900;
+    padding: 1px 5px;
+    border-radius: 4px;
+}
+
+.wl-bets-summary {
+    font-size: 0.73rem;
+    color: #cbd5e1;
+}
+
+.wl-amount-box {
+    text-align: right;
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.wl-win-amt {
+    font-size: 0.95rem;
+    font-weight: 900;
+    color: #4ade80;
+    text-shadow: 0 0 8px rgba(74, 222, 128, 0.4);
+}
+
+.wl-item.is-me .wl-win-amt {
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
+    font-size: 1.05rem;
+}
+
+.wl-bet-amt {
+    font-size: 0.7rem;
+    color: #94a3b8;
+}
+
+.wl-no-winners {
+    text-align: center;
+    padding: 24px 12px;
+    color: #94a3b8;
+    font-size: 0.88rem;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 8px;
+    border: 1px dashed rgba(255, 255, 255, 0.15);
+}
+
+.wl-footer {
+    margin-top: 14px;
+    padding-top: 10px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.wl-timer-text {
+    font-size: 0.78rem;
+    color: #eab308;
+    font-weight: 600;
+}
+
+.wl-close-btn {
+    background: linear-gradient(135deg, #eab308, #ca8a04);
+    color: #000;
+    border: none;
+    border-radius: 8px;
+    padding: 7px 18px;
+    font-size: 0.82rem;
+    font-weight: 800;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(234, 179, 8, 0.3);
+    transition: transform 0.15s ease, filter 0.15s ease;
+}
+
+.wl-close-btn:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
 }
