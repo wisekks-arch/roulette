@@ -1086,6 +1086,21 @@ class RouletteApp {
                 window.rouletteLobby.onSpinResult(winningNumber);
             }
 
+            // 플레이어(나) 테이블 상단 바 정산 및 배팅 금액 표출
+            const myBarBet = document.getElementById('my-bar-bet');
+            if (myBarBet) {
+                if (totalWin > 0) {
+                    myBarBet.textContent = `🎉 당첨! +${totalWin.toLocaleString()} Chip (배팅: ${totalBet.toLocaleString()})`;
+                    myBarBet.style.color = '#ffd700';
+                    myBarBet.style.fontWeight = 'bold';
+                    myBarBet.classList.add('pop-animation');
+                    setTimeout(() => myBarBet.classList.remove('pop-animation'), 1000);
+                } else if (totalBet > 0) {
+                    myBarBet.textContent = `낙첨 (-${totalBet.toLocaleString()})`;
+                    myBarBet.style.color = '#94a3b8';
+                }
+            }
+
             // 6. 상금 지급 및 승리 연출
             if (totalWin > 0) {
                 this.addBalance(totalWin);
@@ -1113,11 +1128,11 @@ class RouletteApp {
         } catch (err) {
             console.error("Error in onSpinResult:", err);
         } finally {
-            // 5단계: 7.5초 동안 당첨 결과 및 상금 모달을 충분히 확인한 후 다음 회차로 자동 순환
+            // [사용자 요청] 정산 후 배팅 금액을 보여준 후 정확히 1.5초(1,500ms) 뒤 다음 단계로 자동 전환
             if (this.nextRoundTimeout) clearTimeout(this.nextRoundTimeout);
             this.nextRoundTimeout = setTimeout(() => {
                 this.nextRound();
-            }, 7500);
+            }, 1500);
         }
     }
 

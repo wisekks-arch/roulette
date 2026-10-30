@@ -43,7 +43,7 @@ class RouletteTable {
 
                 <!-- 상단 0 & 00 (그린 싱글 제로 & 더블 제로) -->
                 <div class="table-zero-area">
-                    <button class="bet-spot spot-zero spot-zero-single" data-bet="straight" data-numbers="0" id="spot-0" title="스트레이트 (35배): #0">
+                    <button class="bet-spot spot-zero spot-zero-single" data-bet="straight" data-numbers="0" id="spot-0" title="스트레이트 (38배): #0">
                         <span class="num-text">0</span>
                         <div class="chip-stack" id="chips-0"></div>
                     </button>
@@ -51,7 +51,7 @@ class RouletteTable {
                     <button class="bet-spot bet-hotspot hotspot-split-zero" data-bet="split" data-numbers="0,00" id="spot-split-0-00" title="스플릿 (17배): 0, 00">
                         <div class="chip-stack" id="chips-split-0-00"></div>
                     </button>
-                    <button class="bet-spot spot-zero spot-zero-double" data-bet="straight" data-numbers="00" id="spot-00" title="스트레이트 (35배): #00">
+                    <button class="bet-spot spot-zero spot-zero-double" data-bet="straight" data-numbers="00" id="spot-00" title="스트레이트 (38배): #00">
                         <span class="num-text">00</span>
                         <div class="chip-stack" id="chips-00"></div>
                     </button>
@@ -76,7 +76,7 @@ class RouletteTable {
                 const isRed = this.redNumbers.includes(n);
                 const colorClass = isRed ? 'spot-red' : 'spot-black';
                 html += `
-                    <button class="bet-spot spot-number ${colorClass}" data-bet="straight" data-numbers="${n}" id="spot-${n}" title="스트레이트 (35배): #${n}">
+                    <button class="bet-spot spot-number ${colorClass}" data-bet="straight" data-numbers="${n}" id="spot-${n}" title="스트레이트 (38배): #${n}">
                         <span class="num-text">${n}</span>
                         <div class="chip-stack" id="chips-${n}"></div>
                     </button>
@@ -928,9 +928,9 @@ class RouletteTable {
         let totalPayout = 0;
         const winningBets = [];
 
-        // 관리자가 설정한 공식 배당률 참조 (미설정 시 정통 표준 배당 기본 적용)
+        // 관리자가 설정한 공식 배당률 참조 (미설정 시 38:1 정통 배당 기본 적용)
         const p = (window.rouletteStats && window.rouletteStats.payouts) ? window.rouletteStats.payouts : {
-            straight: 35, split: 17, street: 11, corner: 8, sixline: 5, dozen: 2, column: 2, evenodd: 1, redblack: 1, highlow: 1
+            straight: 38, split: 17, street: 11, corner: 8, sixline: 5, dozen: 2, column: 2, evenodd: 1, redblack: 1, highlow: 1
         };
 
         for (const [spotId, bet] of Object.entries(this.bets)) {
@@ -944,7 +944,7 @@ class RouletteTable {
             if (bet.type === 'straight') {
                 if (String(bet.numbers) === winStr) {
                     won = true;
-                    multiplier = (p.straight || 35) + 1; // 배당 + 본인 원금
+                    multiplier = (p.straight || 38) + 1; // 배당(38배) + 본인 원금(1배) = 총 39배
                 }
             } else if (!isGreen) {
                 // 0, 00이 아닌 경우에만 외부 배팅(1:1, 2:1) 인정

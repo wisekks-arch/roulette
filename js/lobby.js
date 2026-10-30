@@ -573,9 +573,10 @@ class RouletteLobby {
      * 딜러 당첨 번호 결과 시 봇 다중 배팅 정산
      */
     onSpinResult(winningNumber) {
-        const winNum = parseInt(winningNumber, 10);
-        const isRed = this.getNumberColor(winNum) === 'red';
-        const isEven = winNum !== 0 && winNum % 2 === 0;
+        const winStr = String(winningNumber);
+        const winNum = parseInt(winStr, 10);
+        const isRed = this.getNumberColor(winStr) === 'red';
+        const isEven = (winStr !== '0' && winStr !== '00') && winNum % 2 === 0;
 
         // 각 봇별 배당금 집계
         const botResults = {};
@@ -592,20 +593,20 @@ class RouletteLobby {
             let won = false;
             let payoutRatio = 0; // 원금 포함 배율
 
-            const numbers = bet.numbersStr ? bet.numbersStr.split(',').map(n => parseInt(n.trim(), 10)).filter(n => !isNaN(n)) : [];
+            const numbers = bet.numbersStr ? bet.numbersStr.split(',').map(n => n.trim()) : [];
 
-            // 1. 숫자 포함 여부로 판정하는 인사이드 배팅
-            if (numbers.length > 0 && numbers.includes(winNum)) {
+            // 1. 숫자 포함 여부로 판정하는 인사이드 배팅 (0, 00 포함)
+            if (numbers.length > 0 && numbers.includes(winStr)) {
                 won = true;
-                if (bet.betType === 'straight') payoutRatio = 36;
+                if (bet.betType === 'straight') payoutRatio = 39; // 38:1 (원금 포함 39배)
                 else if (bet.betType === 'split') payoutRatio = 18;
                 else if (bet.betType === 'street') payoutRatio = 12;
                 else if (bet.betType === 'corner') payoutRatio = 9;
                 else if (bet.betType === 'sixline') payoutRatio = 6;
-                else payoutRatio = 36 / numbers.length;
+                else payoutRatio = 39 / numbers.length;
             }
-            // 2. 아웃사이드 배팅 판정 (단, winNum === 0이면 하우스 독식)
-            else if (winNum !== 0) {
+            // 2. 아웃사이드 배팅 판정 (단, winStr === '0' 또는 '00'이면 하우스 독식)
+            else if (winStr !== '0' && winStr !== '00') {
                 if (bet.betType === 'dozen') {
                     if (bet.numbersStr === '1-12' && winNum >= 1 && winNum <= 12) { won = true; payoutRatio = 3; }
                     else if (bet.numbersStr === '13-24' && winNum >= 13 && winNum <= 24) { won = true; payoutRatio = 3; }
@@ -641,8 +642,9 @@ class RouletteLobby {
 
             if (badgeBet) {
                 if (res.totalWon > 0) {
-                    badgeBet.textContent = `🎉 +${res.totalWon.toLocaleString()} Chip 적중 (${res.winHits}건)!`;
-                    badgeBet.style.color = '#fbbf24';
+                    badgeBet.textContent = `🎉 당첨! +${res.totalWon.toLocaleString()} Chip (배팅: ${res.totalBet.toLocaleString()})`;
+                    badgeBet.style.color = '#ffd700';
+                    badgeBet.style.fontWeight = 'bold';
                     badgeBet.classList.add('pop-animation');
                     setTimeout(() => badgeBet.classList.remove('pop-animation'), 1000);
                 } else if (res.totalBet > 0) {

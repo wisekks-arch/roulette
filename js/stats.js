@@ -59,11 +59,15 @@ class RouletteStats {
     loadPayouts() {
         try {
             const data = localStorage.getItem(this.STORAGE_KEY_PAYOUTS);
-            if (data) return JSON.parse(data);
+            if (data) {
+                const parsed = JSON.parse(data);
+                if (parsed && parsed.straight === 35) parsed.straight = 38;
+                return parsed;
+            }
         } catch (e) {}
 
         return {
-            straight: 35,  // 35:1
+            straight: 38,  // 38:1
             split: 17,     // 17:1
             street: 11,    // 11:1
             corner: 8,     // 8:1
@@ -810,7 +814,7 @@ class RouletteStats {
             formPayouts.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const newP = {
-                    straight: parseInt(document.getElementById('pay-straight').value, 10) || 35,
+                    straight: parseInt(document.getElementById('pay-straight').value, 10) || 38,
                     split: parseInt(document.getElementById('pay-split').value, 10) || 17,
                     street: parseInt(document.getElementById('pay-street').value, 10) || 11,
                     corner: parseInt(document.getElementById('pay-corner').value, 10) || 8,
@@ -832,7 +836,7 @@ class RouletteStats {
         const btnReset = document.getElementById('btn-reset-payouts');
         if (btnReset) {
             btnReset.addEventListener('click', () => {
-                const defaultP = { straight: 35, split: 17, street: 11, corner: 8, sixline: 5, dozen: 2, column: 2, evenodd: 1, redblack: 1, highlow: 1 };
+                const defaultP = { straight: 38, split: 17, street: 11, corner: 8, sixline: 5, dozen: 2, column: 2, evenodd: 1, redblack: 1, highlow: 1 };
                 this.savePayouts(defaultP);
                 this.renderAdminModal('payouts');
                 if (window.rouletteApp) {
