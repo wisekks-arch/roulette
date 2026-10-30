@@ -118,6 +118,13 @@ class RouletteApp {
 
         // 첫 배팅 라운드 경쾌하게 시작
         this.startBettingPhase();
+
+        // [보안 안내] 임시 비밀번호로 발급받아 입장한 경우 정식 비밀번호 변경 모달 자동 오픈
+        if (user && user.isTemporaryPassword && window.rouletteAuth && typeof window.rouletteAuth.renderChangePasswordModal === 'function') {
+            setTimeout(() => {
+                window.rouletteAuth.renderChangePasswordModal();
+            }, 600);
+        }
     }
 
     /**

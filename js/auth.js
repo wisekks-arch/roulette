@@ -206,10 +206,82 @@ class RouletteAuth {
     }
 
     /**
-     * [초간편 비밀번호 재설정] 아이디(이메일) + 닉네임 일치 확인 후 즉시 새 비밀번호 갱신
+     * [보안] 안전한 임시 비밀번호 자동 생성 (예: VIP7829, ROYAL3921)
+     */
+    generateTempPassword() {
+        const prefix = ['VIP', 'ROYAL', 'ACE', 'LUCKY', 'GOLD'][Math.floor(Math.random() * 5)];
+        const num = Math.floor(1000 + Math.random() * 9000);
+        return `${prefix}${num}`;
+    }
+
+    /**
+     * [임시 비밀번호 발급] 아이디 + 닉네임 일치 확인 후 임시 비밀번호 발급 및 로그인 처리
      * @param {string} email 
      * @param {string} nickname 
+     */
+    issueTempPassword(email, nickname) {
+        if (!email || !nickname) {
+            return { success: false, message: '아이디(이메일)와 닉네임을 모두 입력해 주세요.' };
+        }
+        const user = this.users.find(u =>
+            u.email && u.email.trim().toLowerCase() === email.trim().toLowerCase() &&
+            u.nickname && u.nickname.trim().toLowerCase() === nickname.trim().toLowerCase()
+        );
+        if (!user) {
+            return { success: false, message: '입력하신 아이디와 닉네임이 일치하지 않습니다. 등록 정보를 다시 확인해 주세요.' };
+        }
+
+        const tempPass = this.generateTempPassword();
+        user.password = tempPass;
+        user.isTemporaryPassword = true; // 임시 비밀번호 사용 플래그
+
+        const idx = this.users.findIndex(u => u.id === user.id);
+        if (idx !== -1) {
+            this.users[idx] = { ...user };
+        }
+        this.saveUsers();
+
+        // 임시 비밀번호 계정으로 로그인 처리
+        this.currentUser = user;
+        this.saveCurrentUser();
+        this.addLoginLog(user, 'TEMP_PW_ISSUED');
+
+        return {
+            success: true,
+            user: user,
+            tempPassword: tempPass,
+            message: '임시 비밀번호가 안전하게 발급되었습니다. 카지노 룸으로 입장합니다.'
+        };
+    }
+
+    /**
+     * [새 비밀번호로 변경] 현재 로그인 유저의 비밀번호를 안전한 정식 비밀번호로 갱신
      * @param {string} newPassword 
+     */
+    changePassword(newPassword) {
+        if (!this.currentUser) {
+            return { success: false, message: '로그인 상태에서만 비밀번호를 변경할 수 있습니다.' };
+        }
+        if (!newPassword || newPassword.trim().length < 4) {
+            return { success: false, message: '새 비밀번호는 최소 4자 이상 입력해 주세요.' };
+        }
+
+        const cleanPass = newPassword.trim();
+        this.currentUser.password = cleanPass;
+        this.currentUser.isTemporaryPassword = false; // 임시 비밀번호 플래그 해제
+
+        const idx = this.users.findIndex(u => u.id === this.currentUser.id);
+        if (idx !== -1) {
+            this.users[idx] = { ...this.currentUser };
+        }
+        this.saveUsers();
+        this.saveCurrentUser();
+
+        return { success: true, user: this.currentUser, message: '새 비밀번호로 안전하게 변경되었습니다!' };
+    }
+
+    /**
+     * [초간편 비밀번호 재설정] 하위 호환성 유지용 메서드
      */
     resetPassword(email, nickname, newPassword) {
         if (!email || !nickname || !newPassword) {
@@ -224,13 +296,13 @@ class RouletteAuth {
         }
 
         user.password = newPassword.trim();
+        user.isTemporaryPassword = false;
         const idx = this.users.findIndex(u => u.id === user.id);
         if (idx !== -1) {
             this.users[idx] = { ...user };
         }
         this.saveUsers();
 
-        // 새 비밀번호로 즉시 로그인 처리
         this.currentUser = user;
         this.saveCurrentUser();
         this.addLoginLog(user, 'PW_RESET');
@@ -468,6 +540,20 @@ class RouletteAuth {
                     </div>
                 </div>
 
+                <!-- 비밀번호 변경 섹션 (언제든 비밀번호 수정 가능) -->
+                <div class="profile-pw-section">
+                    <div class="profile-pw-header">
+                        <label>🔑 계정 비밀번호 변경</label>
+                        ${user.isTemporaryPassword ? '<span class="badge-temp-warn">⚠️ 임시 비밀번호 사용 중 (변경 권장)</span>' : ''}
+                    </div>
+                    <div class="profile-pw-inputs">
+                        <input type="password" id="profile-new-pw" placeholder="새 비밀번호 입력 (4자 이상)" autocomplete="new-password">
+                        <input type="password" id="profile-new-pw-confirm" placeholder="새 비밀번호 확인" autocomplete="new-password">
+                        <button type="button" id="btn-save-new-pw" class="btn-save-sm btn-pw-change">비밀번호 변경</button>
+                    </div>
+                    <div id="profile-pw-msg" class="profile-pw-msg hidden"></div>
+                </div>
+
                 <!-- 회원 게임 통계 요약 -->
                 <div class="profile-stats-grid">
                     <div class="p-stat-card">
@@ -517,7 +603,7 @@ class RouletteAuth {
                     <div class="fgb-title">💡 플레이어 계정 찾기 가이드</div>
                     <div class="fgb-desc">
                         • <strong>아이디 찾기:</strong> 가입 닉네임만 입력하시면 아이디가 즉시 확인됩니다.<br>
-                        • <strong>비밀번호 재설정:</strong> 아이디와 닉네임을 입력하시면 본인 확인 즉시 새 비밀번호로 변경되어 입장됩니다.
+                        • <strong>비밀번호 찾기:</strong> 아이디와 닉네임을 입력하시면 임시 비밀번호가 즉시 발급되어 입장됩니다. (입장 후 새 비밀번호로 수정 가능)
                     </div>
                 </div>
 
@@ -536,30 +622,26 @@ class RouletteAuth {
                     <div id="find-id-result" class="find-result-box hidden"></div>
                 </div>
 
-                <!-- 2. 초간편 비밀번호 재설정 폼 -->
+                <!-- 2. 초간편 임시 비밀번호 발급 폼 -->
                 <div class="find-section-card compact-card">
                     <div class="fsc-header">
                         <span class="fsc-badge">STEP 2</span>
-                        <span class="fsc-title">비밀번호 재설정 및 즉시 입장</span>
+                        <span class="fsc-title">임시 비밀번호 발급 및 즉시 입장</span>
                     </div>
                     <form id="form-reset-pw" class="find-mini-form">
-                        <div class="auth-input-group compact-group">
-                            <label>가입 아이디 (이메일)</label>
-                            <input type="email" id="reset-pw-email" placeholder="example@casino.com" required>
-                        </div>
                         <div class="find-inputs-row">
+                            <div class="auth-input-group compact-group flex-1">
+                                <label>가입 아이디 (이메일)</label>
+                                <input type="email" id="reset-pw-email" placeholder="example@casino.com" required>
+                            </div>
                             <div class="auth-input-group compact-group flex-1">
                                 <label>가입 시 닉네임</label>
                                 <input type="text" id="reset-pw-nickname" placeholder="닉네임 입력" required>
                             </div>
-                            <div class="auth-input-group compact-group flex-1">
-                                <label>새 비밀번호</label>
-                                <input type="password" id="reset-pw-newpass" placeholder="새 비밀번호 입력" required>
-                            </div>
                         </div>
-                        <button type="submit" class="auth-submit-btn btn-reset-gold btn-compact-submit">🔑 비밀번호 변경 및 즉시 입장</button>
+                        <button type="submit" class="auth-submit-btn btn-reset-gold btn-compact-submit">🔑 임시 비밀번호 발급 및 즉시 입장</button>
                     </form>
-                    <!-- 비밀번호 재설정 결과 알림 박스 (일치/불일치 명확한 피드백) -->
+                    <!-- 임시 비밀번호 발급 결과 알림 박스 (일치/불일치 명확한 피드백) -->
                     <div id="reset-pw-result" class="find-result-box hidden"></div>
                 </div>
 
@@ -679,40 +761,39 @@ class RouletteAuth {
             });
         }
 
-        // ② 비밀번호 재설정 폼 제출
+        // ② 임시 비밀번호 발급 폼 제출
         const formResetPw = document.getElementById('form-reset-pw');
         if (formResetPw) {
             formResetPw.addEventListener('submit', (e) => {
                 e.preventDefault();
                 const email = document.getElementById('reset-pw-email').value;
                 const nick = document.getElementById('reset-pw-nickname').value;
-                const newpass = document.getElementById('reset-pw-newpass').value;
                 const resultBox = document.getElementById('reset-pw-result');
-                const res = this.resetPassword(email, nick, newpass);
+                const res = this.issueTempPassword(email, nick);
 
                 if (resultBox) {
                     resultBox.classList.remove('hidden');
                 }
 
                 if (res.success) {
-                    // [사용자 요구 반영] 입력한 정보가 맞으면: 아이디 / 비밀번호 무엇으로 로그인되었는지 명확히 시각적 알림 제공!
+                    // [사용자 요구 반영] 입력한 정보가 맞으면: 임시 비밀번호가 발급되었음을 알리고 입장 후 변경 안내!
                     if (resultBox) {
                         resultBox.innerHTML = `
                             <div class="result-success-box highlight-pulse">
                                 <span class="rs-icon">🎉</span>
                                 <div class="rs-info">
-                                    <div class="rs-text">비밀번호 변경 및 로그인 성공!</div>
+                                    <div class="rs-text">임시 비밀번호 발급 및 로그인 성공!</div>
                                     <div class="rs-credentials-summary">
                                         • 아이디: <strong>${email}</strong><br>
-                                        • 새 비밀번호: <strong>${newpass}</strong>
+                                        • 발급된 임시 비밀번호: <strong>${res.tempPassword}</strong>
                                     </div>
-                                    <div class="rs-subtext">위 계정으로 정상 로그인되었습니다. (1.5초 후 입장)</div>
+                                    <div class="rs-subtext">입장 후 새 비밀번호 변경 화면이 자동으로 열립니다. (1.5초 후 입장)</div>
                                 </div>
                             </div>
                         `;
                     }
                     if (window.rouletteApp) {
-                        window.rouletteApp.showToast(`🎉 [${email}] 새 비밀번호로 정상 로그인되었습니다!`);
+                        window.rouletteApp.showToast(`🎉 [${email}] 임시 비밀번호(${res.tempPassword})로 로그인되었습니다!`);
                         window.rouletteApp.setBalance(res.user.balance);
                     }
                     // 1.5초 동안 유저에게 로그인된 정보를 명확히 보여준 후 입장
@@ -828,6 +909,58 @@ class RouletteAuth {
             });
         }
 
+        // [내 프로필] 새 비밀번호 변경 저장 리스너
+        const btnSaveNewPw = document.getElementById('btn-save-new-pw');
+        if (btnSaveNewPw) {
+            btnSaveNewPw.addEventListener('click', () => {
+                const newPw = document.getElementById('profile-new-pw').value;
+                const confirmPw = document.getElementById('profile-new-pw-confirm').value;
+                const msgBox = document.getElementById('profile-pw-msg');
+
+                if (!newPw || newPw.trim().length < 4) {
+                    if (msgBox) {
+                        msgBox.className = 'profile-pw-msg error';
+                        msgBox.textContent = '새 비밀번호는 최소 4자 이상 입력해 주세요.';
+                        msgBox.classList.remove('hidden');
+                    }
+                    return;
+                }
+
+                if (newPw !== confirmPw) {
+                    if (msgBox) {
+                        msgBox.className = 'profile-pw-msg error';
+                        msgBox.textContent = '비밀번호와 비밀번호 확인이 일치하지 않습니다.';
+                        msgBox.classList.remove('hidden');
+                    }
+                    return;
+                }
+
+                const res = this.changePassword(newPw);
+                if (res.success) {
+                    if (msgBox) {
+                        msgBox.className = 'profile-pw-msg success';
+                        msgBox.textContent = '🎉 비밀번호가 안전하게 변경되었습니다!';
+                        msgBox.classList.remove('hidden');
+                    }
+                    if (window.rouletteApp) {
+                        window.rouletteApp.showToast("🎉 새 비밀번호로 안전하게 변경되었습니다!");
+                    }
+                    // 인풋 초기화 및 탭 갱신
+                    document.getElementById('profile-new-pw').value = '';
+                    document.getElementById('profile-new-pw-confirm').value = '';
+                    setTimeout(() => {
+                        this.renderAuthModal('profile');
+                    }, 1200);
+                } else {
+                    if (msgBox) {
+                        msgBox.className = 'profile-pw-msg error';
+                        msgBox.textContent = res.message;
+                        msgBox.classList.remove('hidden');
+                    }
+                }
+            });
+        }
+
         // 로그아웃
         const btnLogout = document.getElementById('btn-logout');
         if (btnLogout) {
@@ -880,6 +1013,137 @@ class RouletteAuth {
         this.isMandatoryEntrance = false;
         const modal = document.getElementById('auth-modal');
         if (modal) modal.classList.add('hidden');
+    }
+
+    /**
+     * [보안 강화] 카지노 입장 후 임시 비밀번호 변경 전용 팝업 모달
+     */
+    renderChangePasswordModal() {
+        if (!this.currentUser) return;
+
+        let modal = document.getElementById('change-pw-modal');
+        if (!modal) {
+            modal = document.createElement('div');
+            modal.id = 'change-pw-modal';
+            modal.className = 'modal-overlay hidden';
+            document.body.appendChild(modal);
+        }
+
+        modal.innerHTML = `
+            <div class="change-pw-modal-content highlight-pulse-gold">
+                <div class="cpw-header">
+                    <div class="cpw-title-wrap">
+                        <span class="cpw-shield-icon">🔒</span>
+                        <h3>VIP 계정 보안 : 임시 비밀번호 변경</h3>
+                    </div>
+                    <button type="button" id="btn-close-change-pw" class="btn-close-modal" title="창 닫기">✕</button>
+                </div>
+
+                <div class="cpw-body">
+                    <div class="cpw-notice-box">
+                        <div class="cpw-notice-title">💡 안전한 카지노 이용을 위한 필수 보안 안내</div>
+                        <div class="cpw-notice-desc">
+                            현재 시스템에서 자동 발급된 <strong>임시 비밀번호</strong>로 로그인 중입니다.<br>
+                            회원님의 소중한 머니와 계정 보호를 위해 <strong>새로운 정식 비밀번호</strong>로 변경해 주세요.
+                        </div>
+                    </div>
+
+                    <div class="cpw-current-temp-badge">
+                        <span class="lbl">현재 발급된 임시 비밀번호</span>
+                        <strong class="val">${this.currentUser.password || '임시 비밀번호'}</strong>
+                    </div>
+
+                    <form id="form-change-temp-pw" class="cpw-form">
+                        <div class="auth-input-group">
+                            <label>새로 사용할 정식 비밀번호</label>
+                            <input type="password" id="cpw-new-input" placeholder="새 비밀번호 입력 (4자 이상)" required autocomplete="new-password">
+                        </div>
+                        <div class="auth-input-group">
+                            <label>새 비밀번호 확인</label>
+                            <input type="password" id="cpw-confirm-input" placeholder="새 비밀번호 재입력" required autocomplete="new-password">
+                        </div>
+
+                        <div id="cpw-feedback" class="cpw-feedback-msg hidden"></div>
+
+                        <div class="cpw-actions">
+                            <button type="submit" class="auth-submit-btn btn-confirm-new-pw">🔐 새 비밀번호로 안전하게 변경</button>
+                            <button type="button" id="btn-skip-change-pw" class="btn-skip-secondary">다음에 변경하기 (게임 먼저 진행)</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        `;
+
+        modal.classList.remove('hidden');
+
+        // 이벤트 바인딩
+        const closeModal = () => {
+            modal.classList.add('hidden');
+        };
+
+        const btnClose = document.getElementById('btn-close-change-pw');
+        if (btnClose) {
+            btnClose.addEventListener('click', closeModal);
+        }
+
+        const btnSkip = document.getElementById('btn-skip-change-pw');
+        if (btnSkip) {
+            btnSkip.addEventListener('click', () => {
+                closeModal();
+                if (window.rouletteApp) {
+                    window.rouletteApp.showToast("💡 상단 [내 프로필]에서 언제든지 비밀번호를 변경하실 수 있습니다.");
+                }
+            });
+        }
+
+        const formChange = document.getElementById('form-change-temp-pw');
+        if (formChange) {
+            formChange.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const newPw = document.getElementById('cpw-new-input').value;
+                const confirmPw = document.getElementById('cpw-confirm-input').value;
+                const fbBox = document.getElementById('cpw-feedback');
+
+                if (!newPw || newPw.trim().length < 4) {
+                    if (fbBox) {
+                        fbBox.className = 'cpw-feedback-msg error shake-box';
+                        fbBox.textContent = '새 비밀번호는 최소 4자 이상 입력해 주세요.';
+                        fbBox.classList.remove('hidden');
+                    }
+                    return;
+                }
+
+                if (newPw !== confirmPw) {
+                    if (fbBox) {
+                        fbBox.className = 'cpw-feedback-msg error shake-box';
+                        fbBox.textContent = '비밀번호와 비밀번호 확인이 일치하지 않습니다.';
+                        fbBox.classList.remove('hidden');
+                    }
+                    return;
+                }
+
+                const res = this.changePassword(newPw);
+                if (res.success) {
+                    if (fbBox) {
+                        fbBox.className = 'cpw-feedback-msg success highlight-pulse';
+                        fbBox.textContent = '🎉 새 비밀번호로 안전하게 변경되었습니다! 즐거운 게임 되세요.';
+                        fbBox.classList.remove('hidden');
+                    }
+                    if (window.rouletteApp) {
+                        window.rouletteApp.showToast("🎉 정식 비밀번호로 성공적으로 변경되었습니다!");
+                    }
+                    setTimeout(() => {
+                        closeModal();
+                    }, 1200);
+                } else {
+                    if (fbBox) {
+                        fbBox.className = 'cpw-feedback-msg error shake-box';
+                        fbBox.textContent = res.message;
+                        fbBox.classList.remove('hidden');
+                    }
+                }
+            });
+        }
     }
 }
 

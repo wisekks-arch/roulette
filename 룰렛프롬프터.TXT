@@ -744,3 +744,24 @@ SNS 간편로그인 삭제 해주고
    - Chrome 헤드리스 렌더링 검증 및 구문 무결성(Braces/Parens 100% 매칭) 확인 완료.
    - index.html 캐시 버스팅 파라미터 ?v=20261030_1525 전면 갱신.
    - GitHub Pages 실서버(https://wisekks-arch.github.io/roulette/index.html) 배포 완료.
+
+
+[58차 사용자 요청 원문 - 2026-10-30]
+"비밀번호 찾기 후 입장후에 임시비밀번호 수정하는 프로세스 반영해줘"
+- 사용자 최종 확인: 승인 (컨펌 완료)
+
+[58차 핵심 구현 및 개선 사항]
+1. 원클릭 임시 비밀번호 자동 발급 시스템 구축 (js/auth.js):
+   - STEP 2에서 비밀번호를 직접 고민하여 입력할 필요 없이, 가입 아이디(이메일)와 닉네임만 입력하고 [🔑 임시 비밀번호 발급 및 즉시 입장] 버튼 클릭 시 시스템이 안전한 임시 비밀번호(예: VIP8921)를 자동 발급.
+   - user.isTemporaryPassword = true 플래그 설정 및 화면에 발급된 임시 비밀번호를 선명하게 안내한 후 1.5초 뒤 카지노 룸 자동 입장.
+2. 카지노 입장 후 임시 비밀번호 변경 전용 팝업 모달 탑재 (js/auth.js, js/app.js, css/style.css):
+   - 카지노 룸 입장(onUserLoggedIn) 시 임시 비밀번호 사용 여부(isTemporaryPassword)를 자동 감지하여 [🔒 VIP 계정 보안: 임시 비밀번호 변경] 전용 모달 자동 팝업.
+   - 현재 임시 비밀번호 확인 뱃지 및 새 비밀번호/확인 폼 제공.
+   - [🔐 새 비밀번호로 안전하게 변경] 클릭 시 isTemporaryPassword 플래그 해제 및 정식 비밀번호 갱신 완료.
+   - 바쁜 유저를 위해 [다음에 변경하기 (게임 먼저 진행)] 버튼도 제공.
+3. 상단 [내 프로필] 모달 내 상시 비밀번호 변경 섹션 탑재 (js/auth.js, css/style.css):
+   - 언제든지 상단 내 프로필 탭을 열어 새 비밀번호로 즉시 변경 가능하도록 전용 입력 폼 연동.
+4. 브라우저 스크립트 에러 0건(ZERO) 검증 및 GitHub Pages 실서버 배포:
+   - Chrome 헤드리스 렌더링 및 구문 무결성(Braces/Parens 100% 매칭) 확인 완료.
+   - index.html 캐시 버스팅 파라미터 ?v=20261030_1535 전면 갱신.
+   - GitHub Pages 실서버(https://wisekks-arch.github.io/roulette/index.html) 배포 완료.

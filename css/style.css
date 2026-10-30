@@ -3236,6 +3236,252 @@ body {
     gap: 6px;
 }
 
+/* ========================================================
+   [보안 강화] 임시 비밀번호 변경 모달 및 프로필 비밀번호 관리
+   ======================================================== */
+.change-pw-modal-content {
+    background: linear-gradient(145deg, #180928, #0a0312);
+    border: 2px solid #ffd700;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 480px;
+    padding: 16px 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), 0 0 35px rgba(234, 179, 8, 0.45);
+    color: #fff;
+    animation: zoomIn 0.25s ease-out;
+    z-index: 10000;
+}
+
+.highlight-pulse-gold {
+    animation: pulseGlowGold 2s infinite;
+}
+
+@keyframes pulseGlowGold {
+    0%, 100% { box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), 0 0 25px rgba(234, 179, 8, 0.35); }
+    50% { box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), 0 0 45px rgba(234, 179, 8, 0.7); }
+}
+
+.cpw-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+}
+
+.cpw-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cpw-shield-icon {
+    font-size: 1.2rem;
+}
+
+.cpw-title-wrap h3 {
+    font-family: var(--font-heading);
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #ffd700;
+    margin: 0;
+}
+
+.cpw-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cpw-notice-box {
+    background: rgba(234, 179, 8, 0.08);
+    border: 1px solid rgba(234, 179, 8, 0.35);
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+.cpw-notice-title {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #fef08a;
+    margin-bottom: 3px;
+}
+
+.cpw-notice-desc {
+    font-size: 0.72rem;
+    color: #cbd5e1;
+    line-height: 1.45;
+}
+
+.cpw-current-temp-badge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(0, 0, 0, 0.45);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+.cpw-current-temp-badge .lbl {
+    font-size: 0.74rem;
+    color: #94a3b8;
+}
+
+.cpw-current-temp-badge .val {
+    font-size: 0.95rem;
+    color: #ffd700;
+    font-weight: 900;
+    letter-spacing: 1px;
+}
+
+.cpw-form {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.cpw-feedback-msg {
+    font-size: 0.76rem;
+    padding: 6px 10px;
+    border-radius: 6px;
+    line-height: 1.4;
+}
+
+.cpw-feedback-msg.error {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid #ef4444;
+    color: #fca5a5;
+}
+
+.cpw-feedback-msg.success {
+    background: rgba(34, 197, 94, 0.15);
+    border: 1px solid #22c55e;
+    color: #86efac;
+}
+
+.cpw-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 4px;
+}
+
+.btn-confirm-new-pw {
+    background: linear-gradient(135deg, #eab308, #ca8a04);
+    color: #000;
+    font-weight: 900;
+    height: 38px;
+    font-size: 0.88rem;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.btn-skip-secondary {
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: #94a3b8;
+    height: 32px;
+    font-size: 0.76rem;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.btn-skip-secondary:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: #fff;
+}
+
+/* 프로필 내 비밀번호 변경 섹션 */
+.profile-pw-section {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 215, 0, 0.2);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-top: 12px;
+}
+
+.profile-pw-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.profile-pw-header label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #fef08a;
+    margin: 0;
+}
+
+.badge-temp-warn {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid #ef4444;
+    color: #fca5a5;
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.profile-pw-inputs {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.profile-pw-inputs input {
+    flex: 1;
+    min-width: 0;
+    height: 32px;
+    padding: 4px 8px;
+    font-size: 0.78rem;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 5px;
+    color: #fff;
+}
+
+.profile-pw-inputs input:focus {
+    border-color: #ffd700;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+
+.btn-pw-change {
+    background: linear-gradient(135deg, #eab308, #ca8a04);
+    color: #000;
+    font-weight: 800;
+    height: 32px;
+    padding: 0 12px;
+    white-space: nowrap;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.profile-pw-msg {
+    margin-top: 6px;
+    font-size: 0.74rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.profile-pw-msg.success {
+    background: rgba(34, 197, 94, 0.15);
+    border: 1px solid #22c55e;
+    color: #86efac;
+}
+
+.profile-pw-msg.error {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid #ef4444;
+    color: #fca5a5;
+}
+
 /* 프로필 화면 */
 .profile-hero {
     display: flex;
