@@ -2625,7 +2625,9 @@ body {
     border-radius: 12px;
     width: 90%;
     max-width: 520px;
-    padding: 24px;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 14px 18px;
     box-shadow: 0 10px 40px rgba(0, 0, 0, 0.9), 0 0 30px rgba(168, 85, 247, 0.3);
     color: #fff;
 }
@@ -2654,8 +2656,8 @@ body {
     justify-content: space-between;
     align-items: flex-start;
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 14px;
-    margin-bottom: 18px;
+    padding-bottom: 8px;
+    margin-bottom: 8px;
 }
 
 .auth-modal-title h2 {
@@ -2892,16 +2894,20 @@ body {
     font-weight: 700;
 }
 
-/* 계정 찾기 탭 메인 컨테이너 */
+/* 계정 찾기 탭 메인 컨테이너 (컴팩트 최적화) */
 .find-account-container {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
+}
+
+.find-account-container.compact-mode {
+    gap: 8px;
 }
 
 .find-header-row {
     border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-    padding-bottom: 8px;
+    padding-bottom: 5px;
 }
 
 .find-title-group {
@@ -2912,45 +2918,45 @@ body {
 
 .find-title {
     font-family: var(--font-heading);
-    font-size: 1.05rem;
+    font-size: 0.95rem;
     font-weight: 800;
     color: #ffd700;
 }
 
 .find-subtitle {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
     color: #94a3b8;
     display: block;
-    margin-top: 2px;
+    margin-top: 1px;
 }
 
-/* 상시 노출 사용자 가이드 박스 */
+/* 상시 노출 또는 가이드 버튼 클릭 시 토글되는 사용자 가이드 박스 */
 .find-guide-box {
     background: rgba(234, 179, 8, 0.08);
     border: 1px solid rgba(234, 179, 8, 0.35);
-    border-radius: 8px;
-    padding: 10px 14px;
+    border-radius: 6px;
+    padding: 7px 10px;
     transition: all 0.3s ease;
 }
 
 .find-guide-box.highlight-guide {
     background: rgba(234, 179, 8, 0.22);
     border-color: #ffd700;
-    box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
-    transform: scale(1.02);
+    box-shadow: 0 0 16px rgba(255, 215, 0, 0.5);
+    transform: scale(1.01);
 }
 
 .fgb-title {
-    font-size: 0.8rem;
+    font-size: 0.75rem;
     font-weight: 800;
     color: #fef08a;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 
 .fgb-desc {
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     color: #cbd5e1;
-    line-height: 1.5;
+    line-height: 1.4;
 }
 
 .fgb-desc u {
@@ -2962,28 +2968,32 @@ body {
 .find-section-card {
     background: rgba(255, 255, 255, 0.03);
     border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    padding: 12px 14px;
+    border-radius: 6px;
+    padding: 8px 10px;
+}
+
+.find-section-card.compact-card {
+    padding: 7px 9px;
 }
 
 .fsc-header {
     display: flex;
     align-items: center;
-    gap: 6px;
-    margin-bottom: 10px;
+    gap: 5px;
+    margin-bottom: 5px;
 }
 
 .fsc-badge {
     background: #eab308;
     color: #000;
-    font-size: 0.65rem;
+    font-size: 0.62rem;
     font-weight: 900;
-    padding: 1px 6px;
-    border-radius: 4px;
+    padding: 1px 5px;
+    border-radius: 3px;
 }
 
 .fsc-title {
-    font-size: 0.85rem;
+    font-size: 0.78rem;
     font-weight: 700;
     color: #f8fafc;
 }
@@ -2991,28 +3001,112 @@ body {
 .find-mini-form {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 5px;
+}
+
+/* STEP 1: 가로 1줄 인라인 배치 (인풋 + 확인 버튼) */
+.find-input-inline {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+}
+
+.find-input-inline input {
+    flex: 1;
+    min-width: 0;
+    height: 32px;
+    padding: 4px 8px;
+    font-size: 0.8rem;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 5px;
+    color: #fff;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.find-input-inline input:focus {
+    border-color: #0284c7;
+    box-shadow: 0 0 8px rgba(2, 132, 199, 0.4);
+}
+
+.find-input-inline .btn-find-action {
+    height: 32px;
+    padding: 0 12px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    margin-top: 0;
+    white-space: nowrap;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* STEP 2: 가로 2열 배치 (닉네임 + 새 비밀번호) */
+.find-inputs-row {
+    display: flex;
+    gap: 6px;
+}
+
+.auth-input-group.compact-group {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-bottom: 0;
+    flex: 1;
+    min-width: 0;
+}
+
+.auth-input-group.compact-group label {
+    font-size: 0.68rem;
+    color: #94a3b8;
+    margin-bottom: 0;
+}
+
+.auth-input-group.compact-group input {
+    height: 30px;
+    padding: 3px 8px;
+    font-size: 0.8rem;
+    background: rgba(0, 0, 0, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    border-radius: 5px;
+    color: #fff;
+}
+
+.auth-input-group.compact-group input:focus {
+    border-color: #ffd700;
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.35);
+}
+
+.btn-compact-submit {
+    margin-top: 3px;
+    height: 33px;
+    padding: 0 10px;
+    font-size: 0.8rem;
+    font-weight: 800;
+    border-radius: 5px;
+    border: none;
+    cursor: pointer;
 }
 
 .btn-find-action {
     background: linear-gradient(135deg, #0284c7, #0369a1);
     color: #fff;
-    margin-top: 4px;
 }
 
 .btn-reset-gold {
     background: linear-gradient(135deg, #eab308, #ca8a04);
     color: #000;
     font-weight: 900;
-    margin-top: 4px;
 }
 
-/* 아이디 찾기 성공/실패 결과 박스 */
+/* 알림 및 피드백 박스 */
 .find-result-box {
-    margin-top: 10px;
-    padding: 10px 12px;
-    border-radius: 8px;
-    font-size: 0.82rem;
+    margin-top: 5px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    font-size: 0.78rem;
     animation: fadeIn 0.25s ease-out;
 }
 
@@ -3020,11 +3114,80 @@ body {
     background: rgba(34, 197, 94, 0.12);
     border: 1px solid #22c55e;
     border-radius: 6px;
-    padding: 10px 12px;
+    padding: 8px 10px;
     display: flex;
     flex-direction: column;
-    gap: 6px;
+    gap: 4px;
     color: #f0fdf4;
+}
+
+.result-success-box.highlight-pulse {
+    animation: pulseGlow 1.5s infinite;
+}
+
+.rs-credentials-summary {
+    margin: 4px 0;
+    padding: 5px 8px;
+    background: rgba(0, 0, 0, 0.4);
+    border-radius: 4px;
+    border-left: 3px solid #22c55e;
+    font-size: 0.76rem;
+    color: #ffd700;
+    line-height: 1.4;
+}
+
+.rs-credentials-summary strong {
+    color: #86efac;
+}
+
+.rs-subtext {
+    font-size: 0.68rem;
+    color: #cbd5e1;
+}
+
+.result-fail-box {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid #ef4444;
+    color: #fca5a5;
+    border-radius: 6px;
+    padding: 7px 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+}
+
+.result-fail-box.shake-box {
+    animation: shakeBox 0.4s ease-in-out;
+}
+
+.rs-fail-info {
+    font-size: 0.74rem;
+    line-height: 1.35;
+}
+
+.rs-fail-info code {
+    background: rgba(0, 0, 0, 0.35);
+    padding: 1px 4px;
+    border-radius: 3px;
+    color: #fecaca;
+    font-family: inherit;
+    font-weight: 700;
+}
+
+.compact-note {
+    margin-top: 4px;
+    font-size: 0.72rem;
+}
+
+@keyframes shakeBox {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-5px); }
+    40%, 80% { transform: translateX(5px); }
+}
+
+@keyframes pulseGlow {
+    0%, 100% { box-shadow: 0 0 8px rgba(34, 197, 94, 0.3); }
+    50% { box-shadow: 0 0 18px rgba(34, 197, 94, 0.75); }
 }
 
 .rs-info {

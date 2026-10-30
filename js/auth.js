@@ -498,69 +498,72 @@ class RouletteAuth {
     }
 
     /**
-     * [초간편] 아이디/비밀번호 찾기 화면 템플릿 (상시 가이드 박스 및 ❓ 바로 볼 수 있는 도움말 포함)
+     * [초간편] 아이디/비밀번호 찾기 화면 템플릿 (초컴팩트 디자인 & ❓ 원클릭 가이드 토글)
      */
     getFindAccountTemplate() {
         return `
-            <div class="find-account-container">
+            <div class="find-account-container compact-mode">
                 <!-- 상단 헤더 및 ❓ 바로 볼 수 있는 가이드 버튼 -->
                 <div class="find-header-row">
                     <div class="find-title-group">
                         <span class="find-title">🔍 계정 정보 찾기</span>
                         <button type="button" class="btn-guide-help btn-guide-prominent" id="btn-find-tab-guide" title="도움말 가이드 열기">❓ [가이드]</button>
                     </div>
-                    <span class="find-subtitle">아이디 확인 또는 새 비밀번호를 3초 만에 재설정하세요.</span>
+                    <span class="find-subtitle">3초 만에 아이디를 확인하고 새 비밀번호로 재설정하세요.</span>
                 </div>
 
-                <!-- ❓ 바로 볼 수 있는 사용자 가이드 안내 박스 -->
-                <div id="find-guide-box" class="find-guide-box">
-                    <div class="fgb-title">💡 플레이어 계정 찾기 사용자 가이드</div>
+                <!-- ❓ 바로 볼 수 있는 사용자 가이드 안내 박스 (기본 hidden으로 공간 절약) -->
+                <div id="find-guide-box" class="find-guide-box hidden">
+                    <div class="fgb-title">💡 플레이어 계정 찾기 가이드</div>
                     <div class="fgb-desc">
-                        • <strong>아이디(이메일)를 잊으셨나요?</strong> 가입 시 설정한 <u>닉네임</u>만 입력하시면 화면에서 3초 만에 즉시 확인됩니다.<br>
-                        • <strong>비밀번호를 잊으셨나요?</strong> 등록된 <u>아이디</u>와 <u>닉네임</u>을 입력하시면 본인 확인 즉시 <u>새 비밀번호</u>로 변경되어 바로 입장됩니다.
+                        • <strong>아이디 찾기:</strong> 가입 닉네임만 입력하시면 아이디가 즉시 확인됩니다.<br>
+                        • <strong>비밀번호 재설정:</strong> 아이디와 닉네임을 입력하시면 본인 확인 즉시 새 비밀번호로 변경되어 입장됩니다.
                     </div>
                 </div>
 
                 <!-- 1. 초간편 아이디 찾기 폼 -->
-                <div class="find-section-card">
+                <div class="find-section-card compact-card">
                     <div class="fsc-header">
                         <span class="fsc-badge">STEP 1</span>
                         <span class="fsc-title">닉네임으로 아이디 찾기</span>
                     </div>
                     <form id="form-find-id" class="find-mini-form">
-                        <div class="auth-input-group">
-                            <label>가입 시 닉네임</label>
+                        <div class="find-input-inline">
                             <input type="text" id="find-id-nickname" placeholder="가입 닉네임 입력 (예: 로열_플레이어)" required>
+                            <button type="submit" class="auth-submit-btn btn-find-action">아이디 확인</button>
                         </div>
-                        <button type="submit" class="auth-submit-btn btn-find-action">🔎 아이디 즉시 확인</button>
                     </form>
                     <div id="find-id-result" class="find-result-box hidden"></div>
                 </div>
 
                 <!-- 2. 초간편 비밀번호 재설정 폼 -->
-                <div class="find-section-card">
+                <div class="find-section-card compact-card">
                     <div class="fsc-header">
                         <span class="fsc-badge">STEP 2</span>
                         <span class="fsc-title">비밀번호 재설정 및 즉시 입장</span>
                     </div>
                     <form id="form-reset-pw" class="find-mini-form">
-                        <div class="auth-input-group">
-                            <label>가입 아이디 (이메일 주소)</label>
+                        <div class="auth-input-group compact-group">
+                            <label>가입 아이디 (이메일)</label>
                             <input type="email" id="reset-pw-email" placeholder="example@casino.com" required>
                         </div>
-                        <div class="auth-input-group">
-                            <label>가입 시 닉네임</label>
-                            <input type="text" id="reset-pw-nickname" placeholder="본인 닉네임 입력" required>
+                        <div class="find-inputs-row">
+                            <div class="auth-input-group compact-group flex-1">
+                                <label>가입 시 닉네임</label>
+                                <input type="text" id="reset-pw-nickname" placeholder="닉네임 입력" required>
+                            </div>
+                            <div class="auth-input-group compact-group flex-1">
+                                <label>새 비밀번호</label>
+                                <input type="password" id="reset-pw-newpass" placeholder="새 비밀번호 입력" required>
+                            </div>
                         </div>
-                        <div class="auth-input-group">
-                            <label>새로 사용할 비밀번호</label>
-                            <input type="password" id="reset-pw-newpass" placeholder="새 비밀번호 입력" required>
-                        </div>
-                        <button type="submit" class="auth-submit-btn btn-reset-gold">🔑 비밀번호 변경 및 즉시 입장</button>
+                        <button type="submit" class="auth-submit-btn btn-reset-gold btn-compact-submit">🔑 비밀번호 변경 및 즉시 입장</button>
                     </form>
+                    <!-- 비밀번호 재설정 결과 알림 박스 (일치/불일치 명확한 피드백) -->
+                    <div id="reset-pw-result" class="find-result-box hidden"></div>
                 </div>
 
-                <div class="auth-switch-note text-center">
+                <div class="auth-switch-note text-center compact-note">
                     이미 계정을 기억하고 계신가요? <a href="#" id="link-back-to-login">로그인 화면으로 돌아가기</a>
                 </div>
             </div>
@@ -684,20 +687,60 @@ class RouletteAuth {
                 const email = document.getElementById('reset-pw-email').value;
                 const nick = document.getElementById('reset-pw-nickname').value;
                 const newpass = document.getElementById('reset-pw-newpass').value;
+                const resultBox = document.getElementById('reset-pw-result');
                 const res = this.resetPassword(email, nick, newpass);
+
+                if (resultBox) {
+                    resultBox.classList.remove('hidden');
+                }
+
                 if (res.success) {
+                    // [사용자 요구 반영] 입력한 정보가 맞으면: 아이디 / 비밀번호 무엇으로 로그인되었는지 명확히 시각적 알림 제공!
+                    if (resultBox) {
+                        resultBox.innerHTML = `
+                            <div class="result-success-box highlight-pulse">
+                                <span class="rs-icon">🎉</span>
+                                <div class="rs-info">
+                                    <div class="rs-text">비밀번호 변경 및 로그인 성공!</div>
+                                    <div class="rs-credentials-summary">
+                                        • 아이디: <strong>${email}</strong><br>
+                                        • 새 비밀번호: <strong>${newpass}</strong>
+                                    </div>
+                                    <div class="rs-subtext">위 계정으로 정상 로그인되었습니다. (1.5초 후 입장)</div>
+                                </div>
+                            </div>
+                        `;
+                    }
                     if (window.rouletteApp) {
-                        window.rouletteApp.showToast(res.message);
+                        window.rouletteApp.showToast(`🎉 [${email}] 새 비밀번호로 정상 로그인되었습니다!`);
                         window.rouletteApp.setBalance(res.user.balance);
                     }
-                    this.renderHeaderProfile();
-                    this.isMandatoryEntrance = false;
-                    this.closeAuthModal();
-                    if (window.rouletteApp && typeof window.rouletteApp.onUserLoggedIn === 'function') {
-                        window.rouletteApp.onUserLoggedIn(res.user);
-                    }
+                    // 1.5초 동안 유저에게 로그인된 정보를 명확히 보여준 후 입장
+                    setTimeout(() => {
+                        this.renderHeaderProfile();
+                        this.isMandatoryEntrance = false;
+                        this.closeAuthModal();
+                        if (window.rouletteApp && typeof window.rouletteApp.onUserLoggedIn === 'function') {
+                            window.rouletteApp.onUserLoggedIn(res.user);
+                        }
+                    }, 1500);
                 } else {
-                    alert(res.message);
+                    // [사용자 요구 반영] 안 맞으면 안 맞는다고 명확하게 경고 알림 표시!
+                    if (resultBox) {
+                        resultBox.innerHTML = `
+                            <div class="result-fail-box shake-box">
+                                <span class="rs-icon">❌</span>
+                                <div class="rs-fail-info">
+                                    <strong>계정 정보 불일치 안내</strong><br>
+                                    입력하신 아이디(<code>${email}</code>)와 닉네임(<code>${nick}</code>)이 일치하지 않습니다.<br>
+                                    등록된 회원 정보를 다시 확인해 주세요.
+                                </div>
+                            </div>
+                        `;
+                    }
+                    if (window.rouletteApp) {
+                        window.rouletteApp.showToast("⚠️ 입력하신 아이디와 닉네임이 일치하지 않습니다.");
+                    }
                 }
             });
         }
